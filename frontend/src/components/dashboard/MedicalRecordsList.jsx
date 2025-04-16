@@ -23,31 +23,29 @@ const MedicalRecordsList = ({
   handleExport
 }) => {
   return (
-    <Card className="border-slate-100 shadow-sm overflow-hidden">
-      <CardHeader className="border-b border-slate-50 bg-gradient-to-r from-slate-50 to-white py-5">
+    <Card className="border-slate-100 shadow-sm overflow-hidden p-0">
+      <CardHeader className="border-b border-slate-50 bg-primary-300 to-white py-7">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-xl font-light tracking-tight text-slate-800">
+            <CardTitle className="text-xl font-semibold  tracking-tight text-white">
               Medical Records
             </CardTitle>
-            <CardDescription className="text-slate-400 mt-1">
+            <CardDescription className="text-slate-100  mt-1 ">
               Recent patient diagnoses and treatment plans
             </CardDescription>
           </div>
           <div className="flex space-x-2">
             <Button
-              variant="outline"
               size="sm"
-              className="border-slate-200 text-slate-600 hover:text-slate-800 transition-colors"
+              className="border-slate-200  bg-secondary text-slate-800 hover:text-slate-800 transition-colors hover:bg-slate-200  hover:cursor-pointer"
               onClick={handleFilter}>
-              <IconFilter size={16} className="mr-2 text-slate-400" /> Filter
+              <IconFilter size={16} className="mr-2 text-slate-800" /> Filter
             </Button>
             <Button
-              variant="outline"
               size="sm"
-              className="border-slate-200 text-slate-600 hover:bg-slate-50"
+              className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer" 
               onClick={handleExport}>
-              <IconFileExport size={16} className="mr-2 text-slate-400" />{" "}
+              <IconFileExport size={16} className="mr-2 text-slate-800" />
               Export
             </Button>
           </div>

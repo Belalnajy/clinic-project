@@ -17,7 +17,7 @@ import {
 const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
   return (
     <div
-      className="group p-5 border border-slate-100 rounded-lg bg-white hover:border-slate-200 hover:shadow-md transition-all duration-300"
+      className="group p-5 border shadow-xl border-slate-100 rounded-lg  bg-white hover:border-slate-200 hover:shadow-md transition-all duration-300"
     >
       <div className="flex justify-between mb-4">
         <div className="flex items-center">
@@ -138,7 +138,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
         {record.prescription && (
           <div className="mt-4">
             <div className="flex items-center mb-2">
-              <IconPill size={16} className="text-blue-400 mr-1.5" />
+              <IconPill size={16} className="text-primary-400 mr-1.5" />
               <div className="text-xs font-medium text-slate-600">Prescription</div>
             </div>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3.5 rounded-md text-sm border border-blue-100 text-slate-700">
@@ -169,7 +169,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
           </Button>
           <Button
             size="sm"
-            className="bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-900 hover:to-slate-800 text-white group-hover:shadow-sm transition-all"
+            className="bg-primary-300 hover:bg-secondary-foreground text-white group-hover:shadow-sm transition-all"
             onClick={() => handleOpenPatientView(record)}
           >
             <IconFileReport size={16} className="mr-1.5" /> Full Record

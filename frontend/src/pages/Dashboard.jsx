@@ -141,7 +141,7 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="max-w-[80%] mx-auto px-4 py-8">
+    <div className="max-w-[100%] mx-auto px-4 py-8">
       <div className="mb-8 border-b border-slate-200 pb-4">
         <h1 className="text-3xl font-light tracking-tight text-slate-800 bg-mint-500">
           Doctor's dashboard
@@ -176,46 +176,43 @@ const DoctorDashboard = () => {
 
         {/* Patients */}
         <TabsContent value="patients">
-          <Card className="border-slate-200 shadow-sm">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+          <Card className="border-slate-200 shadow-sm  p-0">
+            <CardHeader className="border-b border-slate-100 bg-primary-300 py-7 rounded-t-xl  ">
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle className="text-xl font-medium text-slate-800">
+                  <CardTitle className="text-2xl font-semibold tracking-tight text-white">
                     My Patient List
                   </CardTitle>
-                  <CardDescription className="text-slate-500">
+                  <CardDescription className="text-slate-100 mt-1">
                     All active patients under your care
                   </CardDescription>
                 </div>
                 <div className="flex space-x-2 flex-wrap">
                   <Button
-                    variant="default"
                     size="sm"
-                    className="border-slate-200 hover:bg-blue-50 hover:cursor-pointer"
+                    className="border-slate-200 text-slate-800 bg-secondary  hover:bg-slate-200  hover:cursor-pointer"
                     onClick={console.log("New Patient Clicked")}>
                     <IconUserPlus
                       size={16}
-                      className="mr-2 text-slate-500"
+                      className="mr-2  text-slate-800"
                     />{" "}
                     New Patient
                   </Button>
                   <Button
-                    variant="outline"
                     size="sm"
-                    className="border-slate-200">
+                    className="border-slate-200  text-slate-800  bg-secondary  hover:bg-slate-200  hover:cursor-pointer">
                     <IconFilter
                       size={16}
-                      className="mr-2 text-slate-500"
+                      className="mr-2 text-slate-800"
                     />{" "}
                     Filter
                   </Button>
                   <Button
-                    variant="outline"
                     size="sm"
-                    className="border-slate-200">
+                    className="border-slate-200 text-slate-800  bg-secondary  hover:bg-slate-200   hover:cursor-pointer">
                     <IconArrowsSort
                       size={16}
-                      className="mr-2 text-slate-500"
+                      className="mr-2 text-slate-800"
                     />{" "}
                     Sort
                   </Button>

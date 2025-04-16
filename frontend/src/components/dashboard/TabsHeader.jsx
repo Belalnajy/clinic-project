@@ -18,7 +18,7 @@ const TabsHeader = ({ searchTerm, setSearchTerm }) =>
           key={value}
           value={value}
           className={cn(
-            "relative px-4 py-2 text-sm rounded-md transition-all duration-300 ease-in-out",  
+            "relative px-4 py-2 text-sm rounded-md transition-all duration-300 ease-in-out",
             "data-[state=active]:bg-white data-[state=active]:shadow-xl data-[state=active]:scale-[1.02]",
             "hover:cursor-pointer"
           )}>

@@ -18,7 +18,7 @@ const FilterDialog = ({
 }) => {
   return (
     <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-      <DialogContent className='bg-white'>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Filter Medical Records</DialogTitle>
         </DialogHeader>
@@ -55,10 +55,18 @@ const FilterDialog = ({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={resetFilters}>
+          <Button
+            className="hover:bg-slate-50  hover:cursor-pointer"
+            variant="outline"
+            onClick={resetFilters}>
             Reset
           </Button>
-          <Button onClick={applyFilters}>Apply Filters</Button>
+          <Button
+            variant="secondary"
+            className="hover:bg-slate-400  hover:cursor-pointer"
+            onClick={applyFilters}>
+            Apply Filters
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

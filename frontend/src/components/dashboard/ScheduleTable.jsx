@@ -12,22 +12,21 @@ import {
 
 const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, handleNewAppointment, completionRate }) => {
   return (
-    <Card className="border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 px-6">
+    <Card className="border-slate-200 p-0  shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-slate-100 py-7  bg-primary-300 ">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-xl font-medium text-slate-800">Today's Appointments</CardTitle>
-            <CardDescription className="text-slate-500">
+            <CardTitle className="text-2xl font-semibold  tracking-tight text-white " >Today's Appointments</CardTitle>
+            <CardDescription className="text-slate-100  mt-1">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </CardDescription>
           </div>
           <Button
             size="sm"
-            variant="outline"
-            className="border-slate-200 text-slate-700 hover:bg-slate-50"
+            className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
             onClick={handleNewAppointment}
           >
-            <IconCalendarPlus size={16} className="mr-2 text-slate-400" />
+            <IconCalendarPlus size={16} className="mr-2 text-slate-800 " />
             Add Appointment
           </Button>
         </div>
@@ -42,7 +41,7 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
                 <th className="text-left py-4 px-6 font-medium text-sm text-slate-500">Patient</th>
                 <th className="text-left py-4 px-6 font-medium text-sm text-slate-500">Reason</th>
                 <th className="text-left py-4 px-6 font-medium text-sm text-slate-500">Status</th>
-                <th className="text-right py-4 px-6 font-medium text-sm text-slate-500">Actions</th>
+                <th className="text-right py-4 px-18 font-medium text-sm text-slate-500">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -84,19 +83,19 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
                         variant={appointment.status === 'waiting' ? 'default' : 'secondary'}
                         className={
                           appointment.status === 'waiting'
-                            ? 'bg-sky-600 hover:bg-sky-700 hover:cursor-pointer '
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:cursor-pointer '
+                            ? 'bg-primary-300 hover:bg-sky-700 hover:cursor-pointer '
+                            : 'bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer '
                         }
                       >
                         {appointment.status === 'waiting' ? (
                           <>
-                            <IconPlayerPlay size={16} color="white" className="" />
-                            <span className="ml-2 text-white">Start</span>
+                            <IconPlayerPlay  color="white" className="" />
+                            <span className="ml-3.5 text-white">Start</span>
                           </>
                         ) : (
                           <>
-                            <IconPencil size={16} className="" />
-                            <span className="ml-2">Update</span>
+                            <IconPencil  stroke={2} className="" />
+                            <span className="">Update</span>
                           </>
                         )}
                       </Button>
