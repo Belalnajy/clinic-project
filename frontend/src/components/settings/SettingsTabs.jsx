@@ -1,7 +1,7 @@
-import { NavLink } from "react-router-dom";
-const tabs = ["profile", "account"];
+import { NavLink } from 'react-router-dom';
+const tabs = ['profile', 'account'];
 
-export default function SettingsTabs() {
+function SettingsTabs() {
   return (
     <div className="flex gap-4 p-2 bg-muted rounded-md w-fit">
       {tabs.map((tab) => (
@@ -20,3 +20,4 @@ export default function SettingsTabs() {
     </div>
   );
 }
+export default SettingsTabs;
