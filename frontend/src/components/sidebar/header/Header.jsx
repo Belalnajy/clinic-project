@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Menu } from 'lucide-react';
 const Header = ({ toggleSidebar, title, user }) => {
   //! For Testing
   const handleLogout = () => {
@@ -18,13 +19,13 @@ const Header = ({ toggleSidebar, title, user }) => {
 
   return (
     <header className="h-16 flex items-center justify-between border-b border-slate-200 bg-white px-6">
-      <div className="flex items-center md:hidden">
+      <div className="flex justify-between items-center md:hidden">
         <button
-          className="text-slate-700 hover:text-primary-600"
+          className="text-slate-700 hover:text-primary-600 mr-4 cursor-pointer"
           aria-label="Toggle Menu"
           onClick={toggleSidebar}
         >
-          <i className="fas fa-bars w-5 h-5"></i>
+          <Menu size={32} />
         </button>
         <h2 className="text-xl font-bold text-primary-600 ml-3 md:hidden">Clinic Manager</h2>
       </div>
