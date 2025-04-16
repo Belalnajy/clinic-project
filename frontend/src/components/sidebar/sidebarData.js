@@ -5,7 +5,7 @@ export const user = {
   email: 'alice@mediclinic.com',
   password: 'password',
   role: 'doctor',
-  avatar: 'AD',
+  avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2',
 };
 
 // Determine which navigation items to show based on user role

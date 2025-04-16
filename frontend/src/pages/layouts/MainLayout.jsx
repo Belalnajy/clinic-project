@@ -1,4 +1,6 @@
+import Header from '@/components/sidebar/header/Header';
 import Sidebar from '@/components/sidebar/Sidebar';
+import { getPageTitle } from '@/utils/getPageTitle';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
@@ -25,11 +27,7 @@ const MainLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* <Header 
-          toggleSidebar={toggleSidebar} 
-          title={getPageTitle()}
-          user={user}
-        /> */}
+        <Header toggleSidebar={toggleSidebar} title={getPageTitle()} user={user} />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
