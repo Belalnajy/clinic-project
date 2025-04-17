@@ -8,6 +8,9 @@ backend/venv/
 backend/*.sqlite3
 backend/staticfiles/
 
+
+node_modules/
+
 # Frontend
 frontend/node_modules/
 frontend/dist/
