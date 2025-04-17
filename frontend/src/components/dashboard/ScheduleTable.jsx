@@ -4,12 +4,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  IconCalendarPlus,
-  IconFileReport,
-  IconPlayerPlay,
-  IconPencil,
-  IconDownload,
-} from "@tabler/icons-react";
+  CalendarPlus,
+  FileText,
+  PlayCircle,
+  Edit,
+  Download,
+} from "lucide-react";
 
 const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, handleNewAppointment, completionRate }) => {
   return (
@@ -29,7 +29,7 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
             className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200 hover:cursor-pointer"
             onClick={handleNewAppointment}
           >
-            <IconCalendarPlus size={16} className="mr-2 text-slate-800" />
+            <CalendarPlus size={16} className="mr-2 text-slate-800" />
             Add Appointment
           </Button>
         </div>
@@ -79,7 +79,7 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
                         className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 hover:cursor-pointer"
                         onClick={() => handleOpenPatientView(appointment)}
                       >
-                        <IconFileReport size={16} className="" /> View
+                        <FileText size={16} className="" /> View
                       </Button>
                       <Button
                         size="sm"
@@ -92,12 +92,12 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
                       >
                         {appointment.status === "waiting" ? (
                           <>
-                            <IconPlayerPlay color="white" className="" />
+                            <PlayCircle color="white" className="" />
                             <span className="ml-3.5 text-white">Start</span>
                           </>
                         ) : (
                           <>
-                            <IconPencil stroke={2} className="" />
+                            <Edit stroke={2} className="" />
                             <span className="">Update</span>
                           </>
                         )}
@@ -123,7 +123,7 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
           <span className="text-sm text-slate-600">{completionRate}%</span>
         </div>
         <Button variant="outline" size="sm" className="border-slate-200 hover:cursor-pointer">
-          <IconDownload size={16} className="mr-2 text-slate-500" />
+          <Download size={16} className="mr-2 text-slate-500" />
           Export Schedule
         </Button>
       </CardFooter>
