@@ -150,64 +150,98 @@ export const initializeData = () => {
     // Appointments
     const today = new Date();
     const tomorrow = addDays(today, 1);
-    
+
     const appointments = [
       {
         id: uuidv4(),
         patientId: 'P-1001',
         doctorId: 'doctor-1',
         date: format(today, 'yyyy-MM-dd'),
-        time: '10:00',
-        duration: 45,
+        time: '09:00',
+        duration: 30,
         type: 'Check-up',
-        status: 'confirmed',
-        notes: 'Regular check-up appointment'
+        status: 'Scheduled',
+        notes: 'Booked by secretary for routine check-up'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-2002',
+        doctorId: 'doctor-2',
+        date: format(today, 'yyyy-MM-dd'),
+        time: '09:45',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Scheduled',
+        notes: 'New patient consultation'
       },
       {
         id: uuidv4(),
         patientId: 'P-0872',
-        doctorId: 'doctor-2',
+        doctorId: 'doctor-3',
         date: format(today, 'yyyy-MM-dd'),
-        time: '11:30',
+        time: '10:30',
         duration: 30,
-        type: 'Consultation',
-        status: 'pending',
-        notes: 'Initial consultation for persistent headaches'
+        type: 'Follow-up',
+        status: 'In-Queue',
+        notes: 'Patient waiting in the clinic'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-3012',
+        doctorId: 'doctor-1',
+        date: format(today, 'yyyy-MM-dd'),
+        time: '11:15',
+        duration: 45,
+        type: 'Check-up',
+        status: 'In-Queue',
+        notes: 'Ready for consultation'
       },
       {
         id: uuidv4(),
         patientId: 'P-1245',
-        doctorId: 'doctor-1',
+        doctorId: 'doctor-2',
         date: format(today, 'yyyy-MM-dd'),
-        time: '14:15',
-        duration: 60,
-        type: 'Follow-up',
-        status: 'confirmed',
-        notes: 'Follow-up on diabetes management'
+        time: '12:30',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Completed',
+        notes: 'Completed consultation for migraine'
       },
       {
         id: uuidv4(),
-        patientId: 'P-2345',
+        patientId: 'P-3450',
         doctorId: 'doctor-3',
-        date: format(tomorrow, 'yyyy-MM-dd'),
-        time: '09:00',
+        date: format(today, 'yyyy-MM-dd'),
+        time: '13:15',
         duration: 30,
         type: 'Check-up',
-        status: 'confirmed',
-        notes: 'Regular check-up appointment'
+        status: 'Completed',
+        notes: 'Check-up completed and reports updated'
       },
       {
         id: uuidv4(),
-        patientId: 'P-3456',
+        patientId: 'P-4321',
         doctorId: 'doctor-1',
         date: format(tomorrow, 'yyyy-MM-dd'),
-        time: '13:30',
-        duration: 45,
+        time: '09:30',
+        duration: 30,
         type: 'Follow-up',
-        status: 'confirmed',
-        notes: 'Follow-up on recent lab results'
+        status: 'Cancelled',
+        notes: 'Cancelled by patient due to travel'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-7777',
+        doctorId: 'doctor-2',
+        date: format(tomorrow, 'yyyy-MM-dd'),
+        time: '10:15',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Cancelled',
+        notes: 'Cancelled by clinic due to maintenance'
       }
     ];
+
     localStorage.setItem('appointments', JSON.stringify(appointments));
 
     // Medical Records
@@ -331,12 +365,12 @@ export const generateDashboardStats = () => {
   const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
   const patients = JSON.parse(localStorage.getItem('patients') || '[]');
   const today = format(new Date(), 'yyyy-MM-dd');
-  
+
   const appointmentsToday = appointments.filter(app => app.date === today).length;
   const totalPatients = patients.length;
   const pendingAppointments = appointments.filter(app => app.status === 'pending').length;
   const completedToday = appointments.filter(app => app.date === today && app.status === 'completed').length;
-  
+
   return {
     appointmentsToday,
     totalPatients,
@@ -362,7 +396,7 @@ export const generateRevenueData = () => {
 export const generateStaffPerformance = () => {
   const staff = JSON.parse(localStorage.getItem('staff') || '[]');
   const doctors = staff.filter(user => user.role === 'doctor');
-  
+
   return doctors.map(doctor => ({
     id: doctor.id,
     name: doctor.name,
@@ -376,13 +410,13 @@ export const getTodayAppointments = () => {
   const patients = JSON.parse(localStorage.getItem('patients') || '[]');
   const staff = JSON.parse(localStorage.getItem('staff') || '[]');
   const today = format(new Date(), 'yyyy-MM-dd');
-  
+
   const todaysAppointments = appointments
     .filter(app => app.date === today)
     .map(appointment => {
       const patient = patients.find(p => p.id === appointment.patientId);
       const doctor = staff.find(d => d.id === appointment.doctorId);
-      
+
       return {
         ...appointment,
         patientName: patient ? patient.fullName : 'Unknown Patient',
@@ -391,21 +425,21 @@ export const getTodayAppointments = () => {
         doctorName: doctor ? doctor.name : 'Unknown Doctor'
       };
     });
-  
+
   return todaysAppointments;
 };
 
 export const getRecentPatientRecords = () => {
   const medicalRecords = JSON.parse(localStorage.getItem('medicalRecords') || '[]');
   const patients = JSON.parse(localStorage.getItem('patients') || '[]');
-  
+
   // Sort records by date (most recent first) and take the top 5
   const recentRecords = [...medicalRecords]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .slice(0, 5)
     .map(record => {
       const patient = patients.find(p => p.id === record.patientId);
-      
+
       return {
         ...record,
         patientName: patient ? patient.fullName : 'Unknown Patient',
@@ -413,13 +447,13 @@ export const getRecentPatientRecords = () => {
         timeAgo: '10 min ago' // In a real app, would calculate this from the date
       };
     });
-  
+
   return recentRecords;
 };
 
 export const getRecentRegistrations = () => {
   const patients = JSON.parse(localStorage.getItem('patients') || '[]');
-  
+
   // Sort patients by registration date (most recent first) and take the top 3
   const recentRegistrations = [...patients]
     .sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate))
@@ -432,6 +466,6 @@ export const getRecentRegistrations = () => {
       // In a real app, we would calculate a relative time here
       registeredTimeDescription: 'Registered today'
     }));
-  
+
   return recentRegistrations;
 };

@@ -1,7 +1,8 @@
 import React from 'react';
+import Reports from '../Reports';
 
 const MainLayout = () => {
-  return <div>MainLayout</div>;
+  return <Reports />;
 };
 
 export default MainLayout;
