@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Papa from 'papaparse';
-import { IconFileExport } from '@tabler/icons-react';
+import { FileArchive } from 'lucide-react';
 
 const ageBuckets = [
   { label: '0-10', min: 0, max: 10 },
@@ -169,8 +169,7 @@ const PatientDemographics = ({ patients }) => {
           className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
           onClick={handleExport}
         >
-          <IconFileExport size={16} className="mr-2 text-slate-800" />
-          Export
+          <FileArchive size={16} className="mr-2 text-slate-800" /> Export
         </Button>
       </CardFooter>
     </Card>

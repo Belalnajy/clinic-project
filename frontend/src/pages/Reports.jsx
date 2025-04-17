@@ -37,7 +37,7 @@ import TableFilters from '@/components/Reports/TableFilters';
 import { BarChart, Bar, Legend } from 'recharts';
 import PatientDemographics from '../components/Reports/PatientDemographics';
 import Papa from 'papaparse';
-import { IconFileExport } from '@tabler/icons-react';
+import { FileArchive } from 'lucide-react';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -404,7 +404,7 @@ const Reports = () => {
                   className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
                   onClick={handleExportData}
                 >
-                  <IconFileExport size={16} className="mr-2 text-slate-800" />
+                  <FileArchive size={16} className="mr-2 text-slate-800" />
                   Export
                 </Button>
               </CardFooter>
