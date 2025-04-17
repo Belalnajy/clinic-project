@@ -20,7 +20,7 @@ const AppointmentCompletion = ({ completionRate, total, completed }) => {
 
   return (
     <div className="flex items-center justify-center py-8">
-      <div className="relative h-40 w-40">
+      <div className="relative h-32 w-32 md:h-40 md:w-40">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -41,7 +41,7 @@ const AppointmentCompletion = ({ completionRate, total, completed }) => {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-3xl font-bold">{completionRate}%</div>
+          <div className="text-xl md:text-3xl font-bold">{completionRate}%</div>
         </div>
       </div>
     </div>

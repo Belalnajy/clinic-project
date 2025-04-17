@@ -7,7 +7,7 @@ const AppointmentStatus = ({ stats }) => {
   };
 
   return (
-    <div className="h-[240px] flex flex-col items-center justify-center space-y-4">
+    <div className="h-auto flex flex-col items-center justify-center space-y-4 md:space-y-6">
       {['scheduled', 'inQueue', 'completed', 'cancelled'].map((status) => (
         <div key={status} className="w-full space-y-2">
           <div className="flex justify-between items-center">

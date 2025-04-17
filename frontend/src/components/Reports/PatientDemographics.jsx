@@ -20,6 +20,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import Papa from 'papaparse';
+import { IconFileExport } from '@tabler/icons-react';
 
 const ageBuckets = [
   { label: '0-10', min: 0, max: 10 },
@@ -81,19 +83,22 @@ const PatientDemographics = ({ patients }) => {
   }, [patients]);
 
   const handleExport = () => {
-    const rows = [
-      ['Category', 'Label', 'Count'],
-      ...ageData.map((d) => ['Age', d.name, d.count]),
-      ...genderData.map((d) => ['Gender', d.name, d.value]),
-      ...displayConditions.map((d) => ['Condition', d.name, d.count]),
+    const csvData = [
+      { Category: 'Age', ...ageData.map((d) => ({ Label: d.name, Count: d.count })) },
+      { Category: 'Gender', ...genderData.map((d) => ({ Label: d.name, Count: d.value })) },
+      {
+        Category: 'Condition',
+        ...displayConditions.map((d) => ({ Label: d.name, Count: d.count })),
+      },
     ];
-    const csv = rows.map((r) => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'patient_demographics.csv';
-    a.click();
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'patient_demographics.csv');
+    link.click();
     URL.revokeObjectURL(url);
   };
 
@@ -158,12 +163,14 @@ const PatientDemographics = ({ patients }) => {
           </ResponsiveContainer>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col md:flex-row justify-between gap-4">
-        <Button variant="outline" onClick={handleExport} className="w-full md:w-auto">
-          <i className="fas fa-download mr-2"></i> Export Data
-        </Button>
-        <Button variant="outline" onClick={handlePrint} className="w-full md:w-auto">
-          <i className="fas fa-print mr-2"></i> Print Report
+      <CardFooter className="flex mt-5 flex-col md:flex-row justify-end gap-4">
+        <Button
+          size="lg"
+          className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
+          onClick={handleExport}
+        >
+          <IconFileExport size={16} className="mr-2 text-slate-800" />
+          Export
         </Button>
       </CardFooter>
     </Card>

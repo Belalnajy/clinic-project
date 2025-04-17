@@ -36,6 +36,8 @@ import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
 import { BarChart, Bar, Legend } from 'recharts';
 import PatientDemographics from '../components/Reports/PatientDemographics';
+import Papa from 'papaparse';
+import { IconFileExport } from '@tabler/icons-react';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -237,6 +239,30 @@ const Reports = () => {
     ).values(),
   ];
 
+  const handleExportData = () => {
+    const csvData = filteredAppointments.map((appointment) => ({
+      AppointmentID: appointment.id,
+      PatientName: appointment.patientName,
+      ProviderName: appointment.providerName,
+      Date: appointment.date,
+      Status: appointment.status,
+      Type: appointment.type,
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'appointments_report.csv');
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrintReport = () => {
+    window.print();
+  };
+
   return (
     <>
       <div className="mb-6">
@@ -244,10 +270,10 @@ const Reports = () => {
         <p className="text-slate-500">View insights and performance metrics for your clinic</p>
       </div>
 
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <Tabs defaultValue="overview" className="w-full">
-          <div className="flex justify-between items-center">
-            <TabsList>
+          <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+            <TabsList className="flex flex-wrap gap-2">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="appointments">Appointments</TabsTrigger>
               <TabsTrigger value="patients">Patients</TabsTrigger>
@@ -255,7 +281,7 @@ const Reports = () => {
             </TabsList>
 
             <Select defaultValue={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Select time period" />
               </SelectTrigger>
               <SelectContent>
@@ -268,7 +294,7 @@ const Reports = () => {
           </div>
 
           <TabsContent value="overview" className="mt-6">
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Appointment Completion</CardTitle>
@@ -286,7 +312,6 @@ const Reports = () => {
                   <div>Completed: {stats.appointmentStats.completed}</div>
                 </CardFooter>
               </Card>
-
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Patient Growth</CardTitle>
@@ -326,7 +351,7 @@ const Reports = () => {
                 <CardDescription>Detailed analysis of appointment data</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="mb-6 grid gap-6 md:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg">Appointment Status</CardTitle>
@@ -369,19 +394,19 @@ const Reports = () => {
                   uniqueProviders={uniqueProviders}
                 />
 
-                <AppointmentTable appointments={filteredAppointments} />
+                <div className="overflow-x-auto">
+                  <AppointmentTable appointments={filteredAppointments} />
+                </div>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <div>
-                  <Button variant="outline">
-                    <i className="fas fa-download mr-2"></i> Export Data
-                  </Button>
-                </div>
-                <div>
-                  <Button variant="outline">
-                    <i className="fas fa-print mr-2"></i> Print Report
-                  </Button>
-                </div>
+              <CardFooter className="flex flex-col gap-4 md:flex-row md:justify-end">
+                <Button
+                  size="lg"
+                  className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
+                  onClick={handleExportData}
+                >
+                  <IconFileExport size={16} className="mr-2 text-slate-800" />
+                  Export
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>

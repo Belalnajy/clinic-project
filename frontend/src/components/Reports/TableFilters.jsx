@@ -8,12 +8,12 @@ import {
 
 const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniqueProviders }) => {
   return (
-    <div className="mb-4 flex gap-4">
+    <div className="mb-4 mt-5 flex flex-wrap gap-4">
       <Select
         defaultValue="all"
         onValueChange={(value) => handleFilterChange('location', value === 'all' ? '' : value)}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder="Select Specialization" />
         </SelectTrigger>
         <SelectContent>
@@ -30,7 +30,7 @@ const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniq
         defaultValue="all"
         onValueChange={(value) => handleFilterChange('provider', value === 'all' ? '' : value)}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder="Select Provider" />
         </SelectTrigger>
         <SelectContent>
@@ -49,7 +49,7 @@ const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniq
           handleFilterChange('appointmentType', value === 'all' ? '' : value)
         }
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder="Select Type" />
         </SelectTrigger>
         <SelectContent>
@@ -63,7 +63,7 @@ const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniq
         defaultValue="all"
         onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-full md:w-[180px]">
           <SelectValue placeholder="Select Status" />
         </SelectTrigger>
         <SelectContent>
