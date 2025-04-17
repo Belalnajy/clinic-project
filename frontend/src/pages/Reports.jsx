@@ -34,6 +34,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import DailyCompletionChart from '@/components/Reports/DailyCompletionChart';
 import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
+import { BarChart, Bar, Legend } from 'recharts';
+import PatientDemographics from '../components/Reports/PatientDemographics';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -54,17 +56,17 @@ const Reports = () => {
     const loadedPatients = getAllPatients();
     const loadedDoctors = getAllDoctors();
 
-    console.log('loadedAppointments', loadedAppointments);
-    console.log('loadedPatients', loadedPatients);
-    console.log('loadedDoctors', loadedDoctors);
+    // console.log('loadedAppointments', loadedAppointments);
+    // console.log('loadedPatients', loadedPatients);
+    // console.log('loadedDoctors', loadedDoctors);
 
     // Enrich appointments with patientName, providerName, and specialization
     // console.log(loadedAppointments);
     const enrichedAppointments = loadedAppointments.map((appointment) => {
       const doctor = loadedDoctors.find((doc) => doc.id === appointment.doctorId);
       const patient = loadedPatients.find((pat) => pat.id === appointment.patientId);
-      console.log('doctor', doctor);
-      console.log('patient', patient);
+      // console.log('doctor', doctor);
+      // console.log('patient', patient);
       return {
         ...appointment,
         providerName: doctor ? doctor.name : 'Unknown Provider',
@@ -74,7 +76,7 @@ const Reports = () => {
     });
 
     setAppointments(enrichedAppointments);
-    console.log('enrichedAppointments', enrichedAppointments);
+    // console.log('enrichedAppointments', enrichedAppointments);
     setPatients(loadedPatients);
     setDoctors(loadedDoctors);
   }, []);
@@ -382,6 +384,10 @@ const Reports = () => {
                 </div>
               </CardFooter>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="patients" className="mt-6">
+            <PatientDemographics patients={patients} />
           </TabsContent>
         </Tabs>
       </div>
