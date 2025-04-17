@@ -17,17 +17,11 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { getAllAppointments, getAllPatients, getAllDoctors } from '../data/data';
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Progress } from '@/components/ui/progress';
+import AppointmentCompletion from '@/components/Reports/AppointmentCompletion';
+import PatientGrowth from '@/components/Reports/PatientGrowth';
+import AppointmentStatus from '@/components/Reports/AppointmentStatus';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -119,22 +113,22 @@ const Reports = () => {
 
   const stats = calculateStats();
 
-  const appointmentStatusData = [
-    { name: 'Scheduled', value: stats.appointmentStats.scheduled },
-    { name: 'In-Queue', value: stats.appointmentStats.inQueue },
+  const getCompletionColor = (completionRate) => {
+    if (completionRate <= 25) return '#EF4444'; // Red
+    if (completionRate > 25 && completionRate <= 50) return '#FBBF24'; // Yellow
+    if (completionRate > 50 && completionRate <= 75) return '#3B82F6'; // Blue
+    return '#10B981'; // Green
+  };
+
+  const appointmentCompletionData = [
     { name: 'Completed', value: stats.appointmentStats.completed },
-    { name: 'Cancelled', value: stats.appointmentStats.cancelled },
+    { name: 'Remaining', value: stats.appointmentStats.total - stats.appointmentStats.completed },
   ];
 
-  const patientGrowthData = [
-    { name: 'New Patients', value: stats.patientStats.new },
-    { name: 'Existing Patients', value: stats.patientStats.total - stats.patientStats.new },
+  const COLORS = [
+    getCompletionColor(stats.appointmentStats.completionRate), // Dynamic color for "Completed"
+    '#E5E7EB', // Gray for "Remaining"
   ];
-
-  const doctorPerformanceData = stats.doctorStats.performance.map((doctor) => ({
-    name: doctor.name,
-    value: doctor.completionRate,
-  }));
 
   return (
     <>
@@ -168,83 +162,52 @@ const Reports = () => {
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-6 md:grid-cols-3">
-              {/* Appointments Chart */}
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Appointment Status</CardTitle>
-                  <CardDescription>Distribution of appointment statuses</CardDescription>
+                  <CardTitle className="text-lg">Appointment Completion</CardTitle>
+                  <CardDescription>Overall completion rate</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie
-                        data={appointmentStatusData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        label
-                      >
-                        {appointmentStatusData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={['#FFD700', '#1E90FF', '#32CD32', '#FF6347'][index]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <AppointmentCompletion
+                    completionRate={stats.appointmentStats.completionRate}
+                    total={stats.appointmentStats.total}
+                    completed={stats.appointmentStats.completed}
+                  />
                 </CardContent>
+                <CardFooter className="flex justify-between text-sm text-slate-500">
+                  <div>Total: {stats.appointmentStats.total}</div>
+                  <div>Completed: {stats.appointmentStats.completed}</div>
+                </CardFooter>
               </Card>
 
-              {/* Patient Growth Chart */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Patient Growth</CardTitle>
-                  <CardDescription>New vs existing patients</CardDescription>
+                  <CardDescription>New patient registrations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie
-                        data={patientGrowthData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#82ca9d"
-                        label
-                      >
-                        {patientGrowthData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={['#4CAF50', '#8BC34A'][index]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <PatientGrowth
+                    newPatients={stats.patientStats.new}
+                    totalPatients={stats.patientStats.total}
+                    growthRate={stats.patientStats.growthRate}
+                  />
                 </CardContent>
+                <CardFooter className="flex justify-between text-sm text-slate-500">
+                  <div>Total Patients: {stats.patientStats.total}</div>
+                </CardFooter>
               </Card>
 
-              {/* Doctor Performance Chart */}
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Doctor Performance</CardTitle>
-                  <CardDescription>Completion rates by doctor</CardDescription>
+                  <CardTitle className="text-lg">Appointment Status</CardTitle>
+                  <CardDescription>Distribution by status</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={doctorPerformanceData}>
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <AppointmentStatus stats={stats.appointmentStats} />
                 </CardContent>
+                <CardFooter className="flex justify-between text-sm text-slate-500">
+                  <div>Total: {stats.appointmentStats.total}</div>
+                </CardFooter>
               </Card>
             </div>
           </TabsContent>
