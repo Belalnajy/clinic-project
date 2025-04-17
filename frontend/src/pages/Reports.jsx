@@ -17,6 +17,17 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { getAllAppointments, getAllPatients, getAllDoctors } from '../data/data';
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -46,20 +57,26 @@ const Reports = () => {
 
     // Patient statistics
     const totalPatients = patients.length;
+    const timeRangeDays = {
+      '7days': 7,
+      '30days': 30,
+      '90days': 90,
+      year: 365,
+    }[timeRange];
     const newPatients = patients.filter((p) => {
       const createdDate = new Date(p.createdAt);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return createdDate >= thirtyDaysAgo;
+      const rangeStartDate = new Date();
+      rangeStartDate.setDate(rangeStartDate.getDate() - timeRangeDays);
+      return createdDate >= rangeStartDate;
     }).length;
+    const patientGrowthRate =
+      totalPatients > 0 ? Math.round((newPatients / totalPatients) * 100) : 0;
 
     // Doctor statistics
     const totalDoctors = doctors.length;
-
-    // Doctor performance (simplified for demo)
     const doctorPerformance = doctors.map((doctor) => {
       const doctorAppointments = appointments.filter((a) => a.doctorId === doctor.id);
-      const completed = doctorAppointments.filter((a) => a.status === 'confirmed').length;
+      const completed = doctorAppointments.filter((a) => a.status === 'Completed').length;
       const total = doctorAppointments.length;
       const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -71,6 +88,11 @@ const Reports = () => {
         completionRate,
       };
     });
+    const averageAppointmentsPerDoctor =
+      totalDoctors > 0 ? Math.round(appointments.length / totalDoctors) : 0;
+    const highPerformingDoctors = doctorPerformance.filter((d) => d.completionRate > 80).length;
+    const highPerformingRate =
+      totalDoctors > 0 ? Math.round((highPerformingDoctors / totalDoctors) * 100) : 0;
 
     return {
       appointmentStats: {
@@ -84,15 +106,35 @@ const Reports = () => {
       patientStats: {
         total: totalPatients,
         new: newPatients,
+        growthRate: patientGrowthRate,
       },
       doctorStats: {
         total: totalDoctors,
         performance: doctorPerformance,
+        averageAppointments: averageAppointmentsPerDoctor,
+        highPerformingRate,
       },
     };
   };
 
   const stats = calculateStats();
+
+  const appointmentStatusData = [
+    { name: 'Scheduled', value: stats.appointmentStats.scheduled },
+    { name: 'In-Queue', value: stats.appointmentStats.inQueue },
+    { name: 'Completed', value: stats.appointmentStats.completed },
+    { name: 'Cancelled', value: stats.appointmentStats.cancelled },
+  ];
+
+  const patientGrowthData = [
+    { name: 'New Patients', value: stats.patientStats.new },
+    { name: 'Existing Patients', value: stats.patientStats.total - stats.patientStats.new },
+  ];
+
+  const doctorPerformanceData = stats.doctorStats.performance.map((doctor) => ({
+    name: doctor.name,
+    value: doctor.completionRate,
+  }));
 
   return (
     <>
@@ -126,174 +168,83 @@ const Reports = () => {
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-6 md:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Appointment Completion</CardTitle>
-                  <CardDescription>Overall completion rate</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center py-8">
-                    <div className="relative h-40 w-40">
-                      {/* Circular progress (simplified) */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <svg className="h-full w-full" viewBox="0 0 100 100">
-                          <circle
-                            className="text-slate-100 stroke-current"
-                            strokeWidth="10"
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            fill="transparent"
-                          ></circle>
-                          <circle
-                            className="text-primary-600 stroke-current"
-                            strokeWidth="10"
-                            strokeLinecap="round"
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            fill="transparent"
-                            strokeDasharray={`${2 * Math.PI * 40}`}
-                            strokeDashoffset={`${
-                              2 * Math.PI * 40 * (1 - stats.appointmentStats.completionRate / 100)
-                            }`}
-                            transform="rotate(-90 50 50)"
-                          ></circle>
-                        </svg>
-                        <div className="absolute text-3xl font-bold">
-                          {stats.appointmentStats.completionRate}%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between text-sm text-slate-500">
-                  <div>Total: {stats.appointmentStats.total}</div>
-                  <div>Completed: {stats.appointmentStats.completed}</div>
-                </CardFooter>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Patient Growth</CardTitle>
-                  <CardDescription>New patient registrations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[240px] flex flex-col items-center justify-center">
-                    <div className="text-5xl font-bold text-primary-600">
-                      {stats.patientStats.new}
-                    </div>
-                    <div className="text-sm text-slate-500 mt-2">New patients in last 30 days</div>
-                    <div className="mt-6 w-full bg-slate-100 rounded-full h-4 overflow-hidden">
-                      <div
-                        className="bg-primary-600 h-full rounded-full"
-                        style={{
-                          width: `${(stats.patientStats.new / stats.patientStats.total) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="mt-2 text-xs text-slate-500 self-end">
-                      {Math.round((stats.patientStats.new / stats.patientStats.total) * 100)}%
-                      growth rate
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between text-sm text-slate-500">
-                  <div>Total Patients: {stats.patientStats.total}</div>
-                </CardFooter>
-              </Card>
-
+              {/* Appointments Chart */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Appointment Status</CardTitle>
-                  <CardDescription>Distribution by status</CardDescription>
+                  <CardDescription>Distribution of appointment statuses</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[240px] flex flex-col items-center justify-center space-y-4">
-                    {/* Simplified chart representation */}
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Scheduled</span>
-                        <span className="text-sm font-medium">
-                          {stats.appointmentStats.scheduled}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-yellow-500 h-full rounded-full"
-                          style={{
-                            width: `${
-                              (stats.appointmentStats.scheduled / stats.appointmentStats.total) *
-                              100
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">In-Queue</span>
-                        <span className="text-sm font-medium">
-                          {stats.appointmentStats.inQueue}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-blue-500 h-full rounded-full"
-                          style={{
-                            width: `${
-                              (stats.appointmentStats.inQueue / stats.appointmentStats.total) * 100
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Completed</span>
-                        <span className="text-sm font-medium">
-                          {stats.appointmentStats.completed}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-green-500 h-full rounded-full"
-                          style={{
-                            width: `${
-                              (stats.appointmentStats.completed / stats.appointmentStats.total) *
-                              100
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="w-full space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Cancelled</span>
-                        <span className="text-sm font-medium">
-                          {stats.appointmentStats.cancelled}
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-red-500 h-full rounded-full"
-                          style={{
-                            width: `${
-                              (stats.appointmentStats.cancelled / stats.appointmentStats.total) *
-                              100
-                            }%`,
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
+                      <Pie
+                        data={appointmentStatusData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#8884d8"
+                        label
+                      >
+                        {appointmentStatusData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={['#FFD700', '#1E90FF', '#32CD32', '#FF6347'][index]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </CardContent>
-                <CardFooter className="flex justify-between text-sm text-slate-500">
-                  <div>Total: {stats.appointmentStats.total}</div>
-                </CardFooter>
+              </Card>
+
+              {/* Patient Growth Chart */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Patient Growth</CardTitle>
+                  <CardDescription>New vs existing patients</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
+                      <Pie
+                        data={patientGrowthData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        fill="#82ca9d"
+                        label
+                      >
+                        {patientGrowthData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={['#4CAF50', '#8BC34A'][index]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Doctor Performance Chart */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Doctor Performance</CardTitle>
+                  <CardDescription>Completion rates by doctor</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={doctorPerformanceData}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="value" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
               </Card>
             </div>
           </TabsContent>
