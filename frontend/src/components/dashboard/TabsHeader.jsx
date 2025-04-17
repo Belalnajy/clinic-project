@@ -1,8 +1,7 @@
-// src/components/TabsHeader.jsx
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { IconSearch } from "@tabler/icons-react";
-import { cn } from "@/lib/utils"; // optional for className joining
+import { Search } from "lucide-react"; // تم استبدال الأيقونة هنا
+import { cn } from "@/lib/utils";
 
 const tabs = [
   { value: "schedule", label: "Schedule" },
@@ -34,9 +33,9 @@ const TabsHeader = ({ searchTerm, setSearchTerm }) =>
         value={searchTerm}
         onChange={e => setSearchTerm(e.target.value)}
       />
-      <IconSearch
+      <Search
         size={16}
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" // تم استبدال الأيقونة هنا
       />
     </div>
   </div>;

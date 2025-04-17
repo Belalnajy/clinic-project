@@ -8,12 +8,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  IconFilter,
-  IconFileExport,
-  IconChevronLeft,
-  IconChevronRight
-} from "@tabler/icons-react";
+import { Filter, FileArchive, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MedicalRecordsList = ({
   records,
@@ -39,13 +34,13 @@ const MedicalRecordsList = ({
               size="sm"
               className="border-slate-200  bg-secondary text-slate-800 hover:text-slate-800 transition-colors hover:bg-slate-200  hover:cursor-pointer"
               onClick={handleFilter}>
-              <IconFilter size={16} className="mr-2 text-slate-800" /> Filter
+              <Filter size={16} className="mr-2 text-slate-800" /> Filter
             </Button>
             <Button
               size="sm"
-              className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer" 
+              className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
               onClick={handleExport}>
-              <IconFileExport size={16} className="mr-2 text-slate-800" />
+              <FileArchive size={16} className="mr-2 text-slate-800" />
               Export
             </Button>
           </div>
@@ -75,7 +70,7 @@ const MedicalRecordsList = ({
             variant="outline"
             size="sm"
             className="border-slate-200 text-slate-500 hover:border-slate-300">
-            <IconChevronLeft size={16} className="mr-1.5 text-slate-400" />
+            <ChevronLeft size={16} className="mr-1.5 text-slate-400" />
             Previous
           </Button>
           <Button
@@ -83,7 +78,7 @@ const MedicalRecordsList = ({
             size="sm"
             className="border-slate-200 bg-white text-slate-700 hover:border-slate-300">
             Next
-            <IconChevronRight size={16} className="ml-1.5 text-slate-400" />
+            <ChevronRight size={16} className="ml-1.5 text-slate-400" />
           </Button>
         </div>
       </CardFooter>
