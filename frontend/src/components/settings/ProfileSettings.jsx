@@ -1,5 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useState, useRef } from 'react';
+import { toast } from 'sonner';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -27,10 +34,11 @@ function ProfileSettings() {
   const fileInputRef = useRef(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const name = watch('name');
-  const userRole = watch('role') || 'admin'; //add role here
+  const userRole = watch('role') || 'admin';
 
   const onSubmit = (data) => {
-    // Add your form submission logic here
+    // Replace this with actual submission logic
+    toast.success('Profile updated successfully');
   };
 
   const handleAvatarChange = (e) => {
@@ -38,11 +46,18 @@ function ProfileSettings() {
     if (file) {
       const url = URL.createObjectURL(file);
       setAvatarUrl(url);
+      toast.success('Avatar updated');
+    } else {
+      toast.error('Failed to update avatar');
     }
   };
 
   const validateForm = async () => {
-    return await trigger();
+    const isValid = await trigger();
+    if (!isValid) {
+      toast.error('Please fix validation errors');
+    }
+    return isValid;
   };
 
   return (
@@ -58,10 +73,7 @@ function ProfileSettings() {
             <Avatar className="h-20 w-20">
               <AvatarImage src={avatarUrl} alt={name} />
               <AvatarFallback>
-                {name
-                  ?.split(' ')
-                  .map((n) => n[0])
-                  .join('') || 'JD'}
+                {name?.split(' ').map((n) => n[0]).join('') || 'JD'}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -106,6 +118,7 @@ function ProfileSettings() {
                 <p className="text-red-500 text-sm">{errors.name.message}</p>
               )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -128,6 +141,7 @@ function ProfileSettings() {
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input
@@ -146,6 +160,7 @@ function ProfileSettings() {
                 <p className="text-red-500 text-sm">{errors.phone.message}</p>
               )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="specialization">Specialization</Label>
               <Input
@@ -173,6 +188,7 @@ function ProfileSettings() {
               )}
             </div>
           </div>
+
           <div className="flex justify-end gap-2 pt-6">
             <Button
               variant="outline"
