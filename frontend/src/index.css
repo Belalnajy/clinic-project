@@ -10,9 +10,14 @@
   --color-popover: hsl(0 0% 100%);
   --color-popover-foreground: hsl(222.2 84% 4.9%);
 
-  --color-primary: hsl(225 95% 60%);
+  --color-primary: hsl(225 95% 20%);
+  --color-primary-100: hsl(225 95% 90%);
+  --color-primary-200: hsl(225 95% 80%);
+  --color-primary-300: hsl(225 95% 70%);
+  --color-primary-400: hsl(225 95% 60%);
   --color-primary-600: hsl(225 95% 50%);
   --color-primary-700: hsl(225 95% 40%);
+  --color-primary-800: hsl(225 95% 30%);
   --color-primary-foreground: hsl(210 40% 98%);
 
   --color-secondary: hsl(210 40% 96.1%);
