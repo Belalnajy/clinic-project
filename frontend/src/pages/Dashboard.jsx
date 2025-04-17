@@ -5,13 +5,16 @@ import {
   getTodayAppointments,
   getRecentPatientRecords
 } from "../data/data";
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell
+} from "@/components/ui/table";
+
 import {
   IconFilter,
   IconUserPlus,
@@ -176,56 +179,65 @@ const DoctorDashboard = () => {
 
         {/* Patients */}
         <TabsContent value="patients">
-          <Card className="border-slate-200 shadow-sm  p-0">
-            <CardHeader className="border-b border-slate-100 bg-primary-300 py-7 rounded-t-xl  ">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-2xl font-semibold tracking-tight text-white">
-                    My Patient List
-                  </CardTitle>
-                  <CardDescription className="text-slate-100 mt-1">
-                    All active patients under your care
-                  </CardDescription>
-                </div>
-                <div className="flex space-x-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    className="border-slate-200 text-slate-800 bg-secondary  hover:bg-slate-200  hover:cursor-pointer"
-                    onClick={console.log("New Patient Clicked")}>
-                    <IconUserPlus
-                      size={16}
-                      className="mr-2  text-slate-800"
-                    />{" "}
-                    New Patient
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="border-slate-200  text-slate-800  bg-secondary  hover:bg-slate-200  hover:cursor-pointer">
-                    <IconFilter
-                      size={16}
-                      className="mr-2 text-slate-800"
-                    />{" "}
-                    Filter
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="border-slate-200 text-slate-800  bg-secondary  hover:bg-slate-200   hover:cursor-pointer">
-                    <IconArrowsSort
-                      size={16}
-                      className="mr-2 text-slate-800"
-                    />{" "}
-                    Sort
-                  </Button>
-                </div>
+          <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="border-b border-slate-100 bg-primary-300 py-7 px-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-white">
+                  My Patient List
+                </h2>
+                <p className="text-slate-100 mt-1">
+                  All active patients under your care
+                </p>
               </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="text-center py-12 text-slate-500">
-                <IconUsers size={32} className="mx-auto mb-3 text-slate-300" />
-                <p>Patient list content would appear here</p>
+              <div className="flex  flex-wrap gap-3 ">
+                <Button
+                  size="sm"
+                  className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200">
+                  <IconFilter size={16} className="mr-2 text-slate-800" />
+                  Filter
+                </Button>
+                <Button
+                  size="sm"
+                  className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200">
+                  <IconArrowsSort size={16} className="mr-2 text-slate-800" />
+                  Sort
+                </Button>
+                <Button
+                  size="sm"
+                  className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200"
+                  onClick={() => console.log("New Patient Clicked")}>
+                  <IconUserPlus size={16} className="mr-2 text-slate-800" />
+                  New Patient
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            <div className="p-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="text-center py-12 text-slate-500">
+                      <IconUsers
+                        size={32}
+                        className="mx-auto mb-3 text-slate-300"
+                      />
+                      Patient list content would appear here
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </TabsContent>
         {/* Medical Records */}
         <TabsContent value="records">
