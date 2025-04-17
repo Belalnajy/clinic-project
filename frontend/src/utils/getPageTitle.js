@@ -1,6 +1,5 @@
 // Determine page title based on current path
-export const getPageTitle = () => {
-  const path = location.pathname;
+export const getPageTitle = (path) => {
   if (path.includes('/dashboard')) {
     return 'Dashboard';
   } else if (path.includes('/patients')) {

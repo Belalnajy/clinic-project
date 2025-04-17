@@ -3,10 +3,11 @@ import Sidebar from '@/components/sidebar/Sidebar';
 import { user } from '@/components/sidebar/sidebarData';
 import { getPageTitle } from '@/utils/getPageTitle';
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -28,7 +29,7 @@ const MainLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} title={getPageTitle()} user={user} />
+        <Header toggleSidebar={toggleSidebar} title={getPageTitle(location.pathname)} user={user} />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-6">
