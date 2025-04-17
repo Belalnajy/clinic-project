@@ -5,48 +5,21 @@ import { format, addDays, subDays } from 'date-fns';
 export const initializeData = () => {
   // Check if data already exists
   if (!localStorage.getItem('initialized')) {
-    // Users
+    // Specializations
+    const specializations = [
+      { id: 'spec-1', name: 'General Practitioner' },
+      { id: 'spec-2', name: 'Cardiologist' },
+      { id: 'spec-3', name: 'Neurologist' }
+    ];
+    localStorage.setItem('specializations', JSON.stringify(specializations));
+
+    // Users (staff)
     const users = [
-      {
-        id: 'manager-1',
-        name: 'Alex Johnson',
-        email: 'alex@mediclinic.com',
-        password: 'password',
-        role: 'manager',
-        avatar: 'AJ',
-      },
-      {
-        id: 'doctor-1',
-        name: 'Dr. Alice Davis',
-        email: 'alice@mediclinic.com',
-        password: 'password',
-        role: 'doctor',
-        avatar: 'AD',
-      },
-      {
-        id: 'doctor-2',
-        name: 'Dr. Bob Wilson',
-        email: 'bob@mediclinic.com',
-        password: 'password',
-        role: 'doctor',
-        avatar: 'BW',
-      },
-      {
-        id: 'doctor-3',
-        name: 'Dr. John Doe',
-        email: 'john@mediclinic.com',
-        password: 'password',
-        role: 'doctor',
-        avatar: 'JD',
-      },
-      {
-        id: 'secretary-1',
-        name: 'Mary Johnson',
-        email: 'mary@mediclinic.com',
-        password: 'password',
-        role: 'secretary',
-        avatar: 'MJ',
-      },
+      { id: 'manager-1', name: 'Alex Johnson', email: 'alex@mediclinic.com', password: 'password', role: 'manager', avatar: 'AJ' },
+      { id: 'doctor-1', name: 'Dr. Alice Davis', email: 'alice@mediclinic.com', password: 'password', role: 'doctor', avatar: 'AD', specializationId: 'spec-1' },
+      { id: 'doctor-2', name: 'Dr. Bob Wilson', email: 'bob@mediclinic.com', password: 'password', role: 'doctor', avatar: 'BW', specializationId: 'spec-2' },
+      { id: 'doctor-3', name: 'Dr. John Doe', email: 'john@mediclinic.com', password: 'password', role: 'doctor', avatar: 'JD', specializationId: 'spec-3' },
+      { id: 'secretary-1', name: 'Mary Johnson', email: 'mary@mediclinic.com', password: 'password', role: 'secretary', avatar: 'MJ' }
     ];
     localStorage.setItem('staff', JSON.stringify(users));
 
@@ -154,7 +127,7 @@ export const initializeData = () => {
     const appointments = [
       {
         id: uuidv4(),
-        patientId: 'P-1001',
+        patientId: 'P-1001',  // Sarah Mitchell
         doctorId: 'doctor-1',
         date: format(today, 'yyyy-MM-dd'),
         time: '09:00',
@@ -165,7 +138,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-2002',
+        patientId: 'P-2345',  // John Davis
         doctorId: 'doctor-2',
         date: format(today, 'yyyy-MM-dd'),
         time: '09:45',
@@ -176,7 +149,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-0872',
+        patientId: 'P-0872',  // James Thompson
         doctorId: 'doctor-3',
         date: format(today, 'yyyy-MM-dd'),
         time: '10:30',
@@ -187,7 +160,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-3012',
+        patientId: 'P-3456',  // Amanda Ross
         doctorId: 'doctor-1',
         date: format(today, 'yyyy-MM-dd'),
         time: '11:15',
@@ -198,7 +171,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-1245',
+        patientId: 'P-1245',  // Emma Lewis
         doctorId: 'doctor-2',
         date: format(today, 'yyyy-MM-dd'),
         time: '12:30',
@@ -209,7 +182,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-3450',
+        patientId: 'P-2345',  // John Davis
         doctorId: 'doctor-3',
         date: format(today, 'yyyy-MM-dd'),
         time: '13:15',
@@ -220,7 +193,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-4321',
+        patientId: 'P-3456',  // Amanda Ross
         doctorId: 'doctor-1',
         date: format(tomorrow, 'yyyy-MM-dd'),
         time: '09:30',
@@ -231,7 +204,7 @@ export const initializeData = () => {
       },
       {
         id: uuidv4(),
-        patientId: 'P-7777',
+        patientId: 'P-1001',  // Sarah Mitchell
         doctorId: 'doctor-2',
         date: format(tomorrow, 'yyyy-MM-dd'),
         time: '10:15',
@@ -241,8 +214,18 @@ export const initializeData = () => {
         notes: 'Cancelled by clinic due to maintenance'
       }
     ];
+    // Embed both specializationId and specializationName into each appointment
+    const appointmentsWithSpecializations = appointments.map(app => {
+      const doctor = users.find(u => u.id === app.doctorId) || {};
+      const spec = specializations.find(s => s.id === doctor.specializationId) || {};
+      return {
+        ...app,
+        specializationId: doctor.specializationId || null,
+        specializationName: spec.name || ''
+      };
+    });
 
-    localStorage.setItem('appointments', JSON.stringify(appointments));
+    localStorage.setItem('appointments', JSON.stringify(appointmentsWithSpecializations));
 
     // Medical Records
     const medicalRecords = [

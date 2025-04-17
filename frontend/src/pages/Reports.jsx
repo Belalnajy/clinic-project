@@ -22,6 +22,17 @@ import { Progress } from '@/components/ui/progress';
 import AppointmentCompletion from '@/components/Reports/AppointmentCompletion';
 import PatientGrowth from '@/components/Reports/PatientGrowth';
 import AppointmentStatus from '@/components/Reports/AppointmentStatus';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import DailyCompletionChart from '@/components/Reports/DailyCompletionChart';
+import AppointmentTable from '@/components/Reports/AppointmentTable';
 
 const Reports = () => {
   const user = { role: 'manager' };
@@ -29,12 +40,42 @@ const Reports = () => {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [filters, setFilters] = useState({
+    location: '',
+    provider: '',
+    appointmentType: '',
+    status: '',
+  });
 
   useEffect(() => {
     // Load data from local storage
-    setAppointments(getAllAppointments());
-    setPatients(getAllPatients());
-    setDoctors(getAllDoctors());
+    const loadedAppointments = getAllAppointments();
+    const loadedPatients = getAllPatients();
+    const loadedDoctors = getAllDoctors();
+
+    console.log('loadedAppointments', loadedAppointments);
+    console.log('loadedPatients', loadedPatients);
+    console.log('loadedDoctors', loadedDoctors);
+
+    // Enrich appointments with patientName, providerName, and specialization
+    // console.log(loadedAppointments);
+    const enrichedAppointments = loadedAppointments.map((appointment) => {
+      const doctor = loadedDoctors.find((doc) => doc.id === appointment.doctorId);
+      const patient = loadedPatients.find((pat) => pat.id === appointment.patientId);
+      console.log('doctor', doctor);
+      console.log('patient', patient);
+      return {
+        ...appointment,
+        providerName: doctor ? doctor.name : 'Unknown Provider',
+        patientName: patient ? patient.fullName : 'Unknown Patient',
+        // specialization: lookupSpecialization[appointment.doctorId] || 'Unknown Specialization',
+      };
+    });
+
+    setAppointments(enrichedAppointments);
+    console.log('enrichedAppointments', enrichedAppointments);
+    setPatients(loadedPatients);
+    setDoctors(loadedDoctors);
   }, []);
 
   // Calculate statistics
@@ -111,7 +152,44 @@ const Reports = () => {
     };
   };
 
+  const calculateDailyCompletion = (appointments, timeRangeDays) => {
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - timeRangeDays);
+
+    const dailyData = {};
+
+    appointments.forEach((appointment) => {
+      const appointmentDate = new Date(appointment.date);
+      if (appointmentDate >= startDate && appointmentDate <= today) {
+        const dateKey = appointmentDate.toISOString().split('T')[0];
+        if (!dailyData[dateKey]) {
+          dailyData[dateKey] = { date: dateKey, completed: 0, total: 0 };
+        }
+        dailyData[dateKey].total += 1;
+        if (appointment.status === 'Completed') {
+          dailyData[dateKey].completed += 1;
+        }
+      }
+    });
+
+    return Object.values(dailyData).map((data) => ({
+      ...data,
+      completionRate: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+    }));
+  };
+
   const stats = calculateStats();
+
+  const dailyCompletionData = calculateDailyCompletion(
+    appointments,
+    {
+      '7days': 7,
+      '30days': 30,
+      '90days': 90,
+      year: 365,
+    }[timeRange]
+  );
 
   const getCompletionColor = (completionRate) => {
     if (completionRate <= 25) return '#EF4444'; // Red
@@ -128,6 +206,32 @@ const Reports = () => {
   const COLORS = [
     getCompletionColor(stats.appointmentStats.completionRate), // Dynamic color for "Completed"
     '#E5E7EB', // Gray for "Remaining"
+  ];
+
+  const handleFilterChange = (filterKey, value) => {
+    setFilters((prevFilters) => ({ ...prevFilters, [filterKey]: value }));
+  };
+
+  const filteredAppointments = appointments.filter((appointment) => {
+    return (
+      (!filters.location || appointment.specializationName === filters.location) &&
+      (!filters.provider || appointment.doctorId === filters.provider) &&
+      (!filters.appointmentType || appointment.type === filters.appointmentType) &&
+      (!filters.status || appointment.status === filters.status)
+    );
+  });
+
+  const uniqueSpecializations = [
+    ...new Set(appointments.map((appointment) => appointment.specializationName)),
+  ];
+
+  const uniqueProviders = [
+    ...new Map(
+      appointments.map((appointment) => [
+        appointment.doctorId,
+        { id: appointment.doctorId, name: appointment.providerName },
+      ])
+    ).values(),
   ];
 
   return (
@@ -210,6 +314,139 @@ const Reports = () => {
                 </CardFooter>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="appointments" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Appointment Analytics</CardTitle>
+                <CardDescription>Detailed analysis of appointment data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6 grid gap-6 md:grid-cols-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Appointment Status</CardTitle>
+                      <CardDescription>Distribution by status</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AppointmentStatus stats={stats.appointmentStats} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Daily Completion</CardTitle>
+                      <CardDescription>Completion rate for each day</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DailyCompletionChart data={dailyCompletionData} />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Appointment Completion</CardTitle>
+                      <CardDescription>Overall completion rate</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AppointmentCompletion
+                        completionRate={stats.appointmentStats.completionRate}
+                        total={stats.appointmentStats.total}
+                        completed={stats.appointmentStats.completed}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mb-4 flex gap-4">
+                  <Select
+                    defaultValue="all"
+                    onValueChange={(value) =>
+                      handleFilterChange('location', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Specialization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Specializations</SelectItem>
+                      {uniqueSpecializations.map((specialization, index) => (
+                        <SelectItem key={index} value={specialization}>
+                          {specialization}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    defaultValue="all"
+                    onValueChange={(value) =>
+                      handleFilterChange('provider', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Providers</SelectItem>
+                      {uniqueProviders.map((provider) => (
+                        <SelectItem key={provider.id} value={provider.id}>
+                          {provider.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    defaultValue="all"
+                    onValueChange={(value) =>
+                      handleFilterChange('appointmentType', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="Consultation">Consultation</SelectItem>
+                      <SelectItem value="Follow-up">Follow-up</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    defaultValue="all"
+                    onValueChange={(value) =>
+                      handleFilterChange('status', value === 'all' ? '' : value)
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="Scheduled">Scheduled</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <AppointmentTable appointments={filteredAppointments} />
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <div>
+                  <Button variant="outline">
+                    <i className="fas fa-download mr-2"></i> Export Data
+                  </Button>
+                </div>
+                <div>
+                  <Button variant="outline">
+                    <i className="fas fa-print mr-2"></i> Print Report
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
