@@ -1,63 +1,67 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardContent
+  CardContent,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import useSettingsForm from "@/hooks/useSettingsForm";
-import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+const passwordSchema = z.object({
+  currentPassword: z.string()
+    .min(8, "Current password must be at least 8 characters")
+    .nonempty("Current password is required"),
+  newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .nonempty("New password is required"),
+  confirmPassword: z.string()
+    .nonempty("Please confirm your password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+}).refine((data) => data.newPassword !== data.currentPassword, {
+  message: "New password must be different from current password",
+  path: ["newPassword"],
+});
 
 function AccountSettings() {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-    trigger,
-    setValue,
-    getValues,
-    reset
-  } = useSettingsForm({
+  const form = useForm({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    }
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
   });
 
-  const newPassword = watch('newPassword');
-
   const onSubmit = async (data) => {
-    toast.success("Password updated successfully!");
-    reset();
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Password updated successfully!");
+      form.reset();
+    } catch (error) {
+      toast.error("Failed to update password. Please try again.");
+    }
   };
 
   const handleDeleteAccount = () => {
     toast.warning("Account deletion is not yet implemented.");
-  };
-
-  const validatePasswords = async (e) => {
-    e.preventDefault();
-    const valid = await trigger([
-      'currentPassword',
-      'newPassword',
-      'confirmPassword'
-    ]);
-
-    if (!valid) {
-      Object.entries(errors).forEach(([field, error]) => {
-        if (error?.message) {
-          toast.error(error.message);
-        }
-      });
-      return;
-    }
-    handleSubmit(onSubmit)();
   };
 
   return (
@@ -68,114 +72,82 @@ function AccountSettings() {
       </CardHeader>
 
       <CardContent>
-        <form className="space-y-6">
-          <div className="space-y-1">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              disabled
-              defaultValue="doctor"
-            />
-            <p className="text-xs text-slate-500">
-              Username cannot be changed
-            </p>
-          </div>
-
-          <Separator className="my-6" />
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Change Password</h3>
-
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-1">
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="currentPassword"
-                type="password"
-                {...register('currentPassword', {
-                  required: 'Current password is required',
-                  minLength: {
-                    value: 8,
-                    message: 'Current password must be at least 8 characters'
-                  }
-                })}
-                onChange={(e) =>
-                  setValue('currentPassword', e.target.value, {
-                    shouldValidate: true
-                  })
-                }
+                id="username"
+                disabled
+                defaultValue="doctor"
               />
-              {errors.currentPassword && (
-                <div className="text-red-500 text-sm">
-                  <p>{errors.currentPassword.message}</p>
-                </div>
-              )}
+              <p className="text-xs text-slate-500">
+                Username cannot be changed
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                {...register('newPassword', {
-                  required: 'New password is required',
-                  minLength: {
-                    value: 8,
-                    message: 'Password must be at least 8 characters'
-                  },
-                  validate: {
-                    notSame: (value) =>
-                      value !== watch('currentPassword') ||
-                      'New password must be different from current password'
-                  }
-                })}
-                onChange={(e) =>
-                  setValue('newPassword', e.target.value, {
-                    shouldValidate: true
-                  })
-                }
+            <Separator className="my-6" />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Change Password</h3>
+
+              <FormField
+                control={form.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.newPassword && (
-                <div className="text-red-500 text-sm">
-                  <p>{errors.newPassword.message}</p>
-                </div>
-              )}
+
+              <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm New Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                {...register('confirmPassword', {
-                  required: 'Please confirm your password',
-                  validate: {
-                    matches: (value) =>
-                      value === newPassword || 'Passwords do not match'
-                  }
-                })}
-                onChange={(e) =>
-                  setValue('confirmPassword', e.target.value, {
-                    shouldValidate: true
-                  })
-                }
-              />
-              {errors.confirmPassword && (
-                <div className="text-red-500 text-sm">
-                  <p>{errors.confirmPassword.message}</p>
-                </div>
-              )}
+            <div className="w-full flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Update Password
+              </Button>
             </div>
-          </div>
-
-          <div className="w-full flex justify-end gap-2">
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-            <Button type="submit" onClick={validatePasswords}>
-              Update Password
-            </Button>
-          </div>
-        </form>
+          </form>
+        </Form>
 
         <Separator className="my-6" />
 
