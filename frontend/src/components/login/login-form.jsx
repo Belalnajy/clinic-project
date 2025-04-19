@@ -1,10 +1,39 @@
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const formSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
+});
 
 export function LoginForm({ className, ...props }) {
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  //! For Testing
+  const onSubmit = (data) => {
+    // Handle form submission
+    console.log('Form submitted:', data);
+  };
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card className="overflow-hidden py-0">
@@ -19,53 +48,69 @@ export function LoginForm({ className, ...props }) {
           </div>
 
           {/* Form */}
-          <form className="p-6 md:p-8">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-balance text-muted-foreground">
-                  Login to your Clinic Management account
-                </p>
-              </div>
-
-              {/* Email Input */}
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="doctor@example.com" required />
-              </div>
-
-              {/* Password Input */}
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+          <Form {...form}>
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col items-center text-center">
+                  <h1 className="text-2xl font-bold">Welcome back</h1>
+                  <p className="text-balance text-muted-foreground">
+                    Login to your Clinic Management account
+                  </p>
                 </div>
-                <Input id="password" type="password" required />
-              </div>
 
-              <Button type="submit" className="w-full bg-primary">
-                Login
-              </Button>
+                {/* Email Field */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="doctor@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              {/* Dmo Account Buttons */}
-              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                  Demo Accounts
-                </span>
-              </div>
+                {/* Password Field */}
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                <Button variant="outline" className="py-2">
-                  Manager
+                <Button type="submit" className="w-full bg-primary">
+                  Login
                 </Button>
-                <Button variant="outline" className="py-2">
-                  Doctor
-                </Button>
-                <Button variant="outline" className="py-2">
-                  Secretary
-                </Button>
+                {/* Dmo Account Buttons */}
+                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                    Demo Accounts
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                  <Button variant="outline" className="py-2">
+                    Manager
+                  </Button>
+                  <Button variant="outline" className="py-2">
+                    Doctor
+                  </Button>
+                  <Button variant="outline" className="py-2">
+                    Secretary
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </Form>
         </CardContent>
       </Card>
 
