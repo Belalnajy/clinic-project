@@ -15,6 +15,7 @@ import {
   TableCell
 } from "@/components/ui/table";
 
+import { Filter, UserPlus, Users, ArrowsUpFromLine } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Papa from "papaparse";
@@ -24,7 +25,7 @@ import TabsHeader from "@/components/dashboard/TabsHeader";
 import ScheduleTable from "@/components/dashboard/ScheduleTable";
 import MedicalRecordsList from "@/components/dashboard/MedicalRecordsList";
 
-const DoctorDashboard = () => {
+const Dashboard = () => {
   const navigate = useNavigate();
   const stats = getStatistics("doctor");
   const todayAppointments = getTodayAppointments();
@@ -187,20 +188,20 @@ const DoctorDashboard = () => {
                 <Button
                   size="sm"
                   className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200">
-                  <IconFilter size={16} className="mr-2 text-slate-800" />
+                  <Filter size={16} className="mr-2 text-slate-800" />
                   Filter
                 </Button>
                 <Button
                   size="sm"
                   className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200">
-                  <IconArrowsSort size={16} className="mr-2 text-slate-800" />
+                  <ArrowsUpFromLine size={16} className="mr-2 text-slate-800" />
                   Sort
                 </Button>
                 <Button
                   size="sm"
                   className="border-slate-200 text-slate-800 bg-secondary hover:bg-slate-200"
                   onClick={() => console.log("New Patient Clicked")}>
-                  <IconUserPlus size={16} className="mr-2 text-slate-800" />
+                  <UserPlus size={16} className="mr-2 text-slate-800" />
                   New Patient
                 </Button>
               </div>
@@ -221,7 +222,7 @@ const DoctorDashboard = () => {
                     <TableCell
                       colSpan={4}
                       className="text-center py-12 text-slate-500">
-                      <IconUsers
+                      <Users
                         size={32}
                         className="mx-auto mb-3 text-slate-300"
                       />
@@ -257,4 +258,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default DoctorDashboard;
+export default Dashboard;

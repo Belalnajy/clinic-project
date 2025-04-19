@@ -2,7 +2,17 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
+import {
+  Calendar,
+  Fingerprint,
+  Heart,
+  Stethoscope,
+  Bed,
+  Pill,
+  User,
+  Edit,
+  FileText
+} from 'lucide-react';
 
 const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
   return (
@@ -22,14 +32,14 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
               {record.patientName}
             </div>
             <div className="text-xs text-slate-400 flex items-center mt-0.5">
-              <IconFingerprint size={14} className="mr-1.5 text-slate-300" />
+              <Fingerprint size={14} className="mr-1.5 text-slate-300" />
               {record.patientId}
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end">
           <div className="text-sm text-slate-500 flex items-center">
-            <IconCalendarEvent size={16} className="mr-1.5 text-slate-300" />
+            <Calendar size={16} className="mr-1.5 text-slate-300" />
             {record.date}
           </div>
           <Badge className="mt-1.5 bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 transition-colors">
@@ -40,7 +50,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
 
       <div className="mb-4 p-3 bg-gradient-to-r from-slate-50 to-white rounded-md border border-slate-100">
         <div className="flex items-center mb-2">
-          <IconHeartbeat size={16} className="text-red-500 mr-1.5" />
+          <Heart size={16} className="text-red-500 mr-1.5" />
           <div className="text-xs font-medium text-slate-700">Vital Signs</div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -111,14 +121,14 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="text-sm text-slate-600 bg-slate-50/50 p-3 rounded-md border border-slate-100">
             <span className="font-medium text-slate-700 flex items-center mb-1.5">
-              <IconStethoscope size={16} className="mr-1.5 text-slate-400" />
+              <Stethoscope size={16} className="mr-1.5 text-slate-400" />
               Diagnosis
             </span>
             <p className="leading-relaxed">{record.diagnosis}</p>
           </div>
           <div className="text-sm text-slate-600 bg-slate-50/50 p-3 rounded-md border border-slate-100">
             <span className="font-medium text-slate-700 flex items-center mb-1.5">
-              <IconBed size={16} className="mr-1.5 text-slate-400" />
+              <Bed size={16} className="mr-1.5 text-slate-400" />
               Treatment
             </span>
             <p className="leading-relaxed">{record.treatment}</p>
@@ -128,7 +138,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
         {record.prescription && (
           <div className="mt-4">
             <div className="flex items-center mb-2">
-              <IconPill size={16} className="text-primary-400 mr-1.5" />
+              <Pill size={16} className="text-primary-400 mr-1.5" />
               <div className="text-xs font-medium text-slate-600">Prescription</div>
             </div>
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3.5 rounded-md text-sm border border-blue-100 text-slate-700">
@@ -146,7 +156,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
 
       <div className="flex justify-between items-center mt-5 pt-3 border-t border-slate-50">
         <div className="text-xs text-slate-400 flex items-center">
-          <IconUser size={14} className="mr-1.5" />
+          <User size={14} className="mr-1.5" />
           Dr. {record.physician || 'Richardson'}
         </div>
         <div className="flex space-x-2">
@@ -155,14 +165,14 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
             size="sm"
             className="text-slate-500 hover:text-slate-800 hover:bg-slate-50"
           >
-            <IconEdit size={16} className="mr-1.5" /> Edit
+            <Edit size={16} className="mr-1.5" /> Edit
           </Button>
           <Button
             size="sm"
             className="bg-primary-300 hover:bg-secondary-foreground text-white group-hover:shadow-sm transition-all"
             onClick={() => handleOpenPatientView(record)}
           >
-            <IconFileReport size={16} className="mr-1.5" /> Full Record
+            <FileText size={16} className="mr-1.5" /> Full Record
           </Button>
         </div>
       </div>

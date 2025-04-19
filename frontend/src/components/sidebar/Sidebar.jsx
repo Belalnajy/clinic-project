@@ -1,9 +1,14 @@
-import { getNavItems, user } from './sidebarData';
-import { NavLink } from 'react-router-dom';
+import { useAuth } from '@/contexts/Auth/useAuth';
+import { getNavItems } from './sidebarData';
+import { NavLink, useNavigate } from 'react-router-dom';
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   //! For Testing
   const handleLogout = () => {
     // Handle logout logic here
+    logout();
+    navigate('/login');
     console.log('User logged out');
   };
 
@@ -42,7 +47,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto p-2">
           <ul className="space-y-1">
-            {getNavItems().map((item) => (
+            {getNavItems(user).map((item) => (
               <li key={item.path}>
                 <NavLink
                   to={item.path}
@@ -103,7 +108,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
         <nav className="flex-1 overflow-y-auto p-2">
           <ul className="space-y-1">
-            {getNavItems().map((item) => (
+            {getNavItems(user).map((item) => (
               <li key={item.path}>
                 <NavLink
                   to={item.path}
