@@ -4,9 +4,15 @@ import SettingsPage from './pages/SettingsPage';
 import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
 import Dashboard from './pages/Dashboard';
+import LoginPage from './pages/Login';
 import Reports from './pages/Reports';
 
 const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <LoginPage />,
+    errorElement: <div>404 Not Found</div>,
+  },
   {
     path: '/',
     element: <MainLayout />,
