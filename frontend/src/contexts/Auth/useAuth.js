@@ -22,8 +22,8 @@ export const useAuth = () => {
       setUser(userWithoutPassword);
       setIsAuthenticated(true);
       localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      console.log('Login successful:', user);
-      toast.success(`welcome back, ${user.name}`, {
+      console.log('Login successful:', foundUser);
+      toast.success(`welcome back, ${foundUser.name}`, {
         description: "Here's your schedule for today",
       });
       return true;

@@ -1,6 +1,5 @@
 import { initializeUsers } from '@/components/login/login-data';
 import { LoginForm } from '@/components/login/login-form';
-import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +25,6 @@ export default function LoginPage() {
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-3xl">
         <LoginForm />
-        <Toaster position="top-right" richColors />
       </div>
     </div>
   );
