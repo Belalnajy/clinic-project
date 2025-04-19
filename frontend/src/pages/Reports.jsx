@@ -16,11 +16,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { getAllAppointments, getAllPatients, getAllDoctors } from '../data/data';
+import {
+  getAllAppointments,
+  getAllPatients,
+  getAllDoctors,
+  getAllSpecializations,
+} from '../data/data';
 import AppointmentCompletion from '@/components/Reports/AppointmentCompletion';
 import PatientGrowth from '@/components/Reports/PatientGrowth';
 import AppointmentStatus from '@/components/Reports/AppointmentStatus';
-
+import DoctorPerformance from '@/components/Reports/DoctorPerformance';
 import DailyCompletionChart from '@/components/Reports/DailyCompletionChart';
 import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
@@ -34,6 +39,7 @@ const Reports = () => {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
   const [filters, setFilters] = useState({
     location: '',
     provider: '',
@@ -46,30 +52,25 @@ const Reports = () => {
     const loadedAppointments = getAllAppointments();
     const loadedPatients = getAllPatients();
     const loadedDoctors = getAllDoctors();
-
-    // console.log('loadedAppointments', loadedAppointments);
-    // console.log('loadedPatients', loadedPatients);
-    // console.log('loadedDoctors', loadedDoctors);
+    const loadedSpecializations = getAllSpecializations();
+    // console.log(loadedSpecializations);
 
     // Enrich appointments with patientName, providerName, and specialization
-    // console.log(loadedAppointments);
     const enrichedAppointments = loadedAppointments.map((appointment) => {
       const doctor = loadedDoctors.find((doc) => doc.id === appointment.doctorId);
       const patient = loadedPatients.find((pat) => pat.id === appointment.patientId);
-      // console.log('doctor', doctor);
-      // console.log('patient', patient);
+
       return {
         ...appointment,
         providerName: doctor ? doctor.name : 'Unknown Provider',
         patientName: patient ? patient.fullName : 'Unknown Patient',
-        // specialization: lookupSpecialization[appointment.doctorId] || 'Unknown Specialization',
       };
     });
 
     setAppointments(enrichedAppointments);
-    // console.log('enrichedAppointments', enrichedAppointments);
     setPatients(loadedPatients);
     setDoctors(loadedDoctors);
+    setSpecializations(loadedSpecializations);
   }, []);
 
   // Calculate statistics
@@ -103,6 +104,11 @@ const Reports = () => {
       const completed = doctorAppointments.filter((a) => a.status === 'Completed').length;
       const total = doctorAppointments.length;
       const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const specialization = specializations.find(
+        (spec) => spec.id === doctor.specializationId
+      )?.name;
+
+      // console.log(specialization);
 
       return {
         id: doctor.id,
@@ -110,6 +116,7 @@ const Reports = () => {
         specialization: doctor.specialization,
         appointments: total,
         completionRate,
+        specialization: specialization,
       };
     });
     const averageAppointmentsPerDoctor =
@@ -147,8 +154,6 @@ const Reports = () => {
     startDate.setDate(today.getDate());
 
     const dailyData = {};
-    console.log('appointments', appointments);
-    console.log('timeRangeDays', timeRangeDays);
 
     appointments.forEach((appointment) => {
       const appointmentDate = new Date(appointment.date);
@@ -163,7 +168,6 @@ const Reports = () => {
         }
       }
     });
-    console.log('dailyData', Object.values(dailyData));
     return Object.values(dailyData)
       .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date in ascending order
       .map((data) => ({
@@ -182,7 +186,6 @@ const Reports = () => {
       year: 365,
     }[timeRange]
   );
-  console.log('dailyCompletionData from report', dailyCompletionData);
 
   const getCompletionColor = (completionRate) => {
     if (completionRate <= 25) return '#EF4444'; // Red
@@ -287,7 +290,6 @@ const Reports = () => {
               </SelectContent>
             </Select>
           </div>
-
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <AppointmentCompletion
@@ -316,7 +318,6 @@ const Reports = () => {
               <AppointmentStatus appointmentStatusData={appointmentStatusData} />
             </div>
           </TabsContent>
-
           <TabsContent value="appointments" className="mt-6">
             <Card>
               <CardHeader>
@@ -360,10 +361,14 @@ const Reports = () => {
               </CardFooter>
             </Card>
           </TabsContent>
-
           <TabsContent value="patients" className="mt-6">
             <PatientDemographics patients={patients} />
           </TabsContent>
+          {user.role === 'manager' && (
+            <TabsContent value="doctors" className="mt-6">
+              <DoctorPerformance stats={stats} />
+            </TabsContent>
+          )}{' '}
         </Tabs>
       </div>
     </>
