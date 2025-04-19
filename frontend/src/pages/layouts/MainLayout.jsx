@@ -1,6 +1,7 @@
 import Header from '@/components/sidebar/header/Header';
 import Sidebar from '@/components/sidebar/Sidebar';
 import { user } from '@/components/sidebar/sidebarData';
+import { Toaster } from '@/components/ui/sonner';
 import { getPageTitle } from '@/utils/getPageTitle';
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -35,6 +36,7 @@ const MainLayout = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
+        <Toaster position="top-right" richColors />
       </div>
     </div>
   );

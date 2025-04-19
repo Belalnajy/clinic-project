@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -20,6 +21,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm({ className, ...props }) {
+  const { user, login } = useAuth();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,6 +34,18 @@ export function LoginForm({ className, ...props }) {
   const onSubmit = (data) => {
     // Handle form submission
     console.log('Form submitted:', data);
+    try {
+      const success = login(data);
+      if (success) {
+        // Redirect to dashboard or another page
+        console.log('Login successful');
+      } else {
+        // Handle login failure
+        console.error('invalid username or password');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -98,13 +112,30 @@ export function LoginForm({ className, ...props }) {
                   </span>
                 </div>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                  <Button variant="outline" className="py-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="py-2"
+                    onClick={() =>
+                      login({ email: 'sarah.johnson@clinic.com', password: 'password' })
+                    }
+                  >
                     Manager
                   </Button>
-                  <Button variant="outline" className="py-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="py-2"
+                    onClick={() => login({ email: 'emily.chen@clinic.com', password: 'password' })}
+                  >
                     Doctor
                   </Button>
-                  <Button variant="outline" className="py-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="py-2"
+                    onClick={() => login({ email: 'john.smith@clinic.com', password: 'password' })}
+                  >
                     Secretary
                   </Button>
                 </div>

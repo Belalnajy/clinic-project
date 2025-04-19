@@ -1,9 +1,14 @@
+import { useAuth } from '@/contexts/Auth/useAuth';
 import { getNavItems, user } from './sidebarData';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 const Sidebar = ({ isOpen, toggleSidebar }) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   //! For Testing
   const handleLogout = () => {
     // Handle logout logic here
+    logout();
+    navigate('/login');
     console.log('User logged out');
   };
 
