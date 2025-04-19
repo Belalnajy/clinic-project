@@ -4,6 +4,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ProfileSettings from "./components/settings/ProfileSettings";
 import AccountSettings from "./components/settings/AccountSettings";
 import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
 
 const router = createBrowserRouter([
   {
@@ -20,7 +21,8 @@ const router = createBrowserRouter([
           { path: "account", element: <AccountSettings /> }
         ]
       },
-      { path: "dashboard/:role", element: <Dashboard /> }
+      { path: "dashboard/:role", element: <Dashboard /> },
+      { path: "patients", element: <Patients /> }
     ]
   }
 ]);
