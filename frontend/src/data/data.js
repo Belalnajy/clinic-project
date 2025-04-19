@@ -141,7 +141,7 @@ const initializeDoctors = () => {
   if (!localStorage.getItem('doctors')) {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const doctors = users.filter(user => user.role === 'doctor' || user.role === 'manager');
-    
+
     // Add additional doctors to the list
     const additionalDoctors = [
       {
@@ -165,7 +165,7 @@ const initializeDoctors = () => {
         specialization: 'Dermatology'
       }
     ];
-    
+
     const allDoctors = [...doctors, ...additionalDoctors];
     localStorage.setItem('doctors', JSON.stringify(allDoctors));
   }
@@ -240,7 +240,7 @@ const getStatistics = (userRole) => {
     revenue: '$12,450',
     revenueGrowth: '18%',
   };
-  
+
   // Role-specific adjustments to stats could be made here
   // For example, secretary might not see revenue data
   if (userRole === 'secretary') {
@@ -250,7 +250,7 @@ const getStatistics = (userRole) => {
       revenueGrowth: '-',
     };
   }
-  
+
   return baseStats;
 };
 
@@ -393,11 +393,11 @@ const addPatient = (patientData) => {
   const newId = patients.length > 0 ? Math.max(...patients.map(p => p.id)) + 1 : 1;
   const newPatient = {
     ...patientData,
-    id: newId,
+    id: generatePatientId(),
     patientId: generatePatientId(),
     createdAt: new Date().toISOString()
   };
-  
+
   patients.push(newPatient);
   localStorage.setItem('patients', JSON.stringify(patients));
   return newPatient;
@@ -438,7 +438,7 @@ const addAppointment = (appointmentData) => {
     id: newId,
     createdAt: new Date().toISOString()
   };
-  
+
   appointments.push(newAppointment);
   localStorage.setItem('appointments', JSON.stringify(appointments));
   return newAppointment;
@@ -463,7 +463,9 @@ const deleteAppointment = (id) => {
 };
 
 const getAllDoctors = () => {
-  return JSON.parse(localStorage.getItem('doctors') || '[]');
+  const staff = JSON.parse(localStorage.getItem('staff') || '[]');
+  const doctors = staff.filter(s => s.role === 'doctor');
+  return doctors;
 };
 
 const getDoctorById = (id) => {
@@ -481,7 +483,7 @@ const addChatMessage = (userRole, message, sender) => {
   if (!allChats[userRole]) {
     allChats[userRole] = [];
   }
-  
+
   allChats[userRole].push({ sender, message });
   localStorage.setItem('chatMessages', JSON.stringify(allChats));
   return allChats[userRole];
@@ -490,9 +492,9 @@ const addChatMessage = (userRole, message, sender) => {
 const aiResponseGenerator = (userRole, message) => {
   // Simple AI response generator - in a real app this would be a more sophisticated system
   let response = "I'm sorry, I don't understand that question.";
-  
+
   const lowerMsg = message.toLowerCase();
-  
+
   if (lowerMsg.includes('appointment') && (lowerMsg.includes('today') || lowerMsg.includes('schedule'))) {
     response = `You have 24 appointments scheduled for today. 18 are confirmed, 4 are pending confirmation, 1 is in progress, and 1 has been cancelled.`;
   } else if (lowerMsg.includes('patient') && lowerMsg.includes('new')) {
@@ -508,7 +510,7 @@ const aiResponseGenerator = (userRole, message) => {
   } else if (lowerMsg.includes('help')) {
     response = `You can ask me about appointments, patient information, statistics, and reports. How can I assist you today?`;
   }
-  
+
   return response;
 };
 
@@ -729,7 +731,7 @@ const addStaff = (staffData) => {
     ...staffData,
     id: newId
   };
-  
+
   staff.push(newStaffMember);
   localStorage.setItem('staff', JSON.stringify(staff));
   return staff;
