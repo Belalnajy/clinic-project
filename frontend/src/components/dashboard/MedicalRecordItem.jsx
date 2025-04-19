@@ -2,17 +2,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  IconCalendarEvent,
-  IconFingerprint,
-  IconHeartbeat,
-  IconStethoscope,
-  IconBed,
-  IconPill,
-  IconUser,
-  IconEdit,
-  IconFileReport,
-} from '@tabler/icons-react';
+
 
 const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
   return (

@@ -8,12 +8,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  IconFilter,
-  IconFileExport,
-  IconChevronLeft,
-  IconChevronRight
-} from "@tabler/icons-react";
+
 
 const MedicalRecordsList = ({
   records,

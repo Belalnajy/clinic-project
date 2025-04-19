@@ -15,12 +15,6 @@ import {
   TableCell
 } from "@/components/ui/table";
 
-import {
-  IconFilter,
-  IconUserPlus,
-  IconUsers,
-  IconArrowsSort
-} from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Papa from "papaparse";

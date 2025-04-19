@@ -1,7 +1,6 @@
 // src/components/TabsHeader.jsx
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { IconSearch } from "@tabler/icons-react";
 import { cn } from "@/lib/utils"; // optional for className joining
 
 const tabs = [

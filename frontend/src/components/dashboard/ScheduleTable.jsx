@@ -3,13 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  IconCalendarPlus,
-  IconFileReport,
-  IconPlayerPlay,
-  IconPencil,
-  IconDownload,
-} from "@tabler/icons-react";
+
 
 const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, handleNewAppointment, completionRate }) => {
   return (

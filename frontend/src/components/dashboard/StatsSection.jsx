@@ -1,8 +1,4 @@
-import {
-    Card,
-    CardContent,
 
-  } from '@/components/ui/card';import { IconClipboardCheck, IconClock, IconFlask } from "@tabler/icons-react";
 
 const StatsSection = ({ stats }) => {
   const StatCard = ({ title, value, change, icon, color = "primary" }) => {
