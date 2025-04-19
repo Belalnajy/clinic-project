@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 export default function LoginPage() {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  console.log('rerendered');
+
   useEffect(() => {
     initializeUsers();
     if (isAuthenticated) {

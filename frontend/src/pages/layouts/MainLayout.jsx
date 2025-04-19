@@ -1,11 +1,12 @@
 import Header from '@/components/sidebar/header/Header';
 import Sidebar from '@/components/sidebar/Sidebar';
-import { user } from '@/components/sidebar/sidebarData';
+import { useAuth } from '@/contexts/Auth/useAuth';
 import { getPageTitle } from '@/utils/getPageTitle';
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 const MainLayout = () => {
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
