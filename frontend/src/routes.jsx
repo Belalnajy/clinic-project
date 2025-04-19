@@ -5,6 +5,7 @@ import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/Login';
+import Reports from './pages/Reports';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
         ],
       },
       { path: 'dashboard/:role', element: <Dashboard /> },
+      { path: 'reports', element: <Reports /> },
     ],
   },
 ]);
