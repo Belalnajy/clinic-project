@@ -1,38 +1,40 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import MainLayout from './pages/layouts/MainLayout';
-import SettingsPage from './pages/SettingsPage';
-import ProfileSettings from './components/settings/ProfileSettings';
-import AccountSettings from './components/settings/AccountSettings';
-import Dashboard from './pages/Dashboard';
-import LoginPage from './pages/Login';
-import Reports from './pages/Reports';
-import DoctorsPage from './pages/DoctorsPage';
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import MainLayout from "./pages/layouts/MainLayout";
+import SettingsPage from "./pages/SettingsPage";
+import ProfileSettings from "./components/settings/ProfileSettings";
+import AccountSettings from "./components/settings/AccountSettings";
+import Dashboard from "./pages/Dashboard";
+import Patients from "./pages/Patients";
+import LoginPage from "./pages/Login";
+import Reports from "./pages/Reports";
+import DoctorsPage from "./pages/DoctorsPage";
 
 const router = createBrowserRouter([
   {
-    path: '/login',
+    path: "/login",
     element: <LoginPage />,
-    errorElement: <div>404 Not Found</div>,
+    errorElement: <div>404 Not Found</div>
   },
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     errorElement: <div>404 Not Found</div>,
     children: [
       {
-        path: 'settings',
+        path: "settings",
         element: <SettingsPage />,
         children: [
           { index: true, element: <Navigate to="profile" replace /> },
-          { path: 'profile', element: <ProfileSettings /> },
-          { path: 'account', element: <AccountSettings /> },
-        ],
+          { path: "profile", element: <ProfileSettings /> },
+          { path: "account", element: <AccountSettings /> }
+        ]
       },
-      { path: 'dashboard/:role', element: <Dashboard /> },
-      { path: 'reports', element: <Reports /> },
-      { path: 'doctors', element: <DoctorsPage /> },
-    ],
-  },
+      { path: "dashboard/:role", element: <Dashboard /> },
+      { path: "reports", element: <Reports /> },
+      { path: "doctors", element: <DoctorsPage /> },
+      { path: "patients", element: <Patients /> }
+    ]
+  }
 ]);
 
 export default router;
