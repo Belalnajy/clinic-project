@@ -6,6 +6,7 @@ import AccountSettings from './components/settings/AccountSettings';
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/Login';
 import Reports from './pages/Reports';
+import DoctorsPage from './pages/DoctorsPage';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       },
       { path: 'dashboard/:role', element: <Dashboard /> },
       { path: 'reports', element: <Reports /> },
+      { path: 'doctors', element: <DoctorsPage /> },
     ],
   },
 ]);
