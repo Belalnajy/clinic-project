@@ -1,22 +1,35 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from './pages/layouts/MainLayout';
 import SettingsPage from './pages/SettingsPage';
 import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
+import Dashboard from './pages/Dashboard';
+import LoginPage from './pages/Login';
+import Reports from './pages/Reports';
 
 const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <LoginPage />,
+    errorElement: <div>404 Not Found</div>,
+  },
   {
     path: '/',
     element: <MainLayout />,
     errorElement: <div>404 Not Found</div>,
-    children: [{
-      path: "settings",
-      element: <SettingsPage />,
-      children: [
-        { path: "profile", element: <ProfileSettings /> },
-        { path: "account", element: <AccountSettings /> },
-      ]
-    }],
+    children: [
+      {
+        path: 'settings',
+        element: <SettingsPage />,
+        children: [
+          { index: true, element: <Navigate to="profile" replace /> },
+          { path: 'profile', element: <ProfileSettings /> },
+          { path: 'account', element: <AccountSettings /> },
+        ],
+      },
+      { path: 'dashboard/:role', element: <Dashboard /> },
+      { path: 'reports', element: <Reports /> },
+    ],
   },
 ]);
 
