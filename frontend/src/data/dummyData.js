@@ -23,6 +23,7 @@ export const initializeData = () => {
     ];
     localStorage.setItem('staff', JSON.stringify(users));
 
+    const today = new Date();
     // Patients
     const patients = [
       {
@@ -37,7 +38,7 @@ export const initializeData = () => {
           { condition: 'Asthma', diagnosedDate: '2010-06-22' },
           { condition: 'Migraine', diagnosedDate: '2015-03-14' }
         ],
-        registrationDate: '2022-01-15',
+        registrationDate: format(today, 'yyyy-MM-dd'),
         insuranceInfo: {
           provider: 'HealthPlus',
           policyNumber: 'HP7890123',
@@ -55,7 +56,7 @@ export const initializeData = () => {
         medicalHistory: [
           { condition: 'Hypertension', diagnosedDate: '2018-11-03' }
         ],
-        registrationDate: '2022-02-05',
+        registrationDate: format(today, 'yyyy-MM-dd'),
         insuranceInfo: {
           provider: 'MediCare',
           policyNumber: 'MC4567890',
@@ -74,7 +75,7 @@ export const initializeData = () => {
           { condition: 'Type 2 Diabetes', diagnosedDate: '2019-08-17' },
           { condition: 'Hypertension', diagnosedDate: '2020-02-22' }
         ],
-        registrationDate: '2022-03-10',
+        registrationDate: format(today, 'yyyy-MM-dd'),
         insuranceInfo: {
           provider: 'GlobalHealth',
           policyNumber: 'GH1234567',
@@ -92,7 +93,7 @@ export const initializeData = () => {
         medicalHistory: [
           { condition: 'Arthritis', diagnosedDate: '2017-05-11' }
         ],
-        registrationDate: '2022-04-20',
+        registrationDate: format(today, 'yyyy-MM-dd'),
         insuranceInfo: {
           provider: 'HealthPlus',
           policyNumber: 'HP4561237',
@@ -110,7 +111,7 @@ export const initializeData = () => {
         medicalHistory: [
           { condition: 'Diabetes', diagnosedDate: '2016-09-28' }
         ],
-        registrationDate: '2022-05-05',
+        registrationDate: format(today, 'yyyy-MM-dd'),
         insuranceInfo: {
           provider: 'MediCare',
           policyNumber: 'MC7654321',
@@ -121,7 +122,7 @@ export const initializeData = () => {
     localStorage.setItem('patients', JSON.stringify(patients));
 
     // Appointments
-    const today = new Date();
+
     const tomorrow = addDays(today, 1);
 
     const appointments = [
@@ -212,6 +213,229 @@ export const initializeData = () => {
         type: 'Consultation',
         status: 'Cancelled',
         notes: 'Cancelled by clinic due to maintenance'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-3456',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 5), 'yyyy-MM-dd'),
+        time: '09:00',
+        duration: 30,
+        type: 'Consultation',
+        status: 'In-Queue',
+        notes: 'Patient cancelled due to personal reasons'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1245',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 5), 'yyyy-MM-dd'),
+        time: '10:30',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Completed',
+        notes: 'Routine follow-up visit'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-0872',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 5), 'yyyy-MM-dd'),
+        time: '12:00',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'Cancelled',
+        notes: 'Clinic rescheduled due to doctor unavailability'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-2345',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 5), 'yyyy-MM-dd'),
+        time: '13:30',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Scheduled',
+        notes: 'Booked by secretary'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1001',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 5), 'yyyy-MM-dd'),
+        time: '15:00',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Completed',
+        notes: 'Consultation completed successfully'
+      },
+
+      {
+        id: uuidv4(),
+        patientId: 'P-1001',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 2), 'yyyy-MM-dd'),
+        time: '09:00',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Scheduled',
+        notes: 'Patient reported mild symptoms'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1245',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 2), 'yyyy-MM-dd'),
+        time: '10:30',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'Cancelled',
+        notes: 'Booked by secretary'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-2345',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 2), 'yyyy-MM-dd'),
+        time: '12:00',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Scheduled',
+        notes: 'Routine follow-up visit'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-0872',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 2), 'yyyy-MM-dd'),
+        time: '13:30',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'In-Queue',
+        notes: 'Patient cancelled due to personal reasons'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-3456',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 2), 'yyyy-MM-dd'),
+        time: '15:00',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Completed',
+        notes: 'Consultation completed successfully'
+      },
+
+      {
+        id: uuidv4(),
+        patientId: 'P-1245',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 3), 'yyyy-MM-dd'),
+        time: '09:00',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'Completed',
+        notes: 'Clinic rescheduled due to doctor unavailability'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-2345',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 3), 'yyyy-MM-dd'),
+        time: '10:30',
+        duration: 30,
+        type: 'Consultation',
+        status: 'In-Queue',
+        notes: 'Booked by secretary'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1001',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 3), 'yyyy-MM-dd'),
+        time: '12:00',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Scheduled',
+        notes: 'Patient reported mild symptoms'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-0872',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 3), 'yyyy-MM-dd'),
+        time: '13:30',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Scheduled',
+        notes: 'Consultation completed successfully'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-3456',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 3), 'yyyy-MM-dd'),
+        time: '15:00',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Completed',
+        notes: 'Routine follow-up visit'
+      },
+
+      {
+        id: uuidv4(),
+        patientId: 'P-2345',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 4), 'yyyy-MM-dd'),
+        time: '09:00',
+        duration: 30,
+        type: 'Consultation',
+        status: 'Cancelled',
+        notes: 'Patient cancelled due to personal reasons'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1001',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 4), 'yyyy-MM-dd'),
+        time: '10:30',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'In-Queue',
+        notes: 'Clinic rescheduled due to doctor unavailability'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-0872',
+        doctorId: 'doctor-1',
+        date: format(addDays(today, 4), 'yyyy-MM-dd'),
+        time: '12:00',
+        duration: 30,
+        type: 'Check-up',
+        status: 'Scheduled',
+        notes: 'Consultation completed successfully'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-1245',
+        doctorId: 'doctor-2',
+        date: format(addDays(today, 4), 'yyyy-MM-dd'),
+        time: '13:30',
+        duration: 30,
+        type: 'Check-up',
+        status: 'In-Queue',
+        notes: 'Booked by secretary'
+      },
+      {
+        id: uuidv4(),
+        patientId: 'P-3456',
+        doctorId: 'doctor-3',
+        date: format(addDays(today, 4), 'yyyy-MM-dd'),
+        time: '15:00',
+        duration: 30,
+        type: 'Follow-up',
+        status: 'Completed',
+        notes: 'Routine follow-up visit'
       }
     ];
     // Embed both specializationId and specializationName into each appointment

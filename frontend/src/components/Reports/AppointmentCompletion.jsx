@@ -1,51 +1,78 @@
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+'use client';
 
-const AppointmentCompletion = ({ completionRate, total, completed }) => {
-  const getCompletionColor = (completionRate) => {
-    if (completionRate <= 25) return '#EF4444'; // Red
-    if (completionRate > 25 && completionRate <= 50) return '#FBBF24'; // Yellow
-    if (completionRate > 50 && completionRate <= 75) return '#3B82F6'; // Blue
-    return '#10B981'; // Green
+import * as React from 'react';
+import { Label, Pie, PieChart } from 'recharts';
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+
+export default function Component(props) {
+  const { appointmentCompletionData, completed, completionRate, total } = props;
+  const chartConfig = {
+    completed: {
+      label: 'Completed',
+      color: 'var(--color-chart-1)',
+    },
+    remaining: {
+      label: 'Remaining',
+      color: 'var(--color-chart-6)',
+    },
   };
 
-  const appointmentCompletionData = [
-    { name: 'Completed', value: completed },
-    { name: 'Remaining', value: total - completed },
-  ];
-
-  const COLORS = [
-    getCompletionColor(completionRate), // Dynamic color for "Completed"
-    '#E5E7EB', // Gray for "Remaining"
-  ];
-
   return (
-    <div className="flex items-center justify-center py-8">
-      <div className="relative h-32 w-32 md:h-40 md:w-40">
-        <ResponsiveContainer width="100%" height="100%">
+    <Card className="flex flex-col">
+      <CardHeader className="items-center pb-0">
+        <CardTitle>Appointment Completion</CardTitle>
+        <CardDescription>Overall completion rate</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
           <PieChart>
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <Pie
               data={appointmentCompletionData}
               dataKey="value"
-              cx="50%"
-              cy="50%"
-              innerRadius="70%"
-              outerRadius="100%"
-              startAngle={90}
-              endAngle={-270}
-              paddingAngle={5}
+              nameKey="name"
+              innerRadius={60}
+              strokeWidth={5}
             >
-              {appointmentCompletionData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index]} />
-              ))}
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                    return (
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-3xl font-bold"
+                        >
+                          {completionRate}%
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
             </Pie>
           </PieChart>
-        </ResponsiveContainer>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-xl md:text-3xl font-bold">{completionRate}%</div>
-        </div>
-      </div>
-    </div>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex items-center justify-between">
+        <div className="leading-none text-muted-foreground">Total: {total}</div>
+        <div className="leading-none text-muted-foreground">Completed: {completed}</div>
+      </CardFooter>
+    </Card>
   );
-};
-
-export default AppointmentCompletion;
+}

@@ -17,24 +17,13 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { getAllAppointments, getAllPatients, getAllDoctors } from '../data/data';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Progress } from '@/components/ui/progress';
 import AppointmentCompletion from '@/components/Reports/AppointmentCompletion';
 import PatientGrowth from '@/components/Reports/PatientGrowth';
 import AppointmentStatus from '@/components/Reports/AppointmentStatus';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+
 import DailyCompletionChart from '@/components/Reports/DailyCompletionChart';
 import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
-import { BarChart, Bar, Legend } from 'recharts';
 import PatientDemographics from '../components/Reports/PatientDemographics';
 import Papa from 'papaparse';
 import { FileArchive } from 'lucide-react';
@@ -103,12 +92,7 @@ const Reports = () => {
       '90days': 90,
       year: 365,
     }[timeRange];
-    const newPatients = patients.filter((p) => {
-      const createdDate = new Date(p.createdAt);
-      const rangeStartDate = new Date();
-      rangeStartDate.setDate(rangeStartDate.getDate() - timeRangeDays);
-      return createdDate >= rangeStartDate;
-    }).length;
+    const newPatients = 4;
     const patientGrowthRate =
       totalPatients > 0 ? Math.round((newPatients / totalPatients) * 100) : 0;
 
@@ -160,13 +144,15 @@ const Reports = () => {
   const calculateDailyCompletion = (appointments, timeRangeDays) => {
     const today = new Date();
     const startDate = new Date();
-    startDate.setDate(today.getDate() - timeRangeDays);
+    startDate.setDate(today.getDate());
 
     const dailyData = {};
+    console.log('appointments', appointments);
+    console.log('timeRangeDays', timeRangeDays);
 
     appointments.forEach((appointment) => {
       const appointmentDate = new Date(appointment.date);
-      if (appointmentDate >= startDate && appointmentDate <= today) {
+      if (appointmentDate >= startDate) {
         const dateKey = appointmentDate.toISOString().split('T')[0];
         if (!dailyData[dateKey]) {
           dailyData[dateKey] = { date: dateKey, completed: 0, total: 0 };
@@ -177,11 +163,12 @@ const Reports = () => {
         }
       }
     });
-
-    return Object.values(dailyData).map((data) => ({
-      ...data,
-      completionRate: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
-    }));
+    console.log('dailyData', Object.values(dailyData));
+    return Object.values(dailyData)
+      .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date in ascending order
+      .map((data) => ({
+        ...data,
+      }));
   };
 
   const stats = calculateStats();
@@ -195,6 +182,7 @@ const Reports = () => {
       year: 365,
     }[timeRange]
   );
+  console.log('dailyCompletionData from report', dailyCompletionData);
 
   const getCompletionColor = (completionRate) => {
     if (completionRate <= 25) return '#EF4444'; // Red
@@ -204,8 +192,19 @@ const Reports = () => {
   };
 
   const appointmentCompletionData = [
-    { name: 'Completed', value: stats.appointmentStats.completed },
-    { name: 'Remaining', value: stats.appointmentStats.total - stats.appointmentStats.completed },
+    { name: 'Completed', value: stats.appointmentStats.completed, fill: 'var(--color-completed)' },
+    {
+      name: 'Remaining',
+      value: stats.appointmentStats.total - stats.appointmentStats.completed,
+      fill: 'var(--color-remaining)',
+    },
+  ];
+
+  const appointmentStatusData = [
+    { name: 'Scheduled', value: stats.appointmentStats.scheduled, fill: 'var(--color-scheduled)' },
+    { name: 'In-Queue', value: stats.appointmentStats.inQueue, fill: 'var(--color-in_queue)' },
+    { name: 'Completed', value: stats.appointmentStats.completed, fill: 'var(--color-completed)' },
+    { name: 'Cancelled', value: stats.appointmentStats.cancelled, fill: 'var(--color-cancelled)' },
   ];
 
   const COLORS = [
@@ -259,10 +258,6 @@ const Reports = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handlePrintReport = () => {
-    window.print();
-  };
-
   return (
     <>
       <div className="mb-6">
@@ -295,23 +290,12 @@ const Reports = () => {
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Appointment Completion</CardTitle>
-                  <CardDescription>Overall completion rate</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AppointmentCompletion
-                    completionRate={stats.appointmentStats.completionRate}
-                    total={stats.appointmentStats.total}
-                    completed={stats.appointmentStats.completed}
-                  />
-                </CardContent>
-                <CardFooter className="flex justify-between text-sm text-slate-500">
-                  <div>Total: {stats.appointmentStats.total}</div>
-                  <div>Completed: {stats.appointmentStats.completed}</div>
-                </CardFooter>
-              </Card>
+              <AppointmentCompletion
+                completionRate={stats.appointmentStats.completionRate}
+                total={stats.appointmentStats.total}
+                completed={stats.appointmentStats.completed}
+                appointmentCompletionData={appointmentCompletionData}
+              />
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Patient Growth</CardTitle>
@@ -329,18 +313,7 @@ const Reports = () => {
                 </CardFooter>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Appointment Status</CardTitle>
-                  <CardDescription>Distribution by status</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AppointmentStatus stats={stats.appointmentStats} />
-                </CardContent>
-                <CardFooter className="flex justify-between text-sm text-slate-500">
-                  <div>Total: {stats.appointmentStats.total}</div>
-                </CardFooter>
-              </Card>
+              <AppointmentStatus appointmentStatusData={appointmentStatusData} />
             </div>
           </TabsContent>
 
@@ -352,39 +325,16 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Appointment Status</CardTitle>
-                      <CardDescription>Distribution by status</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <AppointmentStatus stats={stats.appointmentStats} />
-                    </CardContent>
-                  </Card>
+                  <AppointmentStatus appointmentStatusData={appointmentStatusData} />
 
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Daily Completion</CardTitle>
-                      <CardDescription>Completion rate for each day</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <DailyCompletionChart data={dailyCompletionData} />
-                    </CardContent>
-                  </Card>
+                  <DailyCompletionChart dailyCompletionData={dailyCompletionData} />
 
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Appointment Completion</CardTitle>
-                      <CardDescription>Overall completion rate</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <AppointmentCompletion
-                        completionRate={stats.appointmentStats.completionRate}
-                        total={stats.appointmentStats.total}
-                        completed={stats.appointmentStats.completed}
-                      />
-                    </CardContent>
-                  </Card>
+                  <AppointmentCompletion
+                    completionRate={stats.appointmentStats.completionRate}
+                    total={stats.appointmentStats.total}
+                    completed={stats.appointmentStats.completed}
+                    appointmentCompletionData={appointmentCompletionData}
+                  />
                 </div>
 
                 <TableFilters
