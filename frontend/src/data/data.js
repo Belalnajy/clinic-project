@@ -793,7 +793,10 @@ const getRecentPatientRecords = () => {
   ];
 };
 
-// Export all functions
+const getAllSpecializations = () => {
+  return JSON.parse(localStorage.getItem('specializations') || '[]');
+};
+
 export {
   initializeAllData,
   getAllPatients,
@@ -820,5 +823,6 @@ export {
   getStaff,
   addStaff,
   updateStaff,
-  deleteStaff
+  deleteStaff,
+  getAllSpecializations
 };

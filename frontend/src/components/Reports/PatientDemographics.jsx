@@ -102,8 +102,6 @@ const PatientDemographics = ({ patients }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handlePrint = () => window.print();
-
   return (
     <Card>
       <CardHeader>

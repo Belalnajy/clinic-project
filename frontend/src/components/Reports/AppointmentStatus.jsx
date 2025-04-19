@@ -13,13 +13,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 
 export default function Component(props) {
   const { appointmentStatusData } = props;
-  const chartData = [
-    { browser: 'chrome', visitors: 275, fill: 'var(--color-scheduled)' },
-    { browser: 'safari', visitors: 200, fill: 'var(--color-in_queue)' },
-    { browser: 'firefox', visitors: 187, fill: 'var(--color-completed)' },
-    { browser: 'edge', visitors: 173, fill: 'var(--color-cancelled)' },
-    { browser: 'other', visitors: 90, fill: 'var(--color-other)' },
-  ];
 
   const chartConfig = {
     scheduled: {
