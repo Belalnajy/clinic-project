@@ -126,7 +126,7 @@ const ScheduleTable = ({
                       {isSecretary ? (
                         <>
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="secondary"
                             className="bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer px-2 sm:px-3"
                           >
@@ -147,7 +147,7 @@ const ScheduleTable = ({
                       ) : (
                         <>
                           <Button
-                            size="xs"
+                            size="sm"
                             variant="ghost"
                             className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 hover:cursor-pointer px-2 sm:px-3"
                             onClick={() => handleOpenPatientView(appointment)}
@@ -173,7 +173,8 @@ const ScheduleTable = ({
                               </>
                             ) : (
                               <>
-                                <Edit size={14} stroke={2} className="sm:size-4" />
+
+                                <Edit size={14} className="sm:size-4"  />
                                 <span className="hidden sm:inline">Update</span>
                               </>
                             )}
