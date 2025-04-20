@@ -1,17 +1,35 @@
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  CalendarPlus,
-  FileText,
-  PlayCircle,
-  Edit,
-  Download,
-} from "lucide-react";
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/Auth/useAuth';
+import { CalendarPlus, FileText, PlayCircle, Edit, Download, CheckCircle } from 'lucide-react';
 
-const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, handleNewAppointment, completionRate }) => {
+const ScheduleTable = ({
+  appointments,
+  handleOpenPatientView,
+  statusStyles,
+  handleNewAppointment,
+  completionRate,
+}) => {
+  const { user } = useAuth();
+  const isSecretary = user.role === 'secretary';
+
   return (
     <Card className="border-slate-200 p-0 shadow-sm overflow-hidden">
       <CardHeader className="border-b border-slate-100 py-7 bg-primary-300">
@@ -21,7 +39,11 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
               Today's Appointments
             </CardTitle>
             <CardDescription className="text-slate-100 mt-1">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+              })}
             </CardDescription>
           </div>
           <Button
@@ -40,21 +62,37 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">Time</TableHead>
-                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">Patient</TableHead>
-                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">Reason</TableHead>
-                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">Status</TableHead>
-                <TableHead className="text-right py-4 px-18 font-medium text-sm text-slate-500">Actions</TableHead>
+                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">
+                  Time
+                </TableHead>
+                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">
+                  Patient
+                </TableHead>
+                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">
+                  Reason
+                </TableHead>
+                <TableHead className="text-left py-4 px-6 font-medium text-sm text-slate-500">
+                  Status
+                </TableHead>
+                <TableHead className="text-right py-4 px-18 font-medium text-sm text-slate-500">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {appointments.map((appointment, index) => (
-                <TableRow key={index} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                <TableRow
+                  key={index}
+                  className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
+                >
                   <TableCell className="py-4 px-6 text-slate-700">{appointment.time}</TableCell>
                   <TableCell className="py-4 px-6">
                     <div className="flex items-center">
                       <Avatar className="h-8 w-8 mr-3 border border-slate-200">
-                        <AvatarImage src={appointment.patientAvatar} alt={appointment.patientName} />
+                        <AvatarImage
+                          src={appointment.patientAvatar}
+                          alt={appointment.patientName}
+                        />
                         <AvatarFallback className="bg-slate-100 text-slate-700">
                           {appointment.patientName.charAt(0)}
                         </AvatarFallback>
@@ -73,35 +111,60 @@ const ScheduleTable = ({ appointments, handleOpenPatientView, statusStyles, hand
                   </TableCell>
                   <TableCell className="py-4 px-6">
                     <div className="flex justify-end space-x-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 hover:cursor-pointer"
-                        onClick={() => handleOpenPatientView(appointment)}
-                      >
-                        <FileText size={16} className="" /> View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={appointment.status === "waiting" ? "default" : "secondary"}
-                        className={
-                          appointment.status === "waiting"
-                            ? "bg-primary-300 hover:bg-sky-700 hover:cursor-pointer"
-                            : "bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer"
-                        }
-                      >
-                        {appointment.status === "waiting" ? (
-                          <>
-                            <PlayCircle color="white" className="" />
-                            <span className="ml-3.5 text-white">Start</span>
-                          </>
-                        ) : (
-                          <>
-                            <Edit stroke={2} className="" />
-                            <span className="">Update</span>
-                          </>
-                        )}
-                      </Button>
+                      {isSecretary ? (
+                        <>
+                          {/* Secretary View */}
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer"
+                          >
+                            <Edit size={16} />
+                            <span className="ml-2">Edit</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="bg-primary-300 hover:bg-sky-700 hover:cursor-pointer"
+                          >
+                            <CheckCircle size={16} className="text-white" />
+                            <span className="ml-2 text-white">Check-in</span>
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          {/* Doctor View */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 hover:cursor-pointer"
+                            onClick={() => handleOpenPatientView(appointment)}
+                          >
+                            <FileText size={16} /> View
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={appointment.status === 'waiting' ? 'default' : 'secondary'}
+                            className={
+                              appointment.status === 'waiting'
+                                ? 'bg-primary-300 hover:bg-sky-700 hover:cursor-pointer'
+                                : 'bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer'
+                            }
+                          >
+                            {appointment.status === 'waiting' ? (
+                              <>
+                                <PlayCircle color="white" />
+                                <span className="ml-3.5 text-white">Start</span>
+                              </>
+                            ) : (
+                              <>
+                                <Edit stroke={2} />
+                                <span>Update</span>
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
