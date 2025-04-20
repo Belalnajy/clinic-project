@@ -9,6 +9,7 @@ import LoginPage from "./pages/Login";
 import Reports from "./pages/Reports";
 import DoctorsPage from "./pages/DoctorsPage";
 import ManagerDashboard from "./pages/ManagerDashboard";
+import SecretaryDashboard from "./pages/SecretaryDashboard";
 
 const router = createBrowserRouter([
   {
@@ -30,7 +31,8 @@ const router = createBrowserRouter([
           { path: "account", element: <AccountSettings /> }
         ]
       },
-      { path: "dashboard/:role", element: <Dashboard /> },
+      { path: "dashboard/doctor", element: <Dashboard /> },
+      { path: "dashboard/secretary", element: <SecretaryDashboard /> },
       { path: "dashboard/manager", element: <ManagerDashboard /> },
       { path: "reports", element: <Reports /> },
       { path: "doctors", element: <DoctorsPage /> },
