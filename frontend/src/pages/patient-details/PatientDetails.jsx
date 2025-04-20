@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CustomTabsList from '@/components/CustomTabsList';
 import { tabsData } from './tabsData';
 import OverviewTab from '@/components/patient-details/OverviewTab';
+import MedicalRecordsTab from '@/components/patient-details/MedicalRecordsTab';
 
 const PatientDetails = () => {
   const navigate = useNavigate();
@@ -42,9 +43,7 @@ const PatientDetails = () => {
 
         <OverviewTab patient={patient} />
 
-        <TabsContent value="medical-records">
-          <p>Medical Records content goes here...</p>
-        </TabsContent>
+        <MedicalRecordsTab patientId={patient.id} />
 
         <TabsContent value="prescriptions">
           <p>Prescriptions content goes here...</p>
