@@ -187,13 +187,6 @@ const Reports = () => {
     }[timeRange]
   );
 
-  const getCompletionColor = (completionRate) => {
-    if (completionRate <= 25) return '#EF4444'; // Red
-    if (completionRate > 25 && completionRate <= 50) return '#FBBF24'; // Yellow
-    if (completionRate > 50 && completionRate <= 75) return '#3B82F6'; // Blue
-    return '#10B981'; // Green
-  };
-
   const appointmentCompletionData = [
     { name: 'Completed', value: stats.appointmentStats.completed, fill: 'var(--color-completed)' },
     {
@@ -208,11 +201,6 @@ const Reports = () => {
     { name: 'In-Queue', value: stats.appointmentStats.inQueue, fill: 'var(--color-in_queue)' },
     { name: 'Completed', value: stats.appointmentStats.completed, fill: 'var(--color-completed)' },
     { name: 'Cancelled', value: stats.appointmentStats.cancelled, fill: 'var(--color-cancelled)' },
-  ];
-
-  const COLORS = [
-    getCompletionColor(stats.appointmentStats.completionRate), // Dynamic color for "Completed"
-    '#E5E7EB', // Gray for "Remaining"
   ];
 
   const handleFilterChange = (filterKey, value) => {
