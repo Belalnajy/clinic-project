@@ -10,6 +10,7 @@ import { tabsData } from './tabsData';
 import OverviewTab from '@/components/patient-details/OverviewTab';
 import MedicalRecordsTab from '@/components/patient-details/MedicalRecordsTab';
 import PrescriptionsTab from '@/components/patient-details/PrescriptionsTab';
+import LabResultsTab from '@/components/patient-details/LabResultsTab';
 
 const PatientDetails = () => {
   const navigate = useNavigate();
@@ -48,9 +49,7 @@ const PatientDetails = () => {
 
         <PrescriptionsTab patientId={patient.id} />
 
-        <TabsContent value="lab-results">
-          <p>Lab Results content goes here...</p>
-        </TabsContent>
+        <LabResultsTab patientId={patient.id} />
       </Tabs>
     </>
   );
