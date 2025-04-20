@@ -9,7 +9,6 @@ import {
 
 const PatientGrowth = ({ stats }) => {
   const { new: newPatients, growthRate, total: totalPatients } = stats;
-  console.log(stats);
 
   return (
     <Card>

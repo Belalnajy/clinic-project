@@ -25,27 +25,20 @@ export function useReports() {
     const loadedPatients = getAllPatients();
     const loadedDoctors = getAllDoctors();
 
-    // console.log('loadedAppointments', loadedAppointments);
-    // console.log('loadedPatients', loadedPatients);
-    // console.log('loadedDoctors', loadedDoctors);
+
 
     // Enrich appointments with patientName, providerName, and specialization
-    // console.log(loadedAppointments);
     const enrichedAppointments = loadedAppointments.map((appointment) => {
       const doctor = loadedDoctors.find((doc) => doc.id === appointment.doctorId);
       const patient = loadedPatients.find((pat) => pat.id === appointment.patientId);
-      // console.log('doctor', doctor);
-      // console.log('patient', patient);
       return {
         ...appointment,
         providerName: doctor ? doctor.name : 'Unknown Provider',
         patientName: patient ? patient.fullName : 'Unknown Patient',
-        // specialization: lookupSpecialization[appointment.doctorId] || 'Unknown Specialization',
       };
     });
 
     setAppointments(enrichedAppointments);
-    // console.log('enrichedAppointments', enrichedAppointments);
     setPatients(loadedPatients);
     setDoctors(loadedDoctors);
   }, []);
