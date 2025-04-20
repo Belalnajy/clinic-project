@@ -1,16 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Activity, AlertCircle, Calendar, Loader2 } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Activity, AlertCircle, Calendar, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/contexts/Auth/useAuth';
-import DashboardHeader from '../components/managerdashboard/DashboardHeader';
-import StatisticsCards from '../components/managerdashboard/StatisticsCards';
-import FinanceSection from '../components/managerdashboard/FinanceSection';
-import StaffSection from '../components/managerdashboard/StaffSection';
-import PatientsSection from '../components/managerdashboard/PatientsSection';
-import ClinicPerformance from '@/components/ClinicPerformance';
-import AppointmentTable from '../components/AppointmentTable';
+import { useAuth } from "@/contexts/Auth/useAuth";
+import DashboardHeader from "../components/managerdashboard/DashboardHeader";
+import StatisticsCards from "../components/managerdashboard/StatisticsCards";
+import FinanceSection from "../components/managerdashboard/FinanceSection";
+import StaffSection from "../components/managerdashboard/StaffSection";
+import PatientsSection from "../components/managerdashboard/PatientsSection";
+import ClinicPerformance from "@/components/ClinicPerformance";
+import AppointmentTable from "../components/AppointmentTable";
 // import AIAssistant from '../components/AIAssistant';
-import { getStatistics, getStaffPerformance, getRecentRegistrations, getRevenueData } from '../data/data';
+import {
+  getStatistics,
+  getStaffPerformance,
+  getRecentRegistrations,
+  getRevenueData
+} from "../data/data";
 
 const ManagerDashboard = () => {
   const { user } = useAuth();
@@ -22,16 +27,20 @@ const ManagerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsData, staffData, registrationsData, revenue] = await Promise.all([
-          getStatistics('manager'),
+        const [
+          statsData,
+          staffData,
+          registrationsData,
+          revenue
+        ] = await Promise.all([
+          getStatistics("manager"),
           getStaffPerformance(),
           getRecentRegistrations(),
-          getRevenueData(),
+          getRevenueData()
         ]);
         setStats(statsData);
         setStaffPerformance(staffData);
@@ -39,40 +48,46 @@ const ManagerDashboard = () => {
         setRevenueData(revenue);
       } catch (err) {
         console.error("Dashboard data fetch error:", err);
-        setError('Failed to fetch dashboard data');
+        setError("Failed to fetch dashboard data");
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
-  const handleNewAppointment = (appointmentData) => {
-    console.log('New appointment:', appointmentData);
+  const handleNewAppointment = appointmentData => {
+    console.log("New appointment:", appointmentData);
   };
 
-  const handleNewPatient = (patientData) => {
-    console.log('New patient:', patientData);
+  const handleNewPatient = patientData => {
+    console.log("New patient:", patientData);
   };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700">Loading dashboard data...</h2>
+        <h2 className="text-xl font-semibold text-gray-700">
+          Loading dashboard data...
+        </h2>
       </div>
     );
-  }  if (error) {
+  }
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">Unable to load dashboard</h2>
-        <p className="text-gray-600">{error}</p>
-        <button 
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Unable to load dashboard
+        </h2>
+        <p className="text-gray-600">
+          {error}
+        </p>
+        <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-        >
+          className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
           Retry
         </button>
       </div>
@@ -80,59 +95,45 @@ const ManagerDashboard = () => {
   }
 
   return (
-    <>
+    <div>
       <DashboardHeader userName={user.name} />
-      
-      <Tabs defaultValue="overview" className="mb-6" onValueChange={setSelectedTab}>
+      <Tabs
+        defaultValue="overview"
+        className="mb-6"
+        onValueChange={setSelectedTab}>
         <TabsList className="grid grid-cols-4 w-ful max-w-md mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="finance">Finance</TabsTrigger>
           <TabsTrigger value="staff">Staff</TabsTrigger>
           <TabsTrigger value="patients">Patients</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview">
           <StatisticsCards stats={stats} />
-          <div className="grid gap-6 md:grid-cols-12 mb-6">
-            <div className="md:col-span-8">
-              <ClinicPerformance />
-            </div>
-            <div className="md:col-span-4">
-              {/* <AIAssistant /> */}
-              <div className="md:col-span-4 bg-white rounded-xl shadow-md p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium">Upcoming</h3>
-                  <Calendar className="w-5 h-5 text-gray-500" />
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg mb-4">
-                  <p className="text-sm text-gray-500">Next staff meeting</p>
-                  <p className="font-medium">Today at 2:00 PM</p>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-500">Weekly report due</p>
-                  <p className="font-medium">Tomorrow at 9:00 AM</p>
-                </div>
-              </div>
-            </div>
+          <div className="mb-7">
+            <ClinicPerformance />
           </div>
           <AppointmentTable onNewAppointment={handleNewAppointment} />
         </TabsContent>
-        
+
         <TabsContent value="finance">
           <FinanceSection revenueData={revenueData} />
         </TabsContent>
-        
+
         <TabsContent value="staff">
           <StaffSection staffPerformance={staffPerformance} />
         </TabsContent>
-        
+
         <TabsContent value="patients">
-          <PatientsSection stats={stats} recentRegistrations={recentRegistrations} onNewPatient={handleNewPatient} />
+          <PatientsSection
+            stats={stats}
+            recentRegistrations={recentRegistrations}
+            onNewPatient={handleNewPatient}
+          />
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   );
 };
-
 
 export default ManagerDashboard;

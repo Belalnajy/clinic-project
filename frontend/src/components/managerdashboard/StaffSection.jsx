@@ -6,22 +6,6 @@ import StaffTasks from './StaffTasks';
 const StaffSection = ({ staffPerformance }) => {
   return (
     <>
-      <div className="mb-6 flex justify-end gap-3">
-        <Button 
-          onClick={() => window.location.href = '/secretaries'}
-          variant="outline"
-          className="border-primary text-primary hover:bg-primary/10"
-        >
-          <i className="fas fa-user-tie mr-2"></i> Secretary Management
-        </Button>
-        <Button 
-          onClick={() => window.location.href = '/staff'}
-          className="bg-primary text-white hover:bg-primary/90"
-        >
-          <i className="fas fa-users-cog mr-2"></i> Staff Management
-        </Button>
-      </div>
-      
       <div className="grid gap-6 md:grid-cols-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
@@ -78,7 +62,7 @@ const StaffSection = ({ staffPerformance }) => {
       </div>
       
       <StaffPerformanceTable staffPerformance={staffPerformance} />
-      <StaffTasks />
+      {/* <StaffTasks /> */}
     </>
   );
 };
