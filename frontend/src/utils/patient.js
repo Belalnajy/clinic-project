@@ -137,6 +137,8 @@ export function getPrescriptionHistory(patientId) {
       },
       createdAt: prescription.createdAt,
       medications: meds,
+      status: prescription.status,
+      endDate: prescription.endDate,
     };
   });
 }
