@@ -15,7 +15,7 @@ import {
   TableCell
 } from "@/components/ui/table";
 
-import { Filter, UserPlus, Users, ArrowsUpFromLine } from "lucide-react"; 
+import { Filter, UserPlus, Users, ArrowsUpFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Papa from "papaparse";
@@ -25,8 +25,9 @@ import TabsHeader from "@/components/dashboard/TabsHeader";
 import ScheduleTable from "@/components/dashboard/ScheduleTable";
 import MedicalRecordsList from "@/components/dashboard/MedicalRecordsList";
 import PatientsTab from "@/components/dashboard/PatientsTab";
-
+import { useAuth } from "@/contexts/Auth/useAuth";
 const Dashboard = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const stats = getStatistics("doctor");
   const todayAppointments = getTodayAppointments();
@@ -146,7 +147,7 @@ const Dashboard = () => {
           Doctor's dashboard
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
-          Welcome back, Dr. Richardson
+          Welcome back, Dr. {user?.name.split(' ')[1]}
         </p>
       </div>
 
