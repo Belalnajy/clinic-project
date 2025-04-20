@@ -1,4 +1,4 @@
-const prescriptionMedications = [
+export const prescriptionMedications = [
   {
     id: 'PM001',
     prescriptionId: 'PRESC001',

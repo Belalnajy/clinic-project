@@ -1,4 +1,4 @@
-const appointments = [
+export const appointments = [
   {
     id: 'A1',
     patientId: '1', // John Doe

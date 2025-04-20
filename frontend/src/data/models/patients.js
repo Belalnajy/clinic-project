@@ -1,4 +1,4 @@
-const patients = [
+export const patients = [
   {
     id: 1,
     firstName: 'John',

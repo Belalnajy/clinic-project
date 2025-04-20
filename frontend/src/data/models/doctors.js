@@ -1,4 +1,4 @@
-const doctors = [
+export const doctors = [
   {
     userId: 1, // Foreign Key to Users table
     specialty_id: 1, // Refers to Specialties table (Cardiology)

@@ -1,4 +1,4 @@
-const medications = [
+export const medications = [
   {
     id: 'MED001',
     name: 'Atorvastatin',
