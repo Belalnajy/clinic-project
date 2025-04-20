@@ -1,5 +1,5 @@
 // Calculate statistics
-export const calculateStats = (appointments, patients, doctors, timeRange) => {
+export const calculateStats = (appointments, patients, doctors, timeRange, specializations) => {
   // Appointment statistics
   const totalAppointments = appointments.length;
   const completedAppointments = appointments.filter((a) => a.status === 'Completed').length;
@@ -29,6 +29,11 @@ export const calculateStats = (appointments, patients, doctors, timeRange) => {
     const completed = doctorAppointments.filter((a) => a.status === 'Completed').length;
     const total = doctorAppointments.length;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const specialization = specializations.find(
+      (spec) => spec.id === doctor.specializationId
+    )?.name;
+
+    // console.log(specialization);
 
     return {
       id: doctor.id,
@@ -36,8 +41,10 @@ export const calculateStats = (appointments, patients, doctors, timeRange) => {
       specialization: doctor.specialization,
       appointments: total,
       completionRate,
+      specialization: specialization,
     };
   });
+
   const averageAppointmentsPerDoctor =
     totalDoctors > 0 ? Math.round(appointments.length / totalDoctors) : 0;
   const highPerformingDoctors = doctorPerformance.filter((d) => d.completionRate > 80).length;

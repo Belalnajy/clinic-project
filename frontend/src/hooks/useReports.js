@@ -3,7 +3,7 @@ import { calculateDailyCompletion } from '@/utils/calculateDailtyCompletion';
 import { getAppointmentCompletionData } from '@/utils/getAppointmentCompletion';
 import { getAppointmentStatusData } from '@/utils/appointmentStatusData';
 import Papa from 'papaparse';
-import { getAllAppointments, getAllPatients, getAllDoctors } from '../data/data';
+import { getAllAppointments, getAllPatients, getAllDoctors, getAllSpecializations } from '../data/data';
 import { useState, useEffect } from 'react';
 
 export function useReports() {
@@ -12,6 +12,8 @@ export function useReports() {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [specializations, setSpecializations] = useState([]);
+
   const [filters, setFilters] = useState({
     location: '',
     provider: '',
@@ -24,6 +26,8 @@ export function useReports() {
     const loadedAppointments = getAllAppointments();
     const loadedPatients = getAllPatients();
     const loadedDoctors = getAllDoctors();
+    const loadedSpecializations = getAllSpecializations();
+
 
 
 
@@ -41,9 +45,11 @@ export function useReports() {
     setAppointments(enrichedAppointments);
     setPatients(loadedPatients);
     setDoctors(loadedDoctors);
+    setSpecializations(loadedSpecializations);
+
   }, []);
 
-  const stats = calculateStats(appointments, patients, doctors, timeRange);
+  const stats = calculateStats(appointments, patients, doctors, timeRange, specializations);
 
   const dailyCompletionData = calculateDailyCompletion(appointments, 7);
 

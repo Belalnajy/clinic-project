@@ -4,6 +4,7 @@ import TabList from '@/components/Reports/tabs-list/TabList';
 import OverviewTab from '@/components/Reports/tabs/OverviewTab';
 import AppointmentsTab from '@/components/Reports/tabs/AppointmentsTab';
 import PatientTab from '@/components/Reports/tabs/PatientTab';
+import DoctorsTab from '@/components/Reports/tabs/DoctorsTab';
 
 const Reports = () => {
   const {
@@ -34,7 +35,6 @@ const Reports = () => {
         <Tabs defaultValue="overview" className="w-full">
           {/* ! Tab List component Here */}
           <TabList user={user} timeRange={timeRange} setTimeRange={setTimeRange} />
-
           {/* Overview */}
           <OverviewTab
             stats={stats}
@@ -57,9 +57,10 @@ const Reports = () => {
             setTimeRange={setTimeRange}
             patients={patients}
           />
-
           {/* Patients */}
           <PatientTab patients={patients} />
+          {/* Doctors */}
+          {user.role === 'manager' && <DoctorsTab stats={stats} />}{' '}
         </Tabs>
       </div>
     </>
