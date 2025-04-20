@@ -22,6 +22,7 @@ const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
       <div className="flex justify-between mb-4">
         <div className="flex items-center">
           <Avatar className="h-11 w-11 mr-3 ring-2 ring-slate-50 shadow-sm">
+            
             <AvatarImage src={record.patientAvatar} alt={record.patientName} />
             <AvatarFallback className="bg-gradient-to-br from-blue-50 to-indigo-50 text-slate-700 font-medium">
               {record.patientName.charAt(0)}
