@@ -1,6 +1,5 @@
 import { Button } from '../../ui/button';
 import { FileText, Microscope, Pill } from 'lucide-react';
-import { quickActionsData } from './quickActionsData';
 
 function getQuickActionIcon(icon) {
   switch (icon) {
@@ -15,12 +14,12 @@ function getQuickActionIcon(icon) {
   }
 }
 
-const QuickActionButtons = () => {
+const QuickActionButtons = ({ actions }) => {
   return (
     <div className="mb-6">
       <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {quickActionsData.map((action) => (
+        {actions.map((action) => (
           <Button
             key={action.id}
             variant="outline"
