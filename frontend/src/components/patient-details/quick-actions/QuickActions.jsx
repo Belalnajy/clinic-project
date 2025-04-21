@@ -1,5 +1,5 @@
 import QuickActionButtons from './QuickActionButtons';
-import { MedicalRecord, Prescription } from './modals';
+import { LabTest, MedicalRecord, Prescription } from './modals';
 import { useState } from 'react';
 
 const QuickActions = () => {
@@ -32,6 +32,7 @@ const QuickActions = () => {
       <QuickActionButtons actions={actions} />
       <MedicalRecord isOpen={isMedicalRecordOpen} setIsMedicalRecordOpen={setIsMedicalRecordOpen} />
       <Prescription isOpen={isPrescriptionOpen} setIsPrescriptionOpen={setIsPrescriptionOpen} />
+      <LabTest isOpen={isLabTestOpen} setIsLabTestOpen={setIsLabTestOpen} />
     </>
   );
 };

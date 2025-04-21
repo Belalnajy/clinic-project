@@ -88,6 +88,7 @@ export function getPatientDiagnoses(patientId) {
     .filter((record) => record.patientId === patientId)
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // Optional: sort chronologically
     .map((record) => ({
+      id: record.id,
       date: record.createdAt,
       diagnosis: record.diagnosis,
       description: record.description,
