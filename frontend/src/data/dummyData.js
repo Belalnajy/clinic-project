@@ -449,7 +449,20 @@ export const initializeData = () => {
       };
     });
 
-    localStorage.setItem('appointments', JSON.stringify(appointmentsWithSpecializations));
+    // Embed patient and doctor names in the appointment
+    const appointmentsWithNames = appointmentsWithSpecializations.map(
+      app => {
+        const doctor = users.find(u => u.id === app.doctorId) || {};
+        const patient = patients.find(p => p.id === app.patientId) || {};
+        return {
+          ...app,
+          doctorName: doctor.name || 'Unknown Doctor',
+          patientName: patient.fullName || 'Unknown Patient',
+        }
+      }
+    );
+
+    localStorage.setItem('appointments', JSON.stringify(appointmentsWithNames));
 
     // Medical Records
     const medicalRecords = [

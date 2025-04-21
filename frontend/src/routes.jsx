@@ -8,6 +8,7 @@ import Patients from "./pages/Patients";
 import LoginPage from "./pages/Login";
 import Reports from "./pages/Reports";
 import DoctorsPage from "./pages/DoctorsPage";
+import Appointments from "./pages/Appointments";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
 
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
       { path: "dashboard/manager", element: <ManagerDashboard /> },
       { path: "reports", element: <Reports /> },
       { path: "doctors", element: <DoctorsPage /> },
-      { path: "patients", element: <Patients /> }
+      { path: "patients", element: <Patients /> },
+      { path: "appointments", element: <Appointments /> }
     ]
   }
 ]);
