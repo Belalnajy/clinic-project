@@ -18,7 +18,7 @@ const QuickActionButtons = ({ actions }) => {
   return (
     <div className="mb-6">
       <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {actions.map((action) => (
           <Button
             key={action.id}

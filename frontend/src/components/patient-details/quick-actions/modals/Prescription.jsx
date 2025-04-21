@@ -24,7 +24,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-// import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 // ** React Hook Forms **//
 import { z } from 'zod';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -75,10 +75,11 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
     // Here you would typically send the data to your backend
     // For example: await api.post('/prescriptions', data);
     setIsPrescriptionOpen(false);
+    form.reset();
   };
   return (
     <Dialog open={isOpen} onOpenChange={setIsPrescriptionOpen}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Prescription</DialogTitle>
           <DialogDescription>Create a new Prescription record for "Test Name"</DialogDescription>
@@ -207,23 +208,31 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
               </div>
             ))}
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                append({
-                  medicationId: '',
-                  dosage: '',
-                  frequency: '',
-                  duration: '',
-                  instructions: '',
-                })
-              }
-            >
-              Add Medication
-            </Button>
-
-            <Button type="submit">Submit Prescription</Button>
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  append({
+                    medicationId: '',
+                    dosage: '',
+                    frequency: '',
+                    duration: '',
+                    instructions: '',
+                  })
+                }
+              >
+                Add Medication
+              </Button>
+              <Button type="submit">Submit Prescription</Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setIsPrescriptionOpen(false)}
+              >
+                close
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>
