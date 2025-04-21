@@ -44,8 +44,7 @@ const Appointments = () => {
     if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
       setFilteredAppointments(appointments);
     } else {
-      console.log(date.toLocaleDateString().replace(/\//g,"-"));
-      console.log(format(date, 'yyyy-MM-dd'))
+
       const filtered = appointments
         .filter(
           (appointment) =>
