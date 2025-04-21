@@ -1,8 +1,8 @@
 import { getPatientLabResults } from '@/utils/patient';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { TabsContent } from '../ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { TabsContent } from '../../ui/tabs';
 
-const LabResultsTab = ({ patientId }) => {
+const LabResults = ({ patientId }) => {
   const LabResults = getPatientLabResults(patientId);
   console.log('LabResults:', LabResults);
 
@@ -44,4 +44,4 @@ const LabResultsTab = ({ patientId }) => {
   );
 };
 
-export default LabResultsTab;
+export default LabResults;

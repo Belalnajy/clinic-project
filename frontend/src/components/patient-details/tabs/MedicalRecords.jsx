@@ -1,8 +1,8 @@
-import { TabsContent } from '../ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
+import { TabsContent } from '../../ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Button } from '../../ui/button';
 import { getPatientDiagnoses } from '@/utils/patient';
-const MedicalRecordsTab = ({ patientId }) => {
+const MedicalRecords = ({ patientId }) => {
   const diagnosisHistory = getPatientDiagnoses(patientId);
   console.log('Diagnosis History:', diagnosisHistory);
 
@@ -39,4 +39,4 @@ const MedicalRecordsTab = ({ patientId }) => {
   );
 };
 
-export default MedicalRecordsTab;
+export default MedicalRecords;

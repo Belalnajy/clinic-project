@@ -1,16 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-
+import { tabsData } from './tabsData';
+import { getPatientById } from '@/utils/patient';
 //**  ShadCN UI Components **//
 import { Button } from '@/components/ui/button';
-import PatientDetailsHeader from '@/components/patient-details/PatientDetailsHeader';
-import { getPatientById } from '@/utils/patient';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs } from '@/components/ui/tabs';
+// ** Custom Components **//
 import CustomTabsList from '@/components/CustomTabsList';
-import { tabsData } from './tabsData';
-import OverviewTab from '@/components/patient-details/OverviewTab';
-import MedicalRecordsTab from '@/components/patient-details/MedicalRecordsTab';
-import PrescriptionsTab from '@/components/patient-details/PrescriptionsTab';
-import LabResultsTab from '@/components/patient-details/LabResultsTab';
+import PatientDetailsHeader from '@/components/patient-details/PatientDetailsHeader';
+import {
+  LabResults,
+  MedicalRecords,
+  Overview,
+  Prescriptions,
+} from '@/components/patient-details/tabs';
+import QuickActions from '@/components/patient-details/quick-actions/QuickActions';
 
 const PatientDetails = () => {
   const navigate = useNavigate();
@@ -39,17 +42,19 @@ const PatientDetails = () => {
         city={patient.city}
       />
 
+      {/* Quick Actions */}
+      <QuickActions />
+
       {/* Patient Information Tabs */}
       <Tabs defaultValue="overview">
+        {/* Tabs List */}
         <CustomTabsList tabsData={tabsData} />
 
-        <OverviewTab patient={patient} />
-
-        <MedicalRecordsTab patientId={patient.id} />
-
-        <PrescriptionsTab patientId={patient.id} />
-
-        <LabResultsTab patientId={patient.id} />
+        {/* Tabs Content */}
+        <Overview patient={patient} />
+        <MedicalRecords patientId={patient.id} />
+        <Prescriptions patientId={patient.id} />
+        <LabResults patientId={patient.id} />
       </Tabs>
     </>
   );

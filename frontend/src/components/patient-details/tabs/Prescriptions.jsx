@@ -1,8 +1,8 @@
-import { TabsContent } from '../ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { TabsContent } from '../../ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { getPrescriptionHistory } from '@/utils/patient';
 
-const PrescriptionsTab = ({ patientId }) => {
+const Prescriptions = ({ patientId }) => {
   const prescriptionHistory = getPrescriptionHistory(patientId);
   console.log('Prescription History:', prescriptionHistory);
   return (
@@ -13,61 +13,6 @@ const PrescriptionsTab = ({ patientId }) => {
             <CardTitle>Prescription History</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* <div className="space-y-3">
-              <div className="border-b pb-3">
-                <div className="flex justify-between">
-                  <div className="font-medium">Lisinopril 10mg</div>
-                  <div className="text-sm text-slate-500">Prescribed: June 12, 2023</div>
-                </div>
-                <div className="text-sm mt-1">
-                  <div>
-                    <span className="font-medium">Dosage: </span>1 tablet daily, morning
-                  </div>
-                  <div>
-                    <span className="font-medium">Refills: </span>3 remaining
-                  </div>
-                  <div>
-                    <span className="font-medium">Next Refill: </span>July 12, 2023
-                  </div>
-                </div>
-              </div>
-              <div className="border-b pb-3">
-                <div className="flex justify-between">
-                  <div className="font-medium">Hydrochlorothiazide 12.5mg</div>
-                  <div className="text-sm text-slate-500">Prescribed: June 12, 2023</div>
-                </div>
-                <div className="text-sm mt-1">
-                  <div>
-                    <span className="font-medium">Dosage: </span>1 tablet daily, morning
-                  </div>
-                  <div>
-                    <span className="font-medium">Refills: </span>3 remaining
-                  </div>
-                  <div>
-                    <span className="font-medium">Next Refill: </span>July 12, 2023
-                  </div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between">
-                  <div className="font-medium">Aspirin 81mg</div>
-                  <div className="text-sm text-slate-500">Prescribed: June 12, 2023</div>
-                </div>
-                <div className="text-sm mt-1">
-                  <div>
-                    <span className="font-medium">Dosage: </span>1 tablet daily, evening
-                  </div>
-                  <div>
-                    <span className="font-medium">Refills: </span>11 remaining
-                  </div>
-                  <div>
-                    <span className="font-medium">Next Refill: </span>July 12, 2023
-                  </div>
-                </div>
-              </div>
-            </div> */}
-            {/* loop on prescription history and for each prescription render the medication data */}
-
             {prescriptionHistory.length === 0 ? (
               <p className="text-slate-500">No prescription history available.</p>
             ) : (
@@ -122,4 +67,4 @@ const PrescriptionsTab = ({ patientId }) => {
   );
 };
 
-export default PrescriptionsTab;
+export default Prescriptions;

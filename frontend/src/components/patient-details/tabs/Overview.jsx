@@ -3,10 +3,10 @@ import {
   getCurrentMedications,
   getPatientEmergencyContacts,
 } from '@/utils/patient';
-import { TabsContent } from '../ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { TabsContent } from '../../ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 
-const OverviewTab = ({ patient }) => {
+const Overview = ({ patient }) => {
   const emergencyContacts = getPatientEmergencyContacts(patient.id);
   const currentCondition = getCurrentCondition(patient.id);
   const currentMedications = getCurrentMedications(patient.id);
@@ -129,4 +129,4 @@ const OverviewTab = ({ patient }) => {
   );
 };
 
-export default OverviewTab;
+export default Overview;
