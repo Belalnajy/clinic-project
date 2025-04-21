@@ -4,7 +4,6 @@ import { Button } from '../../ui/button';
 import { getPatientDiagnoses } from '@/utils/patient';
 const MedicalRecords = ({ patientId }) => {
   const diagnosisHistory = getPatientDiagnoses(patientId);
-  console.log('Diagnosis History:', diagnosisHistory);
 
   return (
     <TabsContent value="medical-records">

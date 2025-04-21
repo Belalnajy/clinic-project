@@ -4,7 +4,7 @@ import { getPrescriptionHistory } from '@/utils/patient';
 
 const Prescriptions = ({ patientId }) => {
   const prescriptionHistory = getPrescriptionHistory(patientId);
-  console.log('Prescription History:', prescriptionHistory);
+
   return (
     <TabsContent value="prescriptions">
       <div className="space-y-4">

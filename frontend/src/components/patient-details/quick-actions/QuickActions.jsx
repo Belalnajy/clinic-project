@@ -1,17 +1,5 @@
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import QuickActionButtons from './QuickActionButtons';
-import { MedicalRecord } from './modals';
+import { MedicalRecord, Prescription } from './modals';
 import { useState } from 'react';
 
 const QuickActions = () => {
@@ -43,6 +31,7 @@ const QuickActions = () => {
     <>
       <QuickActionButtons actions={actions} />
       <MedicalRecord isOpen={isMedicalRecordOpen} setIsMedicalRecordOpen={setIsMedicalRecordOpen} />
+      <Prescription isOpen={isPrescriptionOpen} setIsPrescriptionOpen={setIsPrescriptionOpen} />
     </>
   );
 };

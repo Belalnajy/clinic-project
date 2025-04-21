@@ -146,3 +146,16 @@ export function getPrescriptionHistory(patientId) {
 export function getPatientEmergencyContacts(patientId) {
   return emergencyContacts.filter((contact) => contact.patientId === patientId);
 }
+
+export function getPrescriptionFormData(patientId) {
+  // Fetch medical records for the current patient
+  const patientMedicalRecords = medicalRecords.filter((record) => record.patientId === patientId);
+
+  // Get available medications list
+  const availableMedications = medications;
+
+  return {
+    medicalRecords: patientMedicalRecords,
+    medications: availableMedications,
+  };
+}

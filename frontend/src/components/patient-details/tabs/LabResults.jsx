@@ -4,7 +4,6 @@ import { TabsContent } from '../../ui/tabs';
 
 const LabResults = ({ patientId }) => {
   const LabResults = getPatientLabResults(patientId);
-  console.log('LabResults:', LabResults);
 
   if (!LabResults.length) {
     return (
