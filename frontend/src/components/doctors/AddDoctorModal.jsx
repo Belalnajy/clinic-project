@@ -4,14 +4,16 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { toast } from "sonner";
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   Form,
   FormField,
@@ -19,24 +21,24 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 
 const doctorSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  username: z.string().min(1, 'Username is required'),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .nonempty("Password is required"),
-  name: z.string().min(2, "Name must be at least 2 characters").nonempty("Name is required"),
-  email: z.string().email("Invalid email address").nonempty("Email is required"),
+    .min(8, 'Password must be at least 8 characters')
+    .nonempty('Password is required'),
+  name: z.string().min(2, 'Name must be at least 2 characters').nonempty('Name is required'),
+  email: z.string().email('Invalid email address').nonempty('Email is required'),
   phone: z
     .string()
     .regex(
       /^(\+20|0)?1[0125]\d{8}$/,
-      "Please enter a valid Egyptian phone number (e.g. 01012345678 or +201012345678)"
+      'Please enter a valid Egyptian phone number (e.g. 01012345678 or +201012345678)'
     )
-    .nonempty("Phone number is required"),
-  specialization: z.string().nonempty("Specialization is required"),
+    .nonempty('Phone number is required'),
+  specialization: z.string().nonempty('Specialization is required'),
 });
 
 const AddDoctorModal = ({ onAdd }) => {
@@ -45,7 +47,7 @@ const AddDoctorModal = ({ onAdd }) => {
 
   const form = useForm({
     resolver: zodResolver(doctorSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const { handleSubmit, reset, formState } = form;
@@ -62,16 +64,16 @@ const AddDoctorModal = ({ onAdd }) => {
         email: data.email.trim(),
         phone: data.phone.trim(),
         specialization: data.specialization.trim(),
-        role: "Doctor",
-        avatar: "",
+        role: 'Doctor',
+        avatar: '',
       };
 
       await onAdd(newDoctor);
-      toast.success("Doctor added successfully!");
+      toast.success('Doctor added successfully!');
       reset();
       setOpen(false);
     } catch (error) {
-      toast.error("Failed to add doctor");
+      toast.error('Failed to add doctor');
     } finally {
       setIsSubmitting(false);
     }
@@ -85,14 +87,14 @@ const AddDoctorModal = ({ onAdd }) => {
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        aria-describedby="add-doctor-description"
       >
         <DialogHeader>
           <DialogTitle>Add New Doctor</DialogTitle>
+          <DialogDescription className="sr-only">
+            Fill out the form below to add a new doctor.
+          </DialogDescription>
         </DialogHeader>
-        <p id="add-doctor-description" className="sr-only">
-          Fill out the form below to add a new doctor.
-        </p>
+
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
             <FormField
@@ -167,7 +169,7 @@ const AddDoctorModal = ({ onAdd }) => {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2 pt-6">
+            <DialogFooter className="mt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -179,9 +181,9 @@ const AddDoctorModal = ({ onAdd }) => {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting || !isValid}>
-                {isSubmitting ? "Saving..." : "Save"}
+                {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>
