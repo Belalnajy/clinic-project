@@ -1,4 +1,4 @@
-const emergencyContacts = [
+export const emergencyContacts = [
   {
     id: 1,
     patientId: 1,

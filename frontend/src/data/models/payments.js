@@ -1,4 +1,4 @@
-const payments = [
+export const payments = [
   {
     appointmentId: 1, // Foreign Key to Appointments table
     patientId: 1, // Foreign Key to Patients table

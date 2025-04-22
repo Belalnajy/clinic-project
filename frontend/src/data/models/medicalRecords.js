@@ -1,4 +1,4 @@
-const medicalRecords = [
+export const medicalRecords = [
   {
     id: 1,
     patientId: 1,

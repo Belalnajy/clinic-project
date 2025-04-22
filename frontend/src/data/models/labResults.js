@@ -1,4 +1,4 @@
-const labResults = [
+export const labResults = [
   {
     id: 1,
     appointmentId: 1,
