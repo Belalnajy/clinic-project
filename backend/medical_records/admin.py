@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import MedicalRecord, LabResults, Prescription, PrescriptionMedication
 
-# Register your models here.
+admin.site.register(MedicalRecord)
+admin.site.register(LabResults)
+admin.site.register(Prescription)
+admin.site.register(PrescriptionMedication)
