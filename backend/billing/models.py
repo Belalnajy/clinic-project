@@ -22,7 +22,7 @@ class Payment(models.Model):
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_date = models.DateTimeField(auto_now_add=True)
     method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
