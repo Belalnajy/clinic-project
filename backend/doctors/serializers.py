@@ -27,10 +27,12 @@ class DoctorSerializer(serializers.ModelSerializer):
         write_only=True,
         source='specialization'
     )
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
     class Meta:
         model = Doctor
         fields = [
-            'id', 'user', 'specialization', 'specialization_id', 'license_number',
+            'id', 'user','first_name','last_name','specialization', 'specialization_id', 'license_number',
             'years_of_experience', 'qualifications', 'bio', 'profile_picture',
             'created_at', 'updated_at'
         ]
