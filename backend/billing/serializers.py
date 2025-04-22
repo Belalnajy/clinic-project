@@ -7,7 +7,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Amount must be greater than zero.")
         return value
-
+    first_name = serializers.CharField(source='patient.first_name', read_only=True)
+    last_name = serializers.CharField(source='patient.last_name', read_only=True)
     class Meta:
         model = Payment
         fields = '__all__'
