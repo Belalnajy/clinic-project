@@ -38,7 +38,7 @@ class Patient(models.Model):
     first_name = models.CharField(max_length=100, verbose_name=_("first name"))
     last_name = models.CharField(max_length=100, verbose_name=_("last name"))
     birth_date = models.DateField(verbose_name=_("birth date"))
-    status = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name=_("gender"))
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name=_("gender"))
     email = models.EmailField(unique=True, verbose_name=_("email address"), null=True, blank=True)
     phone_number = PhoneNumberField(verbose_name=_("phone number"), null=True, blank=True)
     address = models.CharField(max_length=255, verbose_name=_("address"), null=True, blank=True)

@@ -43,8 +43,7 @@ class Prescription(models.Model):
     Model representing a prescription for a patient.
     """
 
-    medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name="prescriptions", verbose_name=_("medical record"))
-    medication_name = models.CharField(max_length=255, verbose_name=_("medication name"))
+    medical_record = models.OneToOneField(MedicalRecord, on_delete=models.CASCADE, related_name="prescriptions", verbose_name=_("medical record"))
     is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))

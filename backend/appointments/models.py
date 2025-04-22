@@ -21,7 +21,7 @@ class Appointment(models.Model):
         ("in_queue", "In Queue"),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    appointment_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name=_("appointment ID"))
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="appointments", verbose_name=_("patient"))
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="appointments", verbose_name=_("doctor"))
     appointment_date = models.DateField(verbose_name=_("appointment date"))
@@ -29,6 +29,7 @@ class Appointment(models.Model):
     duration = models.PositiveIntegerField(verbose_name=_("duration (minutes)"), validators=[MinValueValidator(1)], default=30)
     status = models.CharField(max_length=20, choices=APP_STATUS_CHOICES, default="scheduled", verbose_name=_("status"))
     notes = models.TextField(verbose_name=_("notes"), null=True, blank=True)
+    is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_by = models.ForeignKey("users.User", on_delete=models.RESTRICT, related_name="appointments", verbose_name=_("created by"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
