@@ -1,4 +1,4 @@
-from djoser.serializers import UserCreateSerializer
+from djoser.serializers import UserCreateSerializer,SetPasswordSerializer
 from django.contrib.auth import get_user_model
 from doctors.serializers import DoctorSerializer
 from rest_framework.exceptions import ValidationError
@@ -28,3 +28,9 @@ class UserCreateSerializer(UserCreateSerializer):
 
         return user
 
+class CustomSetPasswordSerializer(SetPasswordSerializer):
+    def update(self, instance, validated_data):
+        password = validated_data.get('new_password')
+        instance.set_password(password)
+        instance.save()
+        return instance
