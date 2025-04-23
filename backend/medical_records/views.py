@@ -7,6 +7,15 @@ from .serializers import (
     PrescriptionSerializer,
     PrescriptionMedicationSerializer,
 )
+from rest_framework.pagination import PageNumberPagination
+
+class CustomPagination(PageNumberPagination):
+    """
+    Custom pagination class to set default page size and allow users to specify items per page.
+    """
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class MedicalRecordViewSet(viewsets.ModelViewSet):
     """
@@ -14,6 +23,7 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
     """
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
+    pagination_class = CustomPagination
 
 class LabResultViewSet(viewsets.ModelViewSet):
     """
@@ -21,6 +31,7 @@ class LabResultViewSet(viewsets.ModelViewSet):
     """
     queryset = LabResult.objects.all()
     serializer_class = LabResultSerializer
+    pagination_class = CustomPagination
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """
@@ -28,6 +39,7 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     """
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
+    pagination_class = CustomPagination
 
 class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     """
@@ -35,4 +47,5 @@ class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     """
     queryset = PrescriptionMedication.objects.all()
     serializer_class = PrescriptionMedicationSerializer
+    pagination_class = CustomPagination
 
