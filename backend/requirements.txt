@@ -10,3 +10,4 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 setuptools==79.0.0
 sqlparse==0.5.3
+django-filter==23.5
