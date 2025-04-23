@@ -16,6 +16,8 @@ urlpatterns = [
                 # Custom application URLs
                 path("doctors/", include("doctors.urls")),
                 path("medical-records/", include("medical_records.urls")),
+                path('billing/', include('billing.urls')),
+
             ]
         ),
     ),
