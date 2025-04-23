@@ -22,6 +22,10 @@ class MedicalRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="created at")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="updated at")
 
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()
+
 class LabResult(models.Model):
     """
     Model representing lab results for an appointment.
@@ -36,7 +40,9 @@ class LabResult(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
 
-
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()
 
 class Prescription(models.Model):
     """
@@ -48,6 +54,9 @@ class Prescription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
 
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()
 
 class PrescriptionMedication(models.Model):
     """
@@ -63,3 +72,7 @@ class PrescriptionMedication(models.Model):
     is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
+
+    def delete(self, *args, **kwargs):
+        self.is_active = False
+        self.save()
