@@ -28,12 +28,14 @@ class Doctor(models.Model):
     specialization = models.ForeignKey(
         Specialization,
         on_delete=models.RESTRICT,
-        related_name='doctors'
+        related_name='doctors',
+        null=True,
+        blank=True
     )
-    license_number = models.CharField(max_length=255, unique=True)
+    license_number = models.CharField(max_length=255, unique=True, null=True, blank=True)
     years_of_experience = models.PositiveIntegerField(default=0)
-    qualifications = models.TextField()
-    bio = models.TextField()
+    qualifications = models.TextField(null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     profile_picture = models.ImageField(
