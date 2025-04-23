@@ -80,8 +80,6 @@ def seed_database():
         date_joined=timezone.now(),
         status="available"
 
-    )
-
     # Create specializations
     print("Creating specializations...")
     specializations = []
