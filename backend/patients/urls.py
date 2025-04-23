@@ -9,5 +9,5 @@ router.register(r'emergency-contacts', EmergencyContactViewSet, basename='emerge
 app_name = 'patients'
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
