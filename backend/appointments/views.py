@@ -10,6 +10,8 @@ from .serializers import AppointmentSerializer
 from .permissions import IsManagerOrSecretary, IsDoctor
 from .filters import AppointmentFilter
 import logging
+from uuid import UUID
+from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +73,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         logger.info(f"Looking for appointment with ID: {appointment_id}")
 
         try:
+            # Validate if the ID is a valid UUID
+            UUID(appointment_id)
+        except (ValueError, TypeError):
+            logger.warning(f"Invalid UUID format: {appointment_id}")
+            return None
+
+        try:
             # First try to get the appointment without any filters
             appointment = Appointment.objects.get(appointment_id=appointment_id)
             logger.info(f"Found appointment: {appointment}")
@@ -90,6 +99,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         except Appointment.DoesNotExist:
             logger.warning(f"Appointment with ID {appointment_id} not found")
             return None
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance is None:
+            return Response(
+                {
+                    "error": "Appointment not found or you don't have permission to view it."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
         # Check for doctor profile before listing
