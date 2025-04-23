@@ -79,6 +79,7 @@ def seed_database():
         is_superuser=True,  # Added to grant full admin access
         date_joined=timezone.now(),
         status="available"
+
     )
 
     # Create specializations
