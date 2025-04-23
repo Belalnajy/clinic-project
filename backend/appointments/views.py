@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Appointment
 from .serializers import AppointmentSerializer
-from .permissions import IsManagerOrSecretary, IsDoctor
+from ..core.permissions import IsManagerOrSecretary, IsDoctor
 from .filters import AppointmentFilter
 import logging
 from uuid import UUID
