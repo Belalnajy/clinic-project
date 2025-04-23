@@ -8,12 +8,11 @@ from .serializers import PatientSerializer, EmergencyContactSerializer
 
 
 class ActivationSerializer(serializers.Serializer):
-    """
-    Serializer for activation/deactivation actions.
-    This is an empty serializer since we don't need any input fields.
-    """
-    pass
+    uid = serializers.CharField()
+    token = serializers.CharField()
 
+    class Meta:
+        ref_name = "PatientsActivationSerializer"
 
 class PatientViewSet(viewsets.ModelViewSet):
     """
