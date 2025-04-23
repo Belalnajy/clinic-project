@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class AppointmentPagination(PageNumberPagination):
     page_size = 10  # Number of items per page
     page_size_query_param = "page_size"  # Allow client to override page size
-    max_page_size = 100  # Maximum page size allowed
+    max_page_size = 50  # Maximum page size allowed
 
 
 # Create your views here.

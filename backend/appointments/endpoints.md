@@ -9,6 +9,29 @@ All endpoints require authentication. Include the authentication token in the re
 Authorization: Token <your_token>
 ```
 
+## Pagination
+All list endpoints support pagination with the following parameters:
+- `page`: The page number to retrieve (default: 1)
+- `page_size`: Number of items per page (default: 10, max: 50)
+
+The response includes pagination metadata:
+- `count`: Total number of items across all pages
+- `next`: URL for the next page (null if no next page)
+- `previous`: URL for the previous page (null if no previous page)
+- `results`: Array of items for the current page
+
+Example pagination response:
+```json
+{
+    "count": 45,
+    "next": "http://127.0.0.1:8000/api/appointments/?page=2&page_size=20",
+    "previous": null,
+    "results": [
+        // ... items ...
+    ]
+}
+```
+
 ## Endpoints
 
 ### 1. List/Create Appointments
@@ -16,7 +39,7 @@ Authorization: Token <your_token>
 #### List Appointments
 - **URL**: `/appointments/`
 - **Method**: `GET`
-- **Description**: List all appointments
+- **Description**: List all appointments with pagination support
 - **Query Parameters**:
   - `patient`: Filter by patient ID
   - `doctor`: Filter by doctor ID
@@ -24,10 +47,20 @@ Authorization: Token <your_token>
   - `status`: Filter by status (scheduled/completed/canceled/in_queue)
   - `is_active`: Filter by active status (true/false)
   - `page`: Page number (default: 1)
-  - `page_size`: Number of items per page (default: 10, max: 100)
-- **Example Request**:
+  - `page_size`: Number of items per page (default: 10, max: 50)
+- **Example Requests**:
   ```bash
-  GET /appointments/?patient=116&status=scheduled&page=1&page_size=20
+  # Get first page with default size (10 items)
+  GET /appointments/
+  
+  # Get first page with 20 items
+  GET /appointments/?page=1&page_size=20
+  
+  # Get second page with 20 items
+  GET /appointments/?page=2&page_size=20
+  
+  # Get last page (assuming 45 total items)
+  GET /appointments/?page=3&page_size=20
   ```
 - **Example Response**:
   ```json
