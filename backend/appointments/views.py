@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Appointment
 from .serializers import AppointmentSerializer
@@ -11,6 +12,14 @@ from .filters import AppointmentFilter
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+# Create a custom pagination class
+class AppointmentPagination(PageNumberPagination):
+    page_size = 10  # Number of items per page
+    page_size_query_param = "page_size"  # Allow client to override page size
+    max_page_size = 100  # Maximum page size allowed
+
 
 # Create your views here.
 
@@ -21,6 +30,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = AppointmentFilter
+    pagination_class = AppointmentPagination
 
     def get_queryset(self):
         # Get all active appointments

@@ -23,45 +23,53 @@ Authorization: Token <your_token>
   - `appointment_date`: Filter by date (YYYY-MM-DD)
   - `status`: Filter by status (scheduled/completed/canceled/in_queue)
   - `is_active`: Filter by active status (true/false)
+  - `page`: Page number (default: 1)
+  - `page_size`: Number of items per page (default: 10, max: 100)
 - **Example Request**:
   ```bash
-  GET /appointments/?patient=116&status=scheduled
+  GET /appointments/?patient=116&status=scheduled&page=1&page_size=20
   ```
 - **Example Response**:
   ```json
-  [
-    {
-      "appointment_id": "75f869bc-dbb2-44cb-9bf1-21726ce5c96d",
-      "patient": {
-        "id": 116,
-        "first_name": "John",
-        "last_name": "Doe",
-        // ... other patient fields
-      },
-      "doctor": {
-        "id": 1,
-        "first_name": "Dr. Smith",
-        "last_name": "MD",
-        "specialization": "Cardiology",
-        // ... other doctor fields
-      },
-      "appointment_date": "2024-03-20",
-      "appointment_time": "14:30:00",
-      "duration": 30,
-      "status": "scheduled",
-      "notes": "Initial consultation",
-      "is_active": true,
-      "created_by": {
-        "id": 1,
-        "email": "admin@example.com",
-        "first_name": "Admin",
-        "last_name": "User",
-        "role": "manager"
-      },
-      "created_at": "2024-03-19T10:00:00Z",
-      "updated_at": "2024-03-19T10:00:00Z"
-    }
-  ]
+  {
+    "count": 45,
+    "next": "http://127.0.0.1:8000/api/appointments/?page=2&page_size=20",
+    "previous": null,
+    "results": [
+      {
+        "appointment_id": "75f869bc-dbb2-44cb-9bf1-21726ce5c96d",
+        "patient": {
+          "id": 116,
+          "first_name": "John",
+          "last_name": "Doe",
+          // ... other patient fields
+        },
+        "doctor": {
+          "id": 1,
+          "first_name": "Dr. Smith",
+          "last_name": "MD",
+          "specialization": "Cardiology",
+          // ... other doctor fields
+        },
+        "appointment_date": "2024-03-20",
+        "appointment_time": "14:30:00",
+        "duration": 30,
+        "status": "scheduled",
+        "notes": "Initial consultation",
+        "is_active": true,
+        "created_by": {
+          "id": 1,
+          "email": "admin@example.com",
+          "first_name": "Admin",
+          "last_name": "User",
+          "role": "manager"
+        },
+        "created_at": "2024-03-19T10:00:00Z",
+        "updated_at": "2024-03-19T10:00:00Z"
+      }
+      // ... more appointments
+    ]
+  }
   ```
 
 #### Create Appointment
