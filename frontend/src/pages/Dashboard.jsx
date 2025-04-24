@@ -1,10 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  getStatistics,
-  getTodayAppointments,
-  getRecentPatientRecords
-} from "../data/data";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getStatistics, getTodayAppointments, getRecentPatientRecords } from '../data/data';
 
 import {
   Table,
@@ -12,56 +8,53 @@ import {
   TableBody,
   TableRow,
   TableHead,
-  TableCell
-} from "@/components/ui/table";
+  TableCell,
+} from '@/components/ui/table';
 
-import { Filter, UserPlus, Users, ArrowsUpFromLine } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import Papa from "papaparse";
-import FilterDialog from "@/components/dashboard/FilterDialog";
-import StatsSection from "@/components/dashboard/StatsSection";
-import TabsHeader from "@/components/dashboard/TabsHeader";
-import ScheduleTable from "@/components/dashboard/ScheduleTable";
-import MedicalRecordsList from "@/components/dashboard/MedicalRecordsList";
-import PatientsTab from "@/components/dashboard/PatientsTab";
-import { useAuth } from "@/contexts/Auth/useAuth";
+import { Filter, UserPlus, Users, ArrowsUpFromLine } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import Papa from 'papaparse';
+import FilterDialog from '@/components/dashboard/FilterDialog';
+import StatsSection from '@/components/dashboard/StatsSection';
+import TabsHeader from '@/components/dashboard/TabsHeader';
+import ScheduleTable from '@/components/dashboard/ScheduleTable';
+import MedicalRecordsList from '@/components/dashboard/MedicalRecordsList';
+import PatientsTab from '@/components/dashboard/PatientsTab';
+import { useAuth } from '@/contexts/Auth/useAuth';
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const stats = getStatistics("doctor");
+  const stats = getStatistics('doctor');
   const todayAppointments = getTodayAppointments();
   const originalRecords = getRecentPatientRecords();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [records, setRecords] = useState(originalRecords);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState({
-    patientName: "",
-    date: "",
-    type: ""
+    patientName: '',
+    date: '',
+    type: '',
   });
 
   // Navigate to patient view page
-  const handleOpenPatientView = patient => {
+  const handleOpenPatientView = (patient) => {
     navigate(`/patient/${patient.patientId}`);
   };
 
   const handleNewAppointment = () => {
     toast({
-      title: "New Appointment",
-      description: "Appointment has been scheduled successfully."
+      title: 'New Appointment',
+      description: 'Appointment has been scheduled successfully.',
     });
   };
 
   // Calculate completion percentage for today
-  const completedAppointments = todayAppointments.filter(
-    a => a.status === "completed"
-  ).length;
-  const completionRate =
-    Math.round(completedAppointments / todayAppointments.length * 100) || 0;
+  const completedAppointments = todayAppointments.filter((a) => a.status === 'completed').length;
+  const completionRate = Math.round((completedAppointments / todayAppointments.length) * 100) || 0;
 
   // Filter appointments for search
-  const filteredAppointments = todayAppointments.filter(appointment =>
+  const filteredAppointments = todayAppointments.filter((appointment) =>
     appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -72,72 +65,68 @@ const Dashboard = () => {
 
   // Apply Filters
   const applyFilters = () => {
-    const filtered = originalRecords.filter(record => {
+    const filtered = originalRecords.filter((record) => {
       const matchesName = record.patientName
         .toLowerCase()
         .includes(filterCriteria.patientName.toLowerCase());
-      const matchesDate = filterCriteria.date
-        ? record.date === filterCriteria.date
-        : true;
+      const matchesDate = filterCriteria.date ? record.date === filterCriteria.date : true;
       const matchesType = filterCriteria.type
-        ? (record.type || "Consultation")
-            .toLowerCase()
-            .includes(filterCriteria.type.toLowerCase())
+        ? (record.type || 'Consultation').toLowerCase().includes(filterCriteria.type.toLowerCase())
         : true;
       return matchesName && matchesDate && matchesType;
     });
     setRecords(filtered);
     setFilterOpen(false);
     toast({
-      title: "Filters Applied",
-      description: `Showing ${filtered.length} matching records.`
+      title: 'Filters Applied',
+      description: `Showing ${filtered.length} matching records.`,
     });
   };
 
   // Reset Filters
   const resetFilters = () => {
-    setFilterCriteria({ patientName: "", date: "", type: "" });
+    setFilterCriteria({ patientName: '', date: '', type: '' });
     setRecords(originalRecords);
     setFilterOpen(false);
     toast({
-      title: "Filters Reset",
-      description: "All records are now displayed."
+      title: 'Filters Reset',
+      description: 'All records are now displayed.',
     });
   };
 
   // Handle Export Button Click
   const handleExport = () => {
-    const csvData = records.map(record => ({
+    const csvData = records.map((record) => ({
       PatientName: record.patientName,
       PatientID: record.patientId,
       Date: record.date,
-      Type: record.type || "Consultation",
+      Type: record.type || 'Consultation',
       Diagnosis: record.diagnosis,
       Treatment: record.treatment,
-      Prescription: record.prescription || "N/A",
-      Notes: record.notes || "N/A",
-      Physician: record.physician || "N/A"
+      Prescription: record.prescription || 'N/A',
+      Notes: record.notes || 'N/A',
+      Physician: record.physician || 'N/A',
     }));
 
     const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "medical_records.csv");
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'medical_records.csv');
     link.click();
     URL.revokeObjectURL(url);
     toast({
-      title: "Export Successful",
-      description: "Medical records have been exported as CSV."
+      title: 'Export Successful',
+      description: 'Medical records have been exported as CSV.',
     });
   };
 
   const statusStyles = {
-    completed: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    waiting: "bg-amber-50 text-amber-700 border border-amber-200",
-    "in-progress": "bg-sky-50 text-sky-700 border border-sky-200",
-    cancelled: "bg-rose-50 text-rose-700 border border-rose-200"
+    completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    waiting: 'bg-amber-50 text-amber-700 border border-amber-200',
+    'in-progress': 'bg-sky-50 text-sky-700 border border-sky-200',
+    cancelled: 'bg-rose-50 text-rose-700 border border-rose-200',
   };
 
   return (
@@ -147,18 +136,18 @@ const Dashboard = () => {
           Doctor's dashboard
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
-          Welcome back, Dr. {user?.name.split(' ')[1]}
+          Welcome back, Dr. {user?.first_name} {user?.last_name}!
         </p>
       </div>
 
       {/* Statistics Cards */}
       <StatsSection
         stats={{
-          patientsToday: "8",
+          patientsToday: '8',
           completedAppointments: `${completedAppointments}/${todayAppointments.length}`,
           completionRate,
-          nextAppointment: "10:30 AM",
-          pendingLabs: "3"
+          nextAppointment: '10:30 AM',
+          pendingLabs: '3',
         }}
       />
       <Tabs defaultValue="schedule" className="mb-8">
@@ -176,7 +165,7 @@ const Dashboard = () => {
 
         {/* Patients */}
         <TabsContent value="patients">
-          <PatientsTab/>
+          <PatientsTab />
         </TabsContent>
         {/* Medical Records */}
         <TabsContent value="records">
