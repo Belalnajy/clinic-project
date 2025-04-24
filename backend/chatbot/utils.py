@@ -5,37 +5,47 @@ from patients.models import Patient
 from doctors.models import Doctor, Specialization
 from medical_records.models import MedicalRecord, Prescription
 from billing.models import Payment
+from medications.models import Medication
 
 import json
+import datetime
 
-def get_recent_data_by_role(role):
+def custom_serializer(obj):
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
+
+def get_recent_data_by_role(role, user):
     now = timezone.now()
     last_week = now - timedelta(days=7)
 
-    base_data = {
-        "patients": list(Patient.objects.filter(is_active=True).values("id", "name", "age")),
-        "doctors": list(Doctor.objects.filter(is_active=True).values("id", "name", "specialization")),
-    }
+    if role == "Manager":
+        data = {
+            "patients": list(Patient.objects.all().values()),
+            "doctors": list(Doctor.objects.all().values("id", "user__first_name", "user__last_name", "specialization__name", "years_of_experience", "bio")),
+            "appointments": list(Appointment.objects.all().values()),
+            "medical_records": list(MedicalRecord.objects.all().values()),
+            "prescriptions": list(Prescription.objects.all().values()),
+            "payments": list(Payment.objects.all().values()),
+            "medications": list(Medication.objects.all().values()),
+        }
 
-    if role == "Doctor":
-        base_data.update({
-            "appointments": list(Appointment.objects.filter(doctor__user__username=role, date__gte=last_week).values()),
-            "patients": list(Patient.objects.filter(doctor__user__username=role).values("id", "name", "age")),
-            "specializations": list(Specialization.objects.filter(doctor__user__username=role).values("id", "name")),
-            "medical_records": list(MedicalRecord.objects.filter(doctor__user__username=role).order_by("-created_at")[:10].values()),
-            "prescriptions": list(Prescription.objects.filter(doctor__user__username=role).order_by("-created_at")[:10].values()),
-        })
-    elif role == "Receptionist":
-        base_data.update({
-            "appointments": list(Appointment.objects.filter(date__gte=last_week).values()),
-            "payments": list(Payment.objects.order_by("-date")[:10].values()),
-        })
-    elif role == "Manager":
-        base_data.update({
-            "appointments": list(Appointment.objects.filter(date__gte=last_week).values()),
-            "medical_records": list(MedicalRecord.objects.order_by("-created_at")[:10].values()),
-            "prescriptions": list(Prescription.objects.order_by("-created_at")[:10].values()),
-            "payments": list(Payment.objects.order_by("-date")[:10].values()),
-        })
+    elif role == "Doctor":
+        data = {
+            "profile": Doctor.objects.filter(user=user).values("id", "user__first_name", "user__last_name", "specialization__name", "years_of_experience", "bio").first(),
+            "patients": list(Patient.objects.filter(appointments__doctor__user=user).distinct().values("id", "first_name", "last_name", "birth_date", "gender")),
+            "appointments": list(Appointment.objects.filter(doctor__user=user).values()),
+            "medications": list(Medication.objects.filter(prescriptions__medical_record__doctor__user=user).distinct().values("id", "name", "default_dosage", "description")),
+        }
 
-    return json.dumps(base_data, indent=2)
+    elif role == "Secretary":
+        data = {
+            "appointments": list(Appointment.objects.all().values()),
+            "payments": list(Payment.objects.all().values()),
+            "patients": list(Patient.objects.all().values("id", "first_name", "last_name", "birth_date", "gender")),
+        }
+
+    else:
+        data = {"error": "Invalid role"}
+
+    return json.dumps(data, indent=2, default=custom_serializer)

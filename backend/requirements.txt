@@ -9,6 +9,7 @@ cryptography==44.0.2
 defusedxml==0.7.1
 distro==1.9.0
 Django==5.2
+django-cors-headers==4.7.0
 django-credit-cards==0.4.1
 django-filter==25.1
 django-phonenumber-field==8.1.0
