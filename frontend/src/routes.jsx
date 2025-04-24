@@ -12,36 +12,109 @@ import Appointments from './pages/Appointments';
 import ManagerDashboard from './pages/ManagerDashboard';
 import PatientDetails from './pages/patient-details/PatientDetails';
 import SecretaryDashboard from './pages/SecretaryDashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 
 const router = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <ProtectedRoute requireAuth={false}>
+        <LoginPage />
+      </ProtectedRoute>
+    ),
     errorElement: <div>404 Not Found</div>,
   },
   {
+    path: '/unauthorized',
+    element: <UnauthorizedPage />,
+  },
+  {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <div>404 Not Found</div>,
     children: [
       {
         path: 'settings',
-        element: <SettingsPage />,
+        element: (
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        ),
         children: [
           { index: true, element: <Navigate to="profile" replace /> },
           { path: 'profile', element: <ProfileSettings /> },
           { path: 'account', element: <AccountSettings /> },
         ],
       },
-      { path: 'dashboard/doctor', element: <Dashboard /> },
-      { path: 'dashboard/secretary', element: <SecretaryDashboard /> },
-      { path: 'dashboard/manager', element: <ManagerDashboard /> },
-      { path: 'reports', element: <Reports /> },
-      { path: 'doctors', element: <DoctorsPage /> },
-      { path: 'patients', element: <Patients /> },
-      { path: 'patient/:id', element: <PatientDetails /> },
-      ,
-      { path: 'appointments', element: <Appointments /> },
+      {
+        path: 'dashboard/doctor',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor']}>
+            <Dashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'dashboard/secretary',
+        element: (
+          <ProtectedRoute allowedRoles={['secretary']}>
+            <SecretaryDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'dashboard/manager',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <ManagerDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'reports',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <Reports />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'doctors',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <DoctorsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'patients',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <Patients />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'patient/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <PatientDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'appointments',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <Appointments />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);
