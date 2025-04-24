@@ -3,7 +3,14 @@ import { useAuth } from '@/contexts/Auth/useAuth';
 
 // Define role-based route access
 const roleAccess = {
-  doctor: ['/dashboard/doctor', '/patients', '/patient/:id', '/appointments', '/settings'],
+  doctor: [
+    '/dashboard/doctor',
+    '/patients',
+    '/patient/:id',
+    '/appointments',
+    '/settings',
+    '/medications',
+  ],
   secretary: ['/dashboard/secretary', '/patients', '/patient/:id', '/appointments', '/settings'],
   manager: [
     '/dashboard/manager',
@@ -13,6 +20,7 @@ const roleAccess = {
     '/doctors',
     '/reports',
     '/settings',
+    '/medications',
   ],
 };
 

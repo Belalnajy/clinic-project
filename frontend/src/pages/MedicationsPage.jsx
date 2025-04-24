@@ -11,10 +11,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CustomPagination from '@/components/CustomPagination';
+
+const ITEMS_PER_PAGE = 7;
 
 const MedicationsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // TODO: Replace with actual data from API
   const medications = [
@@ -32,11 +36,27 @@ const MedicationsPage = () => {
       description: 'Nonsteroidal anti-inflammatory drug',
       is_active: true,
     },
+    // Add more sample data for pagination testing
+    ...Array.from({ length: 25 }, (_, i) => ({
+      id: i + 3,
+      name: `Medication ${i + 3}`,
+      default_dosage: `${(i + 1) * 100}mg`,
+      description: `Description for medication ${i + 3}`,
+      is_active: i % 2 === 0,
+    })),
   ];
 
   const filteredMedications = medications.filter((medication) =>
     medication.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedMedications = filteredMedications.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -54,7 +74,10 @@ const MedicationsPage = () => {
           <Input
             placeholder="Search medications..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-8"
           />
         </div>
@@ -63,7 +86,7 @@ const MedicationsPage = () => {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-gray-100">
               <TableHead>Name</TableHead>
               <TableHead>Default Dosage</TableHead>
               <TableHead>Description</TableHead>
@@ -72,7 +95,7 @@ const MedicationsPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredMedications.map((medication) => (
+            {paginatedMedications.map((medication) => (
               <TableRow key={medication.id}>
                 <TableCell className="font-medium">{medication.name}</TableCell>
                 <TableCell>{medication.default_dosage}</TableCell>
@@ -100,6 +123,15 @@ const MedicationsPage = () => {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="mt-6">
+        <CustomPagination
+          totalItems={filteredMedications.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );

@@ -33,11 +33,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: (
-      <ProtectedRoute>
-        <MainLayout />
-      </ProtectedRoute>
-    ),
+    element: <MainLayout />,
     errorElement: <div>404 Not Found</div>,
     children: [
       {
