@@ -1,7 +1,14 @@
 // Determine which navigation items to show based on user role
-
-import { Home, Calendar, Users, Pill, BarChart3, UserCog, Settings } from 'lucide-react';
-
+import {
+  Home,
+  Calendar,
+  Users,
+  Pill,
+  BarChart3,
+  Stethoscope,
+  Settings,
+  UserRoundPlus,
+} from 'lucide-react';
 const navItems = [
   {
     path: '/dashboard/manager',
@@ -48,7 +55,13 @@ const navItems = [
   {
     path: '/doctors',
     label: 'Doctors',
-    icon: UserCog,
+    icon: Stethoscope,
+    allowedRoles: ['manager'],
+  },
+  {
+    path: '/register',
+    icon: UserRoundPlus,
+    label: 'Add User',
     allowedRoles: ['manager'],
   },
   {

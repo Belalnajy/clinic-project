@@ -14,6 +14,7 @@ import PatientDetails from './pages/patient-details/PatientDetails';
 import SecretaryDashboard from './pages/SecretaryDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import RegisterPage from './pages/Register';
 import MedicationsPage from './pages/MedicationsPage';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
@@ -75,6 +76,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['manager']}>
             <ManagerDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'register',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <RegisterPage />
           </ProtectedRoute>
         ),
       },

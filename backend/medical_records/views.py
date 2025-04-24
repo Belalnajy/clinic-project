@@ -8,6 +8,12 @@ from .serializers import (
     PrescriptionMedicationSerializer,
 )
 from rest_framework.pagination import PageNumberPagination
+from .filters import MedicalRecordFilter, LabResultFilter, PrescriptionFilter, PrescriptionMedicationFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsDoctorOrManager
 
 class CustomPagination(PageNumberPagination):
     """
@@ -24,6 +30,18 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MedicalRecordFilter
+    filter_fields = ['created_at', 'patient', 'doctor']
+    permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    @action(detail=False, methods=["get"], url_path="latest")
+    def latest_medical_record(self, request):
+        latest_record = self.queryset.order_by("-created_at").first()
+        if latest_record:
+            serializer = self.get_serializer(latest_record)
+            return Response(serializer.data)
+        return Response({"detail": "No medical records found."}, status=404)
 
 class LabResultViewSet(viewsets.ModelViewSet):
     """
@@ -32,6 +50,17 @@ class LabResultViewSet(viewsets.ModelViewSet):
     queryset = LabResult.objects.all()
     serializer_class = LabResultSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = LabResultFilter
+    permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    @action(detail=False, methods=["get"], url_path="latest")
+    def latest_lab_result(self, request):
+        latest_result = self.queryset.order_by("-created_at").first()
+        if latest_result:
+            serializer = self.get_serializer(latest_result)
+            return Response(serializer.data)
+        return Response({"detail": "No lab results found."}, status=404)
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """
@@ -40,6 +69,17 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PrescriptionFilter
+    permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    @action(detail=False, methods=["get"], url_path="latest")
+    def latest_prescription(self, request):
+        latest_prescription = self.queryset.order_by("-created_at").first()
+        if latest_prescription:
+            serializer = self.get_serializer(latest_prescription)
+            return Response(serializer.data)
+        return Response({"detail": "No prescriptions found."}, status=404)
 
 class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     """
@@ -48,4 +88,15 @@ class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     queryset = PrescriptionMedication.objects.all()
     serializer_class = PrescriptionMedicationSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PrescriptionMedicationFilter
+    permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    @action(detail=False, methods=["get"], url_path="latest")
+    def latest_prescription_medication(self, request):
+        latest_medication = self.queryset.order_by("-created_at").first()
+        if latest_medication:
+            serializer = self.get_serializer(latest_medication)
+            return Response(serializer.data)
+        return Response({"detail": "No prescription medications found."}, status=404)
 

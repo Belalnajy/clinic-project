@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from './context';
 import { toast } from 'sonner';
-import { login as apiLogin, logout as apiLogout } from '@/api/auth';
+import { login as apiLogin, logout as apiLogout, register as apiRegister } from '@/api/auth';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -36,6 +36,24 @@ export const useAuth = () => {
     }
   };
 
+  const register = async (formData) => {
+    try {
+      await apiRegister(formData);
+
+      toast.success('Registration successful!', {
+        description: 'Please login with your credentials.',
+      });
+
+      navigate('/login');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      toast.error('Registration failed', {
+        description: error.response?.data?.detail || 'Please check your input and try again.',
+      });
+      throw error;
+    }
+  };
+
   const logout = () => {
     apiLogout();
     setUser(null);
@@ -53,5 +71,6 @@ export const useAuth = () => {
     isAuthenticated,
     login,
     logout,
+    register,
   };
 };

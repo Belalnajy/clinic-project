@@ -45,7 +45,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               )}
             </div>
             <div>
-              <p className="font-medium text-sm">{user?.name}</p>
+              <p className="font-medium text-sm">
+                {user.first_name} {user.last_name}
+              </p>
               <p className="text-xs text-slate-500">{getRoleLabel(user?.role)}</p>
             </div>
           </div>
