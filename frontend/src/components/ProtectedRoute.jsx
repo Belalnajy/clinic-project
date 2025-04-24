@@ -13,6 +13,7 @@ const roleAccess = {
     '/doctors',
     '/reports',
     '/settings',
+    '/register',
   ],
 };
 
