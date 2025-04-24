@@ -27,6 +27,12 @@ export const getNavItems = (user) => {
       roles: ['manager'],
     },
     {
+      path: '/register',
+      icon: 'fas fa-user-plus',
+      label: 'Add User',
+      roles: ['manager'],
+    },
+    {
       path: '/reports',
       icon: 'fas fa-chart-bar',
       label: 'Reports',

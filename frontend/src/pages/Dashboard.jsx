@@ -147,7 +147,7 @@ const Dashboard = () => {
           Doctor's dashboard
         </h1>
         <p className="text-slate-500 mt-1 text-sm">
-          Welcome back, Dr. {user?.name.split(' ')[1]}
+          Welcome back, Dr. {user?.first_name} {user?.last_name}!
         </p>
       </div>
 
