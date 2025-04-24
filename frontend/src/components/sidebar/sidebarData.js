@@ -45,7 +45,7 @@ export const getNavItems = (user) => {
       roles: ['manager', 'doctor', 'secretary'],
     },
     {
-      path: '/AiAssistant',
+      path: '/ai-assistant',
       icon: 'fas fa-robot',
       label: 'AI Assistant',
       roles: ['manager', 'doctor', 'secretary'],

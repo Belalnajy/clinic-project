@@ -15,6 +15,7 @@ import SecretaryDashboard from "./pages/SecretaryDashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import RegisterPage from "./pages/Register";
+import AiAssistant from "./pages/AiAssistant";
 
 const router = createBrowserRouter([
   {
@@ -121,6 +122,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={["doctor", "secretary", "manager"]}>
             <Appointments />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "ai-assistant",
+        element: (
+          <ProtectedRoute allowedRoles={["doctor","secretary","manager"]}>
+            <AiAssistant/>
           </ProtectedRoute>
         )
       }
