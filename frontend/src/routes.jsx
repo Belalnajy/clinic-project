@@ -14,6 +14,8 @@ import PatientDetails from './pages/patient-details/PatientDetails';
 import SecretaryDashboard from './pages/SecretaryDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import MedicationsPage from './pages/MedicationsPage';
+import MedicationForm from './pages/MedicationForm';
 
 const router = createBrowserRouter([
   {
@@ -112,6 +114,30 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
             <Appointments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'medications',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'manager']}>
+            <MedicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'medications/new',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'manager']}>
+            <MedicationForm />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'medications/:id/edit',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'manager']}>
+            <MedicationForm />
           </ProtectedRoute>
         ),
       },
