@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "medical_records",
     "medications",
     "billing",
+    "chatbot",
 ]
 
 MIDDLEWARE = [
