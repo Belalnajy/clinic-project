@@ -25,3 +25,9 @@ export const updateMedication = async (id, data) => {
   console.log('Updating medication:', id, data);
   return { id, ...data };
 };
+
+export const deleteMedication = async (id) => {
+  // TODO: Implement API call
+  console.log('Deleting medication:', id);
+  return { success: true };
+};

@@ -9,9 +9,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Trash2, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomPagination from '@/components/CustomPagination';
+import { deleteMedication } from '@/services/medications';
+import { toast } from 'sonner';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 
 const ITEMS_PER_PAGE = 7;
 
@@ -19,6 +22,7 @@ const MedicationsPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [medicationToDelete, setMedicationToDelete] = useState(null);
 
   // TODO: Replace with actual data from API
   const medications = [
@@ -56,6 +60,25 @@ const MedicationsPage = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleDelete = async () => {
+    if (!medicationToDelete) return;
+
+    try {
+      await deleteMedication(medicationToDelete.id);
+      toast.success('Success', {
+        description: 'Medication deleted successfully.',
+      });
+      // TODO: Refresh the medications list
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      toast.error('Error', {
+        description: 'Failed to delete medication.',
+      });
+    } finally {
+      setMedicationToDelete(null);
+    }
   };
 
   return (
@@ -112,12 +135,22 @@ const MedicationsPage = () => {
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate(`/medications/${medication.id}/edit`)}
-                  >
-                    Edit
-                  </Button>
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate(`/medications/${medication.id}/edit`)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMedicationToDelete(medication)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -133,6 +166,13 @@ const MedicationsPage = () => {
           onPageChange={handlePageChange}
         />
       </div>
+
+      <DeleteConfirmationDialog
+        isOpen={!!medicationToDelete}
+        onClose={() => setMedicationToDelete(null)}
+        onConfirm={handleDelete}
+        itemName={medicationToDelete?.name}
+      />
     </div>
   );
 };
