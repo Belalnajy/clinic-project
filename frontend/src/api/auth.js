@@ -27,7 +27,20 @@ export const login = async (email, password) => {
     throw error;
   }
 };
+// register API function
+export const register = async (formData) => {
+  try {
+    const response = await axiosInstance.post('/auth/users/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 /**
  * Logout the user by clearing stored tokens
  */
