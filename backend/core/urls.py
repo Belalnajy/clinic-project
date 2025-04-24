@@ -33,10 +33,12 @@ urlpatterns = [
             [
                 # Custom application URLs
                 path("doctors/", include("doctors.urls")),
-                path("medical-records/", include("medical_records.urls")),
+                path("", include("medical_records.urls")),
                 path('billing/', include('billing.urls')),
                 path("appointments/", include("appointments.urls")),
                 path("patients/", include("patients.urls")),
+                path('medications/', include('medications.urls')),
+
                 path(
                     "docs/",
                     schema_view.with_ui("swagger", cache_timeout=0),
