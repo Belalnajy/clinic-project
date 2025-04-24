@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2 } from 'lucide-react';
+import axios from 'axios'; // Import Axios
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -21,25 +22,27 @@ export default function ChatBot() {
     try {
       const token = localStorage.getItem('access_token');
 
-      // Send the chat message to backend with JWT
-      const res = await fetch('http://localhost:8000/api/chat/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Attach JWT token
-        },
-        body: JSON.stringify({ message: input }), // Message body to be sent
-      });
+      // Send the chat message to backend with JWT using Axios
+      const res = await axios.post(
+        'http://localhost:8000/api/chatbot/',
+        { message: input }, // Message body to be sent
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, 
+          },
+        }
+      );
 
-      const data = await res.json();
-      if (data.response) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      // Handle response from backend
+      if (res.data.response) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: res.data.response }]);
       } else {
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            content: '⚠️ Error: ' + (data.error || 'Unknown error'),
+            content: '⚠️ Error: ' + (res.data.error || 'Unknown error'),
           },
         ]);
       }
