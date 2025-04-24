@@ -1,10 +1,13 @@
 import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthContext from './context';
 import { toast } from 'sonner';
 import { login as apiLogin, logout as apiLogout } from '@/api/auth';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  const navigate = useNavigate();
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
@@ -22,13 +25,14 @@ export const useAuth = () => {
       toast.success('Welcome back!', {
         description: "You've successfully logged in.",
       });
-      return true;
+
+      // Use navigate instead of window.location
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
       toast.error('Login failed', {
         description: error.response?.data?.detail || 'Invalid email or password.',
       });
-      return false;
     }
   };
 
@@ -39,6 +43,8 @@ export const useAuth = () => {
     toast('Goodbye!', {
       description: 'You have been successfully logged out',
     });
+    // Use navigate instead of window.location
+    navigate('/login');
   };
 
   return {

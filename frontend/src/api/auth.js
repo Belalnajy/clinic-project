@@ -35,9 +35,6 @@ export const logout = () => {
   // Clear tokens from localStorage
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
-
-  // redirect to login page after logout
-  window.location.href = '/login';
 };
 
 /**

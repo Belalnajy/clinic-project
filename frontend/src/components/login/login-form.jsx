@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/Auth/useAuth';
+import { useState } from 'react';
+import { demoAccounts } from './login-data';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -22,6 +24,7 @@ const formSchema = z.object({
 
 export function LoginForm({ className, ...props }) {
   const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -30,11 +33,28 @@ export function LoginForm({ className, ...props }) {
     },
   });
 
-  //! For Testing
   const onSubmit = async (credentials) => {
-    // Handle form submission
     console.log('Form submitted:', credentials);
-    await login(credentials);
+    try {
+      setIsSubmitting(true);
+      await login(credentials);
+      navigate('/dashboard');
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate('/login');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDemoAccountClick = (role) => {
+    const account = demoAccounts.find((account) => account.role === role);
+    console.log(account);
+    if (account) {
+      form.setValue('email', account.email);
+      form.setValue('password', account.password);
+    }
   };
 
   return (
@@ -91,8 +111,8 @@ export function LoginForm({ className, ...props }) {
                   )}
                 />
 
-                <Button type="submit" className="w-full bg-primary">
-                  Login
+                <Button type="submit" className="w-full bg-primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Logging in...' : 'Login'}
                 </Button>
                 {/* Dmo Account Buttons */}
                 <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -105,9 +125,8 @@ export function LoginForm({ className, ...props }) {
                     type="button"
                     variant="outline"
                     className="py-2"
-                    onClick={() =>
-                      login({ email: 'sarah.johnson@clinic.com', password: 'password' })
-                    }
+                    disabled={isSubmitting}
+                    onClick={() => handleDemoAccountClick('manager')}
                   >
                     Manager
                   </Button>
@@ -115,7 +134,8 @@ export function LoginForm({ className, ...props }) {
                     type="button"
                     variant="outline"
                     className="py-2"
-                    onClick={() => login({ email: 'emily.chen@clinic.com', password: 'password' })}
+                    disabled={isSubmitting}
+                    onClick={() => handleDemoAccountClick('doctor')}
                   >
                     Doctor
                   </Button>
@@ -123,7 +143,8 @@ export function LoginForm({ className, ...props }) {
                     type="button"
                     variant="outline"
                     className="py-2"
-                    onClick={() => login({ email: 'john.smith@clinic.com', password: 'password' })}
+                    disabled={isSubmitting}
+                    onClick={() => handleDemoAccountClick('secretary')}
                   >
                     Secretary
                   </Button>

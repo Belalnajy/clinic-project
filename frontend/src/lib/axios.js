@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:8000/api';
+// In development, we use the proxy, so we don't need the full URL
+const baseURL = import.meta.env.DEV ? '/api' : 'http://localhost:8000/api';
 
 const axiosInstance = axios.create({
   baseURL,
@@ -36,8 +37,9 @@ axiosInstance.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (!refreshToken) {
-          // No refresh token available, redirect to login
-          window.location.href = '/login';
+          // Clear tokens and reject the error
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
           return Promise.reject(error);
         }
 
@@ -57,10 +59,9 @@ axiosInstance.interceptors.response.use(
         // Retry the original request
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, clear tokens and redirect to login
+        // If refresh fails, clear tokens and reject the error
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }

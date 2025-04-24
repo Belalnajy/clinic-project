@@ -44,3 +44,21 @@ export function getUsers() {
   const users = localStorage.getItem('users');
   return users ? JSON.parse(users) : [];
 }
+
+export const demoAccounts = [
+  {
+    role: 'manager',
+    email: import.meta.env.VITE_DEMO_MANAGER_EMAIL || 'manager1@gmail.com',
+    password: import.meta.env.VITE_DEMO_MANAGER_PASSWORD || 'testpass1234',
+  },
+  {
+    role: 'doctor',
+    email: import.meta.env.VITE_DEMO_DOCTOR_EMAIL || 'doctor1@gmail.com',
+    password: import.meta.env.VITE_DEMO_DOCTOR_PASSWORD || 'testpass1234',
+  },
+  {
+    role: 'secretary',
+    email: import.meta.env.VITE_DEMO_SECRETARY_EMAIL || 'sec1@gmail.com',
+    password: import.meta.env.VITE_DEMO_SECRETARY_PASSWORD || 'testpass1234',
+  },
+];
