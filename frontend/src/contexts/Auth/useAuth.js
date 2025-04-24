@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import AuthContext from './context';
 import { toast } from 'sonner';
-import { getUsers } from '@/components/login/login-data';
+import { login as apiLogin, logout as apiLogout } from '@/api/auth';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -9,39 +9,34 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
 
-  const { user, setUser, isLoading, isAuthenticated, setIsAuthenticated } = context;
+  const { user, setUser, isLoading, isAuthenticated, setIsAuthenticated, fetchUserData } = context;
 
-  const login = (userData) => {
-    const users = getUsers();
-    const foundUser = users.find(
-      (user) => user.email === userData.email && user.password === userData.password
-    );
+  const login = async (credentials) => {
+    try {
+      // Call the API login function
+      await apiLogin(credentials.email, credentials.password);
 
-    if (foundUser) {
-      const { password, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      setIsAuthenticated(true);
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      console.log('Login successful:', foundUser);
-      toast.success(`welcome back, ${foundUser.name}`, {
-        description: "Here's your schedule for today",
+      // Fetch user data after successful login
+      await fetchUserData();
+
+      toast.success('Welcome back!', {
+        description: "You've successfully logged in.",
       });
       return true;
-    } else {
-      console.error('Invalid email or password');
-      toast.error('something went wrong', {
-        description: 'Invalid email or password.',
+    } catch (error) {
+      console.error('Login failed:', error);
+      toast.error('Login failed', {
+        description: error.response?.data?.detail || 'Invalid email or password.',
       });
       return false;
     }
   };
 
   const logout = () => {
+    apiLogout();
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('currentUser');
-    console.log('Logged out');
-    toast('GoodBye !', {
+    toast('Goodbye!', {
       description: 'You have been successfully logged out',
     });
   };

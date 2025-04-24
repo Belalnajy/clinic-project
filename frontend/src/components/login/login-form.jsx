@@ -21,7 +21,7 @@ const formSchema = z.object({
 });
 
 export function LoginForm({ className, ...props }) {
-  const { user, login } = useAuth();
+  const { login } = useAuth();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -31,21 +31,10 @@ export function LoginForm({ className, ...props }) {
   });
 
   //! For Testing
-  const onSubmit = (data) => {
+  const onSubmit = async (credentials) => {
     // Handle form submission
-    console.log('Form submitted:', data);
-    try {
-      const success = login(data);
-      if (success) {
-        // Redirect to dashboard or another page
-        console.log('Login successful');
-      } else {
-        // Handle login failure
-        console.error('invalid username or password');
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    console.log('Form submitted:', credentials);
+    await login(credentials);
   };
 
   return (
