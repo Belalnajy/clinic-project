@@ -16,6 +16,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import MedicationsPage from './pages/MedicationsPage';
 import MedicationForm from './pages/MedicationForm';
+import RootRedirect from './components/RootRedirect';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     errorElement: <div>404 Not Found</div>,
     children: [
+      {
+        index: true,
+        element: <RootRedirect />,
+      },
       {
         path: 'settings',
         element: (
