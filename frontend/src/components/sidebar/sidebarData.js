@@ -38,6 +38,12 @@ export const getNavItems = (user) => {
       label: 'Settings',
       roles: ['manager', 'doctor', 'secretary'],
     },
+    {
+      path: '/AiAssistant',
+      icon: 'fas fa-robot',
+      label: 'AI Assistant',
+      roles: ['manager', 'doctor', 'secretary'],
+    }
   ];
 
   return navItems.filter((item) => item.roles.includes(user.role));

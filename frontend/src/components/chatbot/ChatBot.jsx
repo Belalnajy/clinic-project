@@ -12,6 +12,52 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
 
+  // Utility function to log in and get tokens
+  const login = async () => {
+    try {
+      const res = await axios.post('http://127.0.0.1:8000/api/auth/jwt/create/', {
+        email: 'hamseldakrory14@gmail.com',
+        password: 'team4',
+      });
+
+      const { access, refresh } = res.data;
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+      console.log('Login successful. Tokens saved.');
+    } catch (err) {
+      console.error('Login failed:', err);
+      throw new Error('Login failed. Please check your credentials.');
+    }
+  };
+
+  // Utility function to get access token
+  const getAccessToken = async () => {
+    let token = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (!token && !refreshToken) {
+      console.error('No valid tokens found. Logging in...');
+      await login(); // Log in if no tokens are found
+      token = localStorage.getItem('access_token');
+    }
+
+    if (!token && refreshToken) {
+      try {
+        const res = await axios.post('http://127.0.0.1:8000/api/auth/jwt/refresh/', {
+          refresh: refreshToken,
+        });
+        token = res.data.access;
+        localStorage.setItem('access_token', token); // Update access token
+      } catch (err) {
+        console.error('Failed to refresh token:', err);
+        throw new Error('Authentication failed. Please log in again.');
+      }
+    }
+
+    console.log('Access Token:', token); // Debug log
+    return token;
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
     const userMessage = { role: 'user', content: input };
@@ -20,16 +66,17 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const token = await getAccessToken(); // Get or refresh the token
+      console.log('Sending message with token:', token); // Debug log
 
       // Send the chat message to backend with JWT using Axios
       const res = await axios.post(
-        'http://localhost:8000/api/chatbot/',
-        { message: input }, // Message body to be sent
+        'http://127.0.0.1:8000/api/chatbot/',
+        { message: input },
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, 
+            Authorization: `JWT ${token}`,
           },
         }
       );
@@ -47,6 +94,7 @@ export default function ChatBot() {
         ]);
       }
     } catch (err) {
+      console.error('Error sending message:', err); // Debug log
       setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Network error' }]);
     } finally {
       setLoading(false);

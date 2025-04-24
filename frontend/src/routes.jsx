@@ -12,6 +12,7 @@ import Appointments from './pages/Appointments';
 import ManagerDashboard from './pages/ManagerDashboard';
 import PatientDetails from './pages/patient-details/PatientDetails';
 import SecretaryDashboard from './pages/SecretaryDashboard';
+import AiAssistant from './pages/AiAssistant';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
           { path: 'account', element: <AccountSettings /> },
         ],
       },
+      {path: 'AiAssistant/', element:<AiAssistant/>},
       { path: 'dashboard/doctor', element: <Dashboard /> },
       { path: 'dashboard/secretary', element: <SecretaryDashboard /> },
       { path: 'dashboard/manager', element: <ManagerDashboard /> },
@@ -40,7 +42,6 @@ const router = createBrowserRouter([
       { path: 'doctors', element: <DoctorsPage /> },
       { path: 'patients', element: <Patients /> },
       { path: 'patient/:id', element: <PatientDetails /> },
-      ,
       { path: 'appointments', element: <Appointments /> },
     ],
   },

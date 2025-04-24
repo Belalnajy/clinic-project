@@ -1,6 +1,6 @@
-import DashboardLayout from '@/layouts/DashboardLayout';
-import ChatBot from '@/components/ChatBot';
-import MainLayout from './layouts/MainLayout';
+
+import ChatBot from '@/components/chatbot/ChatBot';
+
 
 function AiAssistant() {
   return (
