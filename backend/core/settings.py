@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "medications",
     "billing",
     "chatbot",
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -153,10 +155,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 
-SIMPLE_JWT = {
-   'AUTH_HEADER_TYPES': ('JWT',),
-}
-
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_CREATE_PASSWORD_RETYPE': False,
@@ -194,6 +192,9 @@ LOGGING = {
         },
     },
 }
+
+
+
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -213,3 +214,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
