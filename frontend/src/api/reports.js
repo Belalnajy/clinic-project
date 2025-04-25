@@ -31,3 +31,18 @@ export const getDoctorPerformance = async (page = 1) => {
   });
   return response.data;
 };
+
+/**
+ * Fetch appointments with pagination and custom page size
+ * @param {number} page - Page number
+ * @returns {Promise<Object>} - Paginated appointments data
+ */
+export const getAppointments = async (page = 1) => {
+  const response = await axiosInstance.get('/appointments/', {
+    params: {
+      page,
+      page_size: 8,
+    },
+  });
+  return response.data;
+};
