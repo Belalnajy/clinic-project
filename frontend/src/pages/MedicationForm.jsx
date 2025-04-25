@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,22 +18,31 @@ import { Switch } from '@/components/ui/switch';
 import { medicationSchema, defaultMedicationValues } from '@/schemas/medication';
 import { toast } from 'sonner';
 import { useMedications } from '@/hooks/useMedications';
+import LoadingState from '@/components/LoadingState';
+import React from 'react';
 
 const MedicationForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
 
+  const { useMedication, createMedication, updateMedication, isCreating, isUpdating } =
+    useMedications();
+
+  // Fetch medication data if editing
+  const { data: medication, isLoading: isLoadingMedication, error: medicationError } = useMedication(id);
+
   const form = useForm({
     resolver: zodResolver(medicationSchema),
     defaultValues: defaultMedicationValues,
   });
 
-  const { useMedication, createMedication, updateMedication, isCreating, isUpdating } =
-    useMedications();
-
-  // Fetch medication data if editing
-  const { isLoading: isLoadingMedication } = useMedication(id);
+  // Initialize form with medication data once it's loaded
+  React.useEffect(() => {
+    if (isEditing && medication) {
+      form.reset(medication);
+    }
+  }, [isEditing, medication, form]);
 
   const onSubmit = async (values) => {
     try {
@@ -52,10 +61,35 @@ const MedicationForm = () => {
     } catch (error) {
       console.error('Error saving medication:', error);
       toast.error('Error', {
-        description: 'Failed to save medication.',
+        description: error.response.data.name || 'Failed to save medication.',
       });
     }
   };
+
+  // Show loading state while fetching medication data
+  if (isEditing && isLoadingMedication ) {
+    return <LoadingState fullPage={true} message="Loading medication details..." />;
+  }
+
+  // Show error state if medication doesn't exist
+  if (isEditing && medicationError) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate('/medications')} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Medications
+          </Button>
+          <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+            <h2 className="text-xl font-semibold text-destructive mb-2">Medication Not Found</h2>
+            <p className="text-muted-foreground">
+              The medication you're trying to edit doesn't exist or you don't have permission to access it.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -146,13 +180,8 @@ const MedicationForm = () => {
             </Button>
             <Button
               type="submit"
-              disabled={
-                form.formState.isSubmitting || isLoadingMedication || isCreating || isUpdating
-              }
+              disabled={form.formState.isSubmitting || isCreating || isUpdating}
             >
-              {(form.formState.isSubmitting || isLoadingMedication || isCreating || isUpdating) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
               {isEditing ? 'Update' : 'Create'} Medication
             </Button>
           </div>

@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { useMedications } from '@/hooks/useMedications';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import LoadingState from '@/components/LoadingState';
 
 const MedicationsTable = () => {
   const navigate = useNavigate();
@@ -53,7 +54,7 @@ const MedicationsTable = () => {
   };
 
   if (isLoadingMedications) {
-    return <LoadingSpinner size="lg" />;
+    return <LoadingState fullPage={true} message="Loading medications..."/>;
   }
 
   if (medicationsError) {

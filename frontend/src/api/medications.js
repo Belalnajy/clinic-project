@@ -41,6 +41,8 @@ export const createMedication = async (data) => {
  * @returns {Promise<Object>} - Updated medication data
  */
 export const updateMedication = async (id, data) => {
+  console.log(data);
+  console.log(id);
   const response = await axiosInstance.put(`/medications/${id}/`, data);
   return response.data;
 };
