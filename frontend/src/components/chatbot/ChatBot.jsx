@@ -22,9 +22,20 @@ export default function ChatBot() {
     ]);
   }, []);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  const formatMessage = (content) => {
+    const boldFormatted = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return boldFormatted.replace(/\n/g, '<br>');
+  };
+
   const sendMessage = async () => {
     const currentMessage = input.trim();
-    if (!currentMessage) return;
+    if (!currentMessage || loading) return;
 
     const userMessage = {
       role: 'user',
@@ -39,78 +50,91 @@ export default function ChatBot() {
     try {
       const res = await axiosInstance.post('/chatbot/', { message: currentMessage });
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: res.data.response || 'No response from AI',
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
+      const assistantMessage = {
+        role: 'assistant',
+        content: res.data.response || 'No response from AI.',
+        timestamp: new Date().toLocaleTimeString(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
+      const errorMsg = err.response?.data?.error || err.message || 'Unknown error';
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: `⚠️ Error: ${err.response?.data?.error || err.message || 'Unknown error'}`,
+          content: `Error: ${errorMsg}`,
           timestamp: new Date().toLocaleTimeString(),
         },
       ]);
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({
-          top: scrollRef.current.scrollHeight,
-          behavior: 'smooth',
-        });
-      }, 100);
     }
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-10 shadow-lg">
-      <CardContent className="p-6 space-y-4">
-        <h2 className="text-xl font-bold">💬 Clinic Assistant</h2>
-
-        <ScrollArea className="h-80 border rounded-md p-4 space-y-4" ref={scrollRef}>
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`p-3 rounded-2xl max-w-sm ${
-                msg.role === 'user'
-                  ? 'bg-blue-100 text-right ml-auto'
-                  : 'bg-gray-100 text-left mr-auto'
-              }`}
-            >
-              <div className="font-medium">
-                {msg.role === 'user' ? 'You' : 'Assistant'}
-                <span className="text-xs text-gray-500 ml-2">{msg.timestamp}</span>
+    <Card className="w-full mx-auto mt-10 shadow-xl rounded-2xl">
+      <CardContent className="p-6 space-y-5">
+        <h2 className="text-2xl font-bold text-center">Clinic Assistant</h2>
+        <ScrollArea
+          className="h-[400px] border rounded-lg p-4 overflow-y-auto bg-gray-50"
+          ref={scrollRef}
+        >
+          <div className="flex flex-col space-y-4">
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`max-w-[75%] px-5 py-4 rounded-2xl shadow-md whitespace-pre-wrap break-words ${
+                  msg.role === 'user'
+                    ? 'bg-blue-100 ml-auto text-right'
+                    : 'bg-white mr-auto text-left border'
+                }`}
+              >
+                <div className="text-xs text-gray-500 font-medium mb-1">
+                  {msg.role === 'user' ? 'You' : 'Assistant'} • {msg.timestamp}
+                </div>
+                {msg.role === 'assistant' ? (
+                  <div
+                    className="text-gray-800 text-sm leading-relaxed prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+                  />
+                ) : (
+                  <div className="text-sm text-gray-800">{msg.content}</div>
+                )}
               </div>
-              <div>{msg.content}</div>
-            </div>
-          ))}
-
-          {loading && (
-            <div className="bg-gray-100 p-3 rounded-2xl inline-block">
-              <Loader2 className="animate-spin inline-block mr-2" />
-              AI is thinking...
-            </div>
-          )}
+            ))}
+            {loading && (
+              <div className="bg-white border px-5 py-3 rounded-2xl inline-block mr-auto text-sm animate-pulse shadow-sm">
+                <Loader2 className="animate-spin inline-block mr-2" />
+                AI is thinking...
+              </div>
+            )}
+          </div>
         </ScrollArea>
-
-        <div className="flex items-center space-x-2">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!loading) sendMessage();
+          }}
+          className="flex items-end gap-2"
+        >
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question..."
-            className="flex-1"
+            placeholder="Ask a clinical or administrative question..."
+            className="flex-1 resize-none border focus:ring-2 focus:ring-blue-500"
             rows={2}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }}
           />
-          <Button onClick={sendMessage} disabled={loading}>
+          <Button type="submit" disabled={loading} className="h-10">
             {loading ? 'Sending...' : 'Send'}
           </Button>
-        </div>
+        </form>
       </CardContent>
     </Card>
   );
