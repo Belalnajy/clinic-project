@@ -52,7 +52,7 @@ const PatientDetails = () => {
 
         {/* Tabs Content */}
         <Overview patient={patient} />
-        <MedicalRecords patientId={patient.id} />
+        <MedicalRecords />
         <Prescriptions patientId={patient.id} />
         <LabResults patientId={patient.id} />
       </Tabs>
