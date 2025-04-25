@@ -3,9 +3,25 @@ import { useAuth } from '@/contexts/Auth/useAuth';
 
 // Define role-based route access
 const roleAccess = {
-  doctor: ['/dashboard/doctor', '/patients', '/patient/:id', '/appointments', '/settings'],
-  secretary: ['/dashboard/secretary', '/patients', '/patient/:id', '/appointments', '/settings'],
+  doctor: [
+    '/',
+    '/dashboard/doctor',
+    '/patients',
+    '/patient/:id',
+    '/appointments',
+    '/settings',
+    '/medications',
+  ],
+  secretary: [
+    '/',
+    '/dashboard/secretary',
+    '/patients',
+    '/patient/:id',
+    '/appointments',
+    '/settings',
+  ],
   manager: [
+    '/',
     '/dashboard/manager',
     '/patients',
     '/patient/:id',
@@ -14,6 +30,7 @@ const roleAccess = {
     '/reports',
     '/settings',
     '/register',
+    '/medications',
   ],
 };
 
@@ -55,6 +72,10 @@ export const ProtectedRoute = ({ children, requireAuth = true, allowedRoles = []
       if (path.includes(':')) {
         const pathRegex = new RegExp('^' + path.replace(/:[^/]+/g, '[^/]+') + '$');
         return pathRegex.test(currentPath);
+      }
+      // Handle root path
+      if (path === '/' && currentPath === '/') {
+        return true;
       }
       return currentPath.startsWith(path);
     });

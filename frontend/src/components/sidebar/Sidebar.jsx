@@ -1,15 +1,28 @@
 import { useAuth } from '@/contexts/Auth/useAuth';
 import { getNavItems } from './sidebarData';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { User, LogOut } from 'lucide-react';
+
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  //! For Testing
+
   const handleLogout = () => {
-    // Handle logout logic here
     logout();
     navigate('/login');
-    console.log('User logged out');
+  };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 'manager':
+        return 'Clinic Manager';
+      case 'doctor':
+        return 'Doctor';
+      case 'secretary':
+        return 'Secretary';
+      default:
+        return 'User';
+    }
   };
 
   return (
@@ -28,18 +41,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               {user?.avatar ? (
                 <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
               ) : (
-                <i className="fas fa-user"></i>
+                <User className="h-5 w-5 text-slate-500" />
               )}
             </div>
             <div>
-              <p className="font-medium text-sm">{user?.name}</p>
-              <p className="text-xs text-slate-500">
-                {user?.role === 'manager'
-                  ? 'Clinic Manager'
-                  : user?.role === 'doctor'
-                  ? 'Doctor'
-                  : 'Secretary'}
+              <p className="font-medium text-sm">
+                {user.first_name} {user.last_name}
               </p>
+              <p className="text-xs text-slate-500">{getRoleLabel(user?.role)}</p>
             </div>
           </div>
         </div>
@@ -47,27 +56,36 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         {/* Navigation Menu */}
         <nav className="flex-1 overflow-y-auto p-2">
           <ul className="space-y-1">
-            {getNavItems(user).map((item) => (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) => (isActive ? 'sidebar-item active' : 'sidebar-item')}
-                >
-                  <i className={`${item.icon} sidebar-icon`}></i>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
+            {getNavItems(user).map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                        isActive
+                          ? 'bg-primary-50 text-primary-600'
+                          : 'text-slate-600 hover:bg-slate-50'
+                      }`
+                    }
+                  >
+                    <Icon className="h-5 w-5 mr-3" />
+                    {item.label}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-200">
           <button
-            className="flex items-center text-sm text-slate-700 hover:text-red-500"
+            className="flex items-center text-sm text-slate-600 hover:text-red-500 transition-colors"
             onClick={handleLogout}
           >
-            <i className="fas fa-sign-out-alt w-5 h-5 mr-2"></i>
+            <LogOut className="h-5 w-5 mr-2" />
             Sign Out
           </button>
         </div>
@@ -90,45 +108,48 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               {user?.avatar ? (
                 <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
               ) : (
-                <i className="fas fa-user"></i>
+                <User className="h-5 w-5 text-slate-500" />
               )}
             </div>
             <div>
               <p className="font-medium text-sm">{user?.name}</p>
-              <p className="text-xs text-slate-500">
-                {user?.role === 'manager'
-                  ? 'Clinic Manager'
-                  : user?.role === 'doctor'
-                  ? 'Doctor'
-                  : 'Secretary'}
-              </p>
+              <p className="text-xs text-slate-500">{getRoleLabel(user?.role)}</p>
             </div>
           </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2">
           <ul className="space-y-1">
-            {getNavItems(user).map((item) => (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) => (isActive ? 'sidebar-item active' : 'sidebar-item')}
-                  onClick={() => toggleSidebar()}
-                >
-                  <i className={`${item.icon} sidebar-icon`}></i>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
+            {getNavItems(user).map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                        isActive
+                          ? 'bg-primary-50 text-primary-600'
+                          : 'text-slate-600 hover:bg-slate-50'
+                      }`
+                    }
+                    onClick={() => toggleSidebar()}
+                  >
+                    <Icon className="h-5 w-5 mr-3" />
+                    {item.label}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
         <div className="p-4 border-t border-slate-200">
           <button
-            className="flex items-center text-sm text-slate-700 hover:text-red-500"
+            className="flex items-center text-sm text-slate-600 hover:text-red-500 transition-colors"
             onClick={handleLogout}
           >
-            <i className="fas fa-sign-out-alt w-5 h-5 mr-2"></i>
+            <LogOut className="h-5 w-5 mr-2" />
             Sign Out
           </button>
         </div>
