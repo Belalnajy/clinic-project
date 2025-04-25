@@ -1,45 +1,38 @@
 import axiosInstance from '@/lib/axios';
 
 /**
- * Get all doctors with optional search query
+ * Get all doctors with optional search query and pagination
  * @param {string} query - Search query for filtering doctors
- * @returns {Promise<Array>} - List of doctors
+ * @param {number} page - Page number (1-based)
+ * @param {number} pageSize - Number of items per page
+ * @returns {Promise<Object>} - Paginated response with results and count
  */
-export const getDoctors = async (query = '') => {
+export const getDoctors = async (query = '', page = 1, pageSize = 10) => {
+  // console.log(query, page, pageSize);
   const response = await axiosInstance.get('/doctors/doctorsList/', {
-    params: { search: query },
+    params: {
+      search: query,
+      page,
+      page_size: pageSize,
+    },
   });
-  return response.data;
+  return {
+    results: response.data.results || [],
+    count: response.data.count || 0,
+  };
 };
 
 /**
- * Create a new doctor
- * @param {Object} doctorData - Doctor data to create
- * @returns {Promise<Object>} - Created doctor
- */
-export const createDoctor = async (doctorData) => {
-  const response = await axiosInstance.post('/doctors/doctorsList/', doctorData);
-  return response.data;
-};
-
-/**
- * Update an existing doctor
+ * Toggle doctor's active status
  * @param {number} id - Doctor ID
- * @param {Object} doctorData - Updated doctor data
+ * @param {boolean} isActive - New active status
  * @returns {Promise<Object>} - Updated doctor
  */
-export const updateDoctor = async (id, doctorData) => {
-  const response = await axiosInstance.patch(`/doctors/doctorsList/${id}/`, doctorData);
+export const toggleDoctorStatus = async (id, isActive) => {
+  const response = await axiosInstance.patch(`/doctors/doctorsList/${id}/`, {
+    is_active: isActive,
+  });
   return response.data;
-};
-
-/**
- * Delete a doctor
- * @param {number} id - Doctor ID
- * @returns {Promise<void>}
- */
-export const deleteDoctor = async (id) => {
-  await axiosInstance.delete(`/doctors/doctorsList/${id}/`);
 };
 
 /**
