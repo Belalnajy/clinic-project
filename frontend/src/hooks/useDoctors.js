@@ -1,56 +1,80 @@
-import { useState } from "react";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getDoctors,
+  createDoctor,
+  updateDoctor,
+  deleteDoctor,
+  getSpecializations,
+} from '@/api/doctors';
+import { toast } from 'sonner';
 
-const initialDoctors = [
-  {
-    id: 1,
-    name: "Dr. Sarah Johnson",
-    specialization: "Neurology",
-    email: "sarah.johnson@clinic.com",
-    phone: "555-123-4567",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    role: "Doctor",
-  },
-  {
-    id: 2,
-    name: "Dr. Emily Chen",
-    specialization: "Cardiology",
-    email: "emily.chen@clinic.com",
-    phone: "555-234-5678",
-    avatar: "/avatars/emily.png",
-    role: "Doctor",
-  },
-  {
-    id: 3,
-    name: "Dr. Mark Williams",
-    specialization: "General",
-    email: "mark.williams@clinic.com",
-    phone: "555-456-7890",
-    avatar: "/avatars/mark.png",
-    role: "Doctor",
-  },
-  {
-    id: 4,
-    name: "Dr. Jessica Lee",
-    specialization: "Dermatology",
-    email: "jessica.lee@clinic.com",
-    phone: "555-567-8901",
-    avatar: "/avatars/jessica.png",
-    role: "Doctor",
-  },
-];
+export const useDoctors = () => {
+  const [query, setQuery] = useState('');
+  const queryClient = useQueryClient();
 
-const useDoctors = () => {
-  const [doctors, setDoctors] = useState(initialDoctors);
-  const [query, setQuery] = useState("");
+  // Fetch doctors
+  const { data: doctors = [], isLoading } = useQuery({
+    queryKey: ['doctors', query],
+    queryFn: () => getDoctors(query),
+  });
 
-  const addDoctor = (doctor) => setDoctors(prev => [...prev, doctor]);
-  const filtered = doctors.filter(d =>
-    d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.specialization.toLowerCase().includes(query.toLowerCase()) ||
-    d.email.toLowerCase().includes(query.toLowerCase())
-  );
+  // Fetch specializations
+  const { data: specializations = [] } = useQuery({
+    queryKey: ['specializations'],
+    queryFn: getSpecializations,
+  });
 
-  return { doctors: filtered, addDoctor, setQuery };
+  // Create doctor mutation
+  const createDoctorMutation = useMutation({
+    mutationFn: createDoctor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      toast.success('Doctor added successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to add doctor', {
+        description: error.response?.data?.detail || 'Please try again',
+      });
+    },
+  });
+
+  // Update doctor mutation
+  const updateDoctorMutation = useMutation({
+    mutationFn: ({ id, data }) => updateDoctor(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      toast.success('Doctor updated successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to update doctor', {
+        description: error.response?.data?.detail || 'Please try again',
+      });
+    },
+  });
+
+  // Delete doctor mutation
+  const deleteDoctorMutation = useMutation({
+    mutationFn: deleteDoctor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      toast.success('Doctor deleted successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete doctor', {
+        description: error.response?.data?.detail || 'Please try again',
+      });
+    },
+  });
+
+  return {
+    doctors,
+    specializations,
+    isLoading,
+    query,
+    setQuery,
+    addDoctor: createDoctorMutation.mutate,
+    updateDoctor: updateDoctorMutation.mutate,
+    deleteDoctor: deleteDoctorMutation.mutate,
+  };
 };
-
-export default useDoctors;
