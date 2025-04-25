@@ -13,6 +13,12 @@ class AppointmentFilter(filters.FilterSet):
     status = filters.CharFilter()
     doctor = filters.NumberFilter()
     patient = filters.NumberFilter()
+    ordering = filters.OrderingFilter(
+        fields=(
+            ("appointment_date", "appointment_date"),
+            ("created_at", "created_at"),
+        )
+    )
 
     class Meta:
         model = Appointment
