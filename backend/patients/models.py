@@ -18,7 +18,6 @@ class Patient(models.Model):
     GENDER_CHOICES = [
         ("male", "Male"),
         ("female", "Female"),
-        ("other", "Other"),
     ]
 
     BLOOD_TYPE_CHOICES = [
