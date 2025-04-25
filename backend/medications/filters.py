@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from .models import Medication
 
+
 class MedicationFilter(filters.FilterSet):
     name = filters.CharFilter(lookup_expr="icontains")
     is_active = filters.BooleanFilter()
