@@ -1,318 +1,503 @@
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { format } from 'date-fns';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { addPatient } from "../../data/data"; 
-import { format } from "date-fns";
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import axiosInstance from '@/lib/axios';
 
-const PatientModal = ({ isOpen, onClose, onSave, user }) => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    dateOfBirth: "",
-    gender: "",
-    email: "",
-    phone: "",
-    address: "",
-    insuranceInfo: {
-      provider: "",
-      policyNumber: "",
-      expiryDate: "",
+const phoneRegex = /^\+20\d{10}$/; 
+
+const patientSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  dateOfBirth: z
+    .string()
+    .refine((val) => new Date(val) <= new Date(), 'Date of birth cannot be in the future'),
+  gender: z.string().min(1, 'Gender is required'),
+  email: z.string().email('Invalid email format').optional(),
+  phone: z.string().regex(phoneRegex, 'Phone format must be +20XXXXXXXXXX'),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  bloodType: z.string().optional(),
+  height: z.string().optional(),
+  weight: z.string().optional(),
+  paymentType: z.string().min(1, 'Payment type is required'),
+  creditCardNumber: z.string().optional(),
+  insuranceInfo: z.object({
+    provider: z.string().min(1, 'Insurance provider is required').optional(),
+    policyNumber: z.string().min(1, 'Policy number is required').optional(),
+    expiryDate: z
+      .string()
+      .refine((val) => new Date(val) >= new Date(), 'Insurance cannot be expired')
+      .optional(),
+  }),
+});
+
+const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
+  const [paymentType, setPaymentType] = useState('');
+  const form = useForm({
+    resolver: zodResolver(patientSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      dateOfBirth: '',
+      gender: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      bloodType: '',
+      height: '',
+      weight: '',
+      paymentType: '',
+      creditCardNumber: '',
+      insuranceInfo: {
+        provider: '',
+        policyNumber: '',
+        expiryDate: '',
+      },
     },
-    medicalHistory: [],
   });
 
-  const [errors, setErrors] = useState({});
+  const { reset } = form;
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Date of birth is required";
-    } else {
-      const today = new Date();
-      const dob = new Date(formData.dateOfBirth);
-      if (dob > today) newErrors.dateOfBirth = "Date of birth cannot be in the future";
-    }
-    if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\d{3}-\d{3}-\d{4}$/.test(formData.phone)) {
-      newErrors.phone = "Phone format must be XXX-XXX-XXXX";
-    }
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-    if (!formData.insuranceInfo.provider) {
-      newErrors.provider = "Insurance provider is required";
-    }
-    if (!formData.insuranceInfo.policyNumber) {
-      newErrors.policyNumber = "Policy number is required";
-    }
-    if (!formData.insuranceInfo.expiryDate) {
-      newErrors.expiryDate = "Insurance expiry date is required";
-    } else {
-      const expiry = new Date(formData.insuranceInfo.expiryDate);
-      if (expiry < new Date()) newErrors.expiryDate = "Insurance cannot be expired";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith("insuranceInfo.")) {
-      const field = name.split(".")[1];
-      setFormData({
-        ...formData,
-        insuranceInfo: { ...formData.insuranceInfo, [field]: value },
-      });
-      setErrors({ ...errors, [field]: "" });
-    } else {
-      setFormData({ ...formData, [name]: value });
-      setErrors({ ...errors, [name]: "" });
-    }
-  };
-
-  const handleSelectChange = (value) => {
-    setFormData({ ...formData, gender: value });
-    setErrors({ ...errors, gender: "" });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form");
-      return;
-    }
-
-    try {
-      const patientData = {
-        ...formData,
-        createdBy: user?.id || "secretary-1", 
-      };
-
-      const newPatient = addPatient(patientData);
-
-      toast.success(`Patient ${formData.fullName} added successfully`);
-
-      if (onSave) {
-        onSave(newPatient);
-      }
-
-      // Reset form and close modal
-      setFormData({
-        fullName: "",
-        dateOfBirth: "",
-        gender: "",
-        email: "",
-        phone: "",
-        address: "",
+  useEffect(() => {
+    if (patientData) {
+      reset({
+        firstName: patientData.first_name || '',
+        lastName: patientData.last_name || '',
+        dateOfBirth: patientData.birth_date || '',
+        gender: patientData.gender || '',
+        email: patientData.email || '',
+        phone: patientData.phone_number || '',
+        address: patientData.address || '',
+        city: patientData.city || '',
+        bloodType: patientData.blood_type || '',
+        height: patientData.height || '',
+        weight: patientData.weight || '',
+        paymentType: patientData.payment_type || '',
+        creditCardNumber: patientData.credit_card_number || '',
         insuranceInfo: {
-          provider: "",
-          policyNumber: "",
-          expiryDate: "",
+          provider: patientData.insurance_provider || '',
+          policyNumber: patientData.insurance_number || '',
+          expiryDate: patientData.insurance_expiration_date || '',
         },
-        medicalHistory: [],
       });
-      setErrors({});
+      setPaymentType(patientData.payment_type || '');
+    }
+  }, [patientData, reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      const payload = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        birth_date: data.dateOfBirth,
+        gender: data.gender,
+        email: data.email,
+        phone_number: data.phone,
+        address: data.address,
+        city: data.city,
+        blood_type: data.bloodType,
+        height: data.height,
+        weight: data.weight,
+        payment_type: data.paymentType,
+        credit_card_number: data.creditCardNumber,
+        insurance_provider: data.insuranceInfo?.provider,
+        insurance_number: data.insuranceInfo?.policyNumber,
+        insurance_expiration_date: data.insuranceInfo?.expiryDate,
+        created_by: 1
+      };
+      console.log('Data sent to API:', payload);
+      const response = await axiosInstance.post('/patients/patients/', payload);
+
+      toast.success(`Patient ${data.firstName} ${data.lastName} saved successfully`);
+      onSave(response.data);
+      form.reset();
       onClose();
     } catch (error) {
-      toast.error("Failed to add patient. Please try again.");
-      console.error("Error adding patient:", error);
+      toast.error('Failed to save patient. Please try again.');
+      console.error('test');
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent
+        className="max-w-lg w-full mx-auto px-6 py-4 bg-white rounded-lg shadow-lg" 
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        aria-describedby="add-patient-description"
+      >
         <DialogHeader>
-          <DialogTitle>Add New Patient</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-gray-800">
+            {patientData ? 'Edit Patient' : 'Add New Patient'}
+          </DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                placeholder="Full name"
-                value={formData.fullName}
-                onChange={handleChange}
-                aria-invalid={!!errors.fullName}
-                aria-describedby={errors.fullName ? "fullName-error" : undefined}
+        <p id="add-patient-description" className="sr-only">
+          Fill out the form below to {patientData ? 'edit' : 'add'} a patient.
+        </p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      First Name *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="First name"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.fullName && (
-                <p id="fullName-error" className="text-red-500 text-sm">
-                  {errors.fullName}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth *</Label>
-                <Input
-                  type="date"
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  max={format(new Date(), "yyyy-MM-dd")}
-                  aria-invalid={!!errors.dateOfBirth}
-                  aria-describedby={errors.dateOfBirth ? "dateOfBirth-error" : undefined}
-                />
-                {errors.dateOfBirth && (
-                  <p id="dateOfBirth-error" className="text-red-500 text-sm">
-                    {errors.dateOfBirth}
-                  </p>
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Last Name *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Last name"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender *</Label>
-                <Select
-                  name="gender"
-                  onValueChange={handleSelectChange}
-                  value={formData.gender}
-                  aria-invalid={!!errors.gender}
-                  aria-describedby={errors.gender ? "gender-error" : undefined}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.gender && (
-                  <p id="gender-error" className="text-red-500 text-sm">{errors.gender}</p>
-                )}
-              </div>
+              />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                type="email"
-                id="email"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="dateOfBirth"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Date of Birth *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Gender *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="email"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={handleChange}
-                aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "email-error" : undefined}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Email address"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.email && (
-                <p id="email-error" className="text-red-500 text-sm">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone *</Label>
-              <Input
-                type="tel"
-                id="phone"
+              <FormField
+                control={form.control}
                 name="phone"
-                placeholder="XXX-XXX-XXXX"
-                value={formData.phone}
-                onChange={handleChange}
-                aria-invalid={!!errors.phone}
-                aria-describedby={errors.phone ? "phone-error" : undefined}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Phone *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="+20XXXXXXXXXX"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.phone && (
-                <p id="phone-error" className="text-red-500 text-sm">{errors.phone}</p>
-              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
                 name="address"
-                placeholder="Street address"
-                value={formData.address}
-                onChange={handleChange}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Street address"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">City</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="City"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="provider">Insurance Provider *</Label>
-              <Input
-                id="provider"
-                name="insuranceInfo.provider"
-                placeholder="Insurance provider"
-                value={formData.insuranceInfo.provider}
-                onChange={handleChange}
-                aria-invalid={!!errors.provider}
-                aria-describedby={errors.provider ? "provider-error" : undefined}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="bloodType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Blood Type</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Blood type"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.provider && (
-                <p id="provider-error" className="text-red-500 text-sm">{errors.provider}</p>
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Height</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Height (e.g., 170 cm)"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Weight</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Weight (e.g., 70 kg)"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="paymentType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Payment Type *
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setPaymentType(value);
+                    }}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <SelectValue placeholder="Select payment type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="creditCard">Credit Card</SelectItem>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="policyNumber">Policy Number *</Label>
-              <Input
-                id="policyNumber"
-                name="insuranceInfo.policyNumber"
-                placeholder="Policy number"
-                value={formData.insuranceInfo.policyNumber}
-                onChange={handleChange}
-                aria-invalid={!!errors.policyNumber}
-                aria-describedby={errors.policyNumber ? "policyNumber-error" : undefined}
+            />
+            {paymentType === 'creditCard' && (
+              <FormField
+                control={form.control}
+                name="creditCardNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Credit Card Number *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Credit card number"
+                        {...field}
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.policyNumber && (
-                <p id="policyNumber-error" className="text-red-500 text-sm">
-                  {errors.policyNumber}
-                </p>
-              )}
-            </div>
+            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="expiryDate">Insurance Expiry Date *</Label>
-              <Input
-                type="date"
-                id="expiryDate"
-                name="insuranceInfo.expiryDate"
-                value={formData.insuranceInfo.expiryDate}
-                onChange={handleChange}
-                min={format(new Date(), "yyyy-MM-dd")}
-                aria-invalid={!!errors.expiryDate}
-                aria-describedby={errors.expiryDate ? "expiryDate-error" : undefined}
-              />
-              {errors.expiryDate && (
-                <p id="expiryDate-error" className="text-red-500 text-sm">
-                  {errors.expiryDate}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Add Patient</Button>
-          </DialogFooter>
-        </form>
+            {paymentType === 'insurance' && (
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="insuranceInfo.provider"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Insurance Provider *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Insurance provider"
+                          {...field}
+                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="insuranceInfo.policyNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Policy Number *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Policy number"
+                          {...field}
+                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="insuranceInfo.expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Insurance Expiry Date *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          min={format(new Date(), 'yyyy-MM-dd')}
+                          {...field}
+                          className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            <DialogFooter className="flex justify-end space-x-4">
+              <Button variant="outline" type="button" onClick={onClose} className="px-4 py-2">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                {patientData ? 'Save Changes' : 'Add Patient'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
