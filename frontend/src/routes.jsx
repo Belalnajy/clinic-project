@@ -16,6 +16,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import RegisterPage from './pages/Register';
 import MedicationsPage from './pages/MedicationsPage';
+import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
 
@@ -35,7 +36,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     errorElement: <div>404 Not Found</div>,
     children: [
       {
@@ -134,22 +139,17 @@ const router = createBrowserRouter([
             <MedicationsPage />
           </ProtectedRoute>
         ),
-      },
-      {
-        path: 'medications/new',
-        element: (
-          <ProtectedRoute allowedRoles={['doctor', 'manager']}>
-            <MedicationForm />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'medications/:id/edit',
-        element: (
-          <ProtectedRoute allowedRoles={['doctor', 'manager']}>
-            <MedicationForm />
-          </ProtectedRoute>
-        ),
+        children: [
+          { index: true, element: <MedicationsTable /> },
+          {
+            path: 'new',
+            element: <MedicationForm />,
+          },
+          {
+            path: ':id/edit',
+            element: <MedicationForm />,
+          },
+        ],
       },
     ],
   },

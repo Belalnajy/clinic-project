@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -17,8 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { medicationSchema, defaultMedicationValues } from '@/schemas/medication';
-import { getMedicationById, createMedication, updateMedication } from '@/services/medications';
 import { toast } from 'sonner';
+import { useMedications } from '@/hooks/useMedications';
 
 const MedicationForm = () => {
   const navigate = useNavigate();
@@ -30,30 +29,16 @@ const MedicationForm = () => {
     defaultValues: defaultMedicationValues,
   });
 
-  useEffect(() => {
-    const fetchMedication = async () => {
-      if (!isEditing) return;
+  const { useMedication, createMedication, updateMedication, isCreating, isUpdating } =
+    useMedications();
 
-      try {
-        const medication = await getMedicationById(id);
-        form.reset(medication);
-      } catch (error) {
-        console.error('Error fetching medication:', error);
-        toast.error({
-          title: 'Error',
-          description: 'Failed to load medication data.',
-        });
-        navigate('/medications');
-      }
-    };
-
-    fetchMedication();
-  }, [id, isEditing, form, navigate]);
+  // Fetch medication data if editing
+  const { isLoading: isLoadingMedication } = useMedication(id);
 
   const onSubmit = async (values) => {
     try {
       if (isEditing) {
-        await updateMedication(id, values);
+        await updateMedication({ id, data: values });
         toast.success('Success', {
           description: 'Medication updated successfully.',
         });
@@ -159,8 +144,15 @@ const MedicationForm = () => {
             <Button type="button" variant="outline" onClick={() => navigate('/medications')}>
               Cancel
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              disabled={
+                form.formState.isSubmitting || isLoadingMedication || isCreating || isUpdating
+              }
+            >
+              {(form.formState.isSubmitting || isLoadingMedication || isCreating || isUpdating) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {isEditing ? 'Update' : 'Create'} Medication
             </Button>
           </div>
