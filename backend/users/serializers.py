@@ -11,7 +11,8 @@ class UserCreateSerializer(UserCreateSerializer):
     """
     class Meta(UserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'password', 'first_name', 'last_name', 'role', 'status')
+        fields = ('id', 'email', 'password', 'first_name', 'last_name', 'role', 'status', 'is_active')
+        read_only_fields = ('is_active',)
 
     def create(self, validated_data):
         """
