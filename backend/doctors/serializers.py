@@ -29,11 +29,12 @@ class DoctorSerializer(serializers.ModelSerializer):
     )
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
+    is_active = serializers.BooleanField(source='user.is_active')
     class Meta:
         model = Doctor
         fields = [
             'id', 'user','first_name','last_name','specialization', 'specialization_id', 'license_number',
-            'years_of_experience', 'qualifications', 'bio', 'profile_picture',
+            'years_of_experience', 'qualifications', 'bio', 'profile_picture', 'is_active',
             'created_at', 'updated_at'
         ]
     def validate_license_number(self, value):
@@ -63,4 +64,12 @@ class DoctorSerializer(serializers.ModelSerializer):
         if self.instance is None and Doctor.objects.filter(user=user).exists():
             raise serializers.ValidationError("This user already has a doctor profile.")
         return data
+
+    def update(self, instance, validated_data):
+        if 'user' in validated_data and 'is_active' in validated_data['user']:
+            user = instance.user
+            user.is_active = validated_data['user']['is_active']
+            user.save()
+            validated_data.pop('user')
+        return super().update(instance, validated_data)
 
