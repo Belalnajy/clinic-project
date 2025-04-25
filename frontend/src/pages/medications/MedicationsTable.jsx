@@ -10,13 +10,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Search, Trash2, Pencil } from 'lucide-react';
+import { Search, Trash2, Pencil, ArrowLeft } from 'lucide-react';
 import CustomPagination from '@/components/CustomPagination';
 import { toast } from 'sonner';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 import { useMedications } from '@/hooks/useMedications';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LoadingState from '@/components/LoadingState';
+import CustomAlert from '@/components/CustomAlert';
 
 const MedicationsTable = () => {
   const navigate = useNavigate();
@@ -54,11 +55,25 @@ const MedicationsTable = () => {
   };
 
   if (isLoadingMedications) {
-    return <LoadingState fullPage={true} message="Loading medications..."/>;
+    return <LoadingState fullPage={true} message="Loading medications..." />;
   }
 
   if (medicationsError) {
-    return <div>Error loading medications: {medicationsError.message}</div>;
+    return (
+      <div className="container mx-auto py-6">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate('/medications')} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Medications
+          </Button>
+        </div>
+        <CustomAlert
+          message="Can't find medications or you don't have permission to
+          access it."
+          variant="destructive"
+        />
+      </div>
+    );
   }
 
   return (

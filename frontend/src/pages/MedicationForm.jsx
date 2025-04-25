@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { useMedications } from '@/hooks/useMedications';
 import LoadingState from '@/components/LoadingState';
 import React from 'react';
+import CustomAlert from '@/components/CustomAlert';
 
 const MedicationForm = () => {
   const navigate = useNavigate();
@@ -30,7 +31,11 @@ const MedicationForm = () => {
     useMedications();
 
   // Fetch medication data if editing
-  const { data: medication, isLoading: isLoadingMedication, error: medicationError } = useMedication(id);
+  const {
+    data: medication,
+    isLoading: isLoadingMedication,
+    error: medicationError,
+  } = useMedication(id);
 
   const form = useForm({
     resolver: zodResolver(medicationSchema),
@@ -67,7 +72,7 @@ const MedicationForm = () => {
   };
 
   // Show loading state while fetching medication data
-  if (isEditing && isLoadingMedication ) {
+  if (isEditing && isLoadingMedication) {
     return <LoadingState fullPage={true} message="Loading medication details..." />;
   }
 
@@ -80,13 +85,12 @@ const MedicationForm = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Medications
           </Button>
-          <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
-            <h2 className="text-xl font-semibold text-destructive mb-2">Medication Not Found</h2>
-            <p className="text-muted-foreground">
-              The medication you're trying to edit doesn't exist or you don't have permission to access it.
-            </p>
-          </div>
         </div>
+        <CustomAlert
+          message="The medication you're trying to edit doesn't exist or you don't have permission to
+              access it."
+          variant="destructive"
+        />
       </div>
     );
   }
