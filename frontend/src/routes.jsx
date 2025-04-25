@@ -19,6 +19,7 @@ import MedicationsPage from './pages/MedicationsPage';
 import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
+import AiAssistant from "./pages/AiAssistant";
 
 const router = createBrowserRouter([
   {
@@ -151,8 +152,17 @@ const router = createBrowserRouter([
           },
         ],
       },
-    ],
-  },
+
+      {
+        path: "ai-assistant",
+        element: (
+          <ProtectedRoute allowedRoles={["doctor","secretary","manager"]}>
+            <AiAssistant/>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  }
 ]);
 
 export default router;
