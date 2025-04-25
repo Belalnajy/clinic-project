@@ -1,56 +1,64 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getDoctors, getSpecializations, toggleDoctorStatus } from '@/api/doctors';
+import { toast } from 'sonner';
 
-const initialDoctors = [
-  {
-    id: 1,
-    name: "Dr. Sarah Johnson",
-    specialization: "Neurology",
-    email: "sarah.johnson@clinic.com",
-    phone: "555-123-4567",
-    avatar: "https://randomuser.me/api/portraits/women/65.jpg",
-    role: "Doctor",
-  },
-  {
-    id: 2,
-    name: "Dr. Emily Chen",
-    specialization: "Cardiology",
-    email: "emily.chen@clinic.com",
-    phone: "555-234-5678",
-    avatar: "/avatars/emily.png",
-    role: "Doctor",
-  },
-  {
-    id: 3,
-    name: "Dr. Mark Williams",
-    specialization: "General",
-    email: "mark.williams@clinic.com",
-    phone: "555-456-7890",
-    avatar: "/avatars/mark.png",
-    role: "Doctor",
-  },
-  {
-    id: 4,
-    name: "Dr. Jessica Lee",
-    specialization: "Dermatology",
-    email: "jessica.lee@clinic.com",
-    phone: "555-567-8901",
-    avatar: "/avatars/jessica.png",
-    role: "Doctor",
-  },
-];
+export const useDoctors = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const queryClient = useQueryClient();
 
-const useDoctors = () => {
-  const [doctors, setDoctors] = useState(initialDoctors);
-  const [query, setQuery] = useState("");
+  // Fetch doctors
+  const { data: doctorsData = { results: [], count: 0 }, isLoading } = useQuery({
+    queryKey: ['doctors', query, page, pageSize],
+    queryFn: () => getDoctors(query, page, pageSize),
+    initialData: { results: [], count: 0 },
+  });
 
-  const addDoctor = (doctor) => setDoctors(prev => [...prev, doctor]);
-  const filtered = doctors.filter(d =>
-    d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.specialization.toLowerCase().includes(query.toLowerCase()) ||
-    d.email.toLowerCase().includes(query.toLowerCase())
-  );
+  // Calculate pagination values
+  const totalPages = Math.ceil(doctorsData.count / pageSize);
+  const canPreviousPage = page > 1;
+  const canNextPage = page < totalPages;
 
-  return { doctors: filtered, addDoctor, setQuery };
+  // Pagination handlers
+  const previousPage = () => setPage((old) => Math.max(old - 1, 1));
+  const nextPage = () => setPage((old) => Math.min(old + 1, totalPages));
+  const goToPage = (pageNumber) => setPage(pageNumber);
+
+  // Fetch specializations
+  const { data: specializations = [] } = useQuery({
+    queryKey: ['specializations'],
+    queryFn: getSpecializations,
+  });
+
+  // Toggle doctor status mutation
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, isActive }) => toggleDoctorStatus(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      toast.success('Doctor status updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update doctor status');
+    },
+  });
+
+  return {
+    doctors: doctorsData.results || [],
+    totalDoctors: doctorsData.count || 0,
+    specializations,
+    isLoading,
+    query,
+    setQuery,
+    page,
+    pageSize,
+    totalPages,
+    canPreviousPage,
+    canNextPage,
+    previousPage,
+    nextPage,
+    goToPage,
+    toggleDoctorStatus: toggleStatusMutation.mutate,
+  };
 };
-
-export default useDoctors;
