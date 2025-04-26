@@ -59,6 +59,13 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Function to replace user data in context (for full profile updates)
+  const replaceUser = (newUser) => {
+    setUser(newUser);
+    setIsAuthenticated(true);
+    localStorage.setItem('userStatus', newUser.status);
+  };
+
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
@@ -100,6 +107,7 @@ const AuthProvider = ({ children }) => {
       value={{
         user,
         setUser: updateUserData,
+        replaceUser,
         isLoading,
         isAuthenticated,
         setIsAuthenticated,

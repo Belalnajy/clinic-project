@@ -8,6 +8,7 @@ from .models import Doctor, Specialization
 from .serializers import DoctorSerializer, SpecializationSerializer, DoctorRegistrationSerializer
 from django.db import transaction
 from users.models import User
+from users.serializers import UserProfileSerializer
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,18 +49,34 @@ class DoctorViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['user__first_name','user__last_name','user__email','specialization__name']
 
-    def update(self, request, *args, **kwargs):
-        try:
-            response = super().update(request, *args, **kwargs)
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except Exception as e:
-            logger.error(f"Error updating doctor profile: {str(e)}", exc_info=True)
-            return Response(
-                {'error': 'Failed to update doctor profile', 'detail': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+def update(self, request, *args, **kwargs):
+    try:
+        # Perform the update operation
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()  # Save the updated doctor instance
+
+            # Optionally, reload the user if you want to include updated user profile
+            user = instance.user
+            user_serializer = UserProfileSerializer(user, context={'request': request})
+            
+            # Return the updated doctor profile along with user data if needed
+            response_data = {
+                'doctor': serializer.data,
+                'user': user_serializer.data
+            }
+            return Response(response_data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        logger.error(f"Error updating doctor profile: {str(e)}", exc_info=True)
+        return Response(
+            {'error': 'Failed to update doctor profile', 'detail': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
     @action(detail=False, methods=['post'])
     def register(self, request):

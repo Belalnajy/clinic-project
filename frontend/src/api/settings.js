@@ -46,28 +46,6 @@ export const updateProfile = async (profileData) => {
   }
 };
 
-export const updateDoctorProfile = async (doctorData) => {
-  try {
-    const formData = new FormData();
-    Object.keys(doctorData).forEach((key) => {
-      if (doctorData[key] instanceof File) {
-        formData.append(key, doctorData[key]);
-      } else if (doctorData[key] !== undefined && doctorData[key] !== null) {
-        formData.append(key, doctorData[key]);
-      }
-    });
-
-    const response = await axiosInstance.put('/doctors/me/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
-};
-
 export const updatePassword = async (passwordData) => {
   try {
     const response = await axiosInstance.post('/auth/users/set_password/', passwordData);
@@ -77,14 +55,14 @@ export const updatePassword = async (passwordData) => {
   }
 };
 
-export const deleteAccount = async () => {
-  try {
-    const response = await axiosInstance.delete('/auth/users/me/');
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || error.message;
-  }
-};
+// export const deleteAccount = async () => {
+//   try {
+//     const response = await axiosInstance.delete('/auth/users/me/');
+//     return response.data;
+//   } catch (error) {
+//     throw error.response?.data || error.message;
+//   }
+// };
 
 export const uploadAvatar = async (file) => {
   try {

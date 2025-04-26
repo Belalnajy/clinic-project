@@ -54,14 +54,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if obj.role == 'doctor':
             try:
                 doctor = Doctor.objects.get(user=obj)
-                return {
-                    'specialization': doctor.specialization.name if doctor.specialization else None,
-                    'license_number': doctor.license_number,
-                    'years_of_experience': doctor.years_of_experience,
-                    'qualifications': doctor.qualifications,
-                    'bio': doctor.bio,
-                    'profile_picture': self.context['request'].build_absolute_uri(doctor.profile_picture.url) if doctor.profile_picture else None
-                }
+                return DoctorSerializer(doctor, context=self.context).data
             except Doctor.DoesNotExist:
                 return None
         return None
