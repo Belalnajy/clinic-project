@@ -3,7 +3,6 @@ import { tablistItems } from './tabListData';
 
 const TabList = ({ user }) => {
   const renderTabs = tablistItems.map((item) => {
-    if (item.permissions && !item.permissions.includes(user.role)) return;
     return (
       <TabsTrigger
         key={item.id}

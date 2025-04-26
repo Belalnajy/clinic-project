@@ -36,7 +36,7 @@ const Reports = () => {
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <Tabs defaultValue="overview" className="w-full">
-          <TabList user={{ role: 'manager' }} />
+          <TabList />
           {/* Overview Tab */}
           <OverviewTab
             appointmentMetrics={appointmentMetrics}
