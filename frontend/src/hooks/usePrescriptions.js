@@ -26,9 +26,10 @@ export const usePrescriptions = () => {
   // Mutation for creating a new prescription
   const createPrescriptionMutation = useMutation({
     mutationFn: createPrescription,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries(['prescriptions', patientId]);
       toast.success('Prescription created successfully');
+      return data; // Return the created prescription data
     },
     onError: (error) => {
       toast.error('Failed to create prescription', {
@@ -39,7 +40,8 @@ export const usePrescriptions = () => {
 
   // Mutation for adding medications
   const addMedicationsMutation = useMutation({
-    mutationFn: addMedicationsToPrescription,
+    mutationFn: ({ prescriptionId, medications }) =>
+      addMedicationsToPrescription(prescriptionId, medications),
     onSuccess: () => {
       queryClient.invalidateQueries(['prescriptions', patientId]);
       toast.success('Medications added successfully');

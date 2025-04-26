@@ -8,13 +8,16 @@ export const getPatientPrescriptions = async (page = 1, patientId) => {
 };
 
 export const createPrescription = async (medicalRecordId) => {
-  const response = await axiosInstance.post('/medical-records/', {
+  const response = await axiosInstance.post('/prescriptions/', {
     medical_record_id: medicalRecordId,
   });
   return response.data;
 };
 
-export const addMedicationsToPrescription = async (data) => {
-  const response = await axiosInstance.post('/prescription-medications/', data);
+export const addMedicationsToPrescription = async (prescriptionId, medications) => {
+  const response = await axiosInstance.post('/prescription-medications/', {
+    prescription_id: prescriptionId,
+    medications: medications,
+  });
   return response.data;
 };
