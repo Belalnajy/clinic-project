@@ -6,36 +6,66 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Loader2, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import axios from 'axios';
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 const doctorFormSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters long' }),
-  first_name: z.string().min(1, { message: 'First name is required' }),
-  last_name: z.string().min(1, { message: 'Last name is required' }),
-  role: z.literal('doctor'),
-  license_number: z.string().min(1, { message: 'License number is required' }),
-  years_of_experience: z.string().min(1, { message: 'Years of experience is required' }),
-  bio: z.string().min(10, { message: 'Bio must be at least 10 characters long' }),
-  qualifications: z.string().min(10, { message: 'Qualifications must be at least 10 characters long' }),
-  profile_picture: z
-    .any()
-    .refine((file) => file?.size <= MAX_FILE_SIZE, 'Max file size is 5MB')
-    .refine(
-      (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
-      'Only .jpg, .jpeg, .png and .webp files are accepted'
-    ),
+  email: z.string().email(),
+  password: z.string().min(8),
+  first_name: z.string().min(2),
+  last_name: z.string().min(2),
+  role: z.string(),
+  specialization_id: z.string().min(1, "Please select a specialization"),
+  license_number: z.string().min(5, "License number must be at least 5 characters"),
+  years_of_experience: z.string().min(1, "Years of experience is required"),
+  qualifications: z.string().min(5, "Qualifications must be at least 5 characters"),
+  bio: z.string().min(10, "Bio must be at least 10 characters"),
+  profile_picture: z.any().optional()
 });
 
 function DoctorFields() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const [specializations, setSpecializations] = useState([]);
+  const [isLoadingSpecializations, setIsLoadingSpecializations] = useState(true);
   const form = useFormContext();
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      try {
+        setIsLoadingSpecializations(true);
+        const response = await axios.get('/api/doctors/specializations/');
+        if (response.data) {
+          setSpecializations(response.data.results || response.data);
+        } else {
+          console.error('No data received from specializations endpoint');
+          setSpecializations([]);
+        }
+      } catch (error) {
+        console.error('Error fetching specializations:', error);
+        if (error.response) {
+          console.error('Server response:', error.response.data);
+        }
+        setSpecializations([]);
+      } finally {
+        setIsLoadingSpecializations(false);
+      }
+    };
+
+    fetchSpecializations();
+  }, []);
 
   const handleFileChange = (e, onChange) => {
     const file = e.target.files?.[0];
@@ -118,10 +148,40 @@ function DoctorFields() {
       />
 
       <FormField
+        name="specialization_id"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Specialization</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingSpecializations ? "Loading..." : "Select a specialization"} />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {isLoadingSpecializations ? (
+                  <SelectItem value="loading" disabled>Loading specializations...</SelectItem>
+                ) : specializations.length === 0 ? (
+                  <SelectItem value="no_specializations" disabled>No specializations available</SelectItem>
+                ) : (
+                  specializations.map((specialization) => (
+                    <SelectItem key={specialization.id} value={specialization.id.toString()}>
+                      {specialization.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
         name="license_number"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Medical License Number</FormLabel>
+            <FormLabel>License Number</FormLabel>
             <FormControl>
               <Input placeholder="Enter your medical license number" {...field} />
             </FormControl>
@@ -136,23 +196,12 @@ function DoctorFields() {
           <FormItem>
             <FormLabel>Years of Experience</FormLabel>
             <FormControl>
-              <Input type="number" min="0" placeholder="Enter years of experience" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        name="bio"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Bio</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Tell us about yourself and your medical background"
-                className="min-h-[100px]"
-                {...field}
+              <Input 
+                type="number" 
+                min="0" 
+                max="60" 
+                placeholder="Enter years of experience" 
+                {...field} 
               />
             </FormControl>
             <FormMessage />
@@ -166,10 +215,25 @@ function DoctorFields() {
           <FormItem>
             <FormLabel>Qualifications</FormLabel>
             <FormControl>
-              <Textarea
-                placeholder="List your medical qualifications and certifications"
-                className="min-h-[100px]"
-                {...field}
+              <Textarea 
+                placeholder="Enter your qualifications" 
+                {...field} 
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        name="bio"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Bio</FormLabel>
+            <FormControl>
+              <Textarea 
+                placeholder="Tell us about yourself" 
+                {...field} 
               />
             </FormControl>
             <FormMessage />

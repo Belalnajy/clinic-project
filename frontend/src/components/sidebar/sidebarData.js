@@ -8,6 +8,7 @@ import {
   Stethoscope,
   Settings,
   UserRoundPlus,
+  GraduationCap,
 } from 'lucide-react';
 const navItems = [
   {
@@ -59,6 +60,12 @@ const navItems = [
     allowedRoles: ['manager'],
   },
   {
+    path: '/specializations',
+    label: 'Specializations',
+    icon: GraduationCap,
+    allowedRoles: ['manager'],
+  },
+  {
     path: '/register',
     icon: UserRoundPlus,
     label: 'Add User',
@@ -68,6 +75,12 @@ const navItems = [
     path: '/settings',
     label: 'Settings',
     icon: Settings,
+    allowedRoles: ['manager', 'doctor', 'secretary'],
+  },
+  {
+    path: '/ai-assistant',
+    label: 'AI Assistant',
+    icon: Stethoscope,
     allowedRoles: ['manager', 'doctor', 'secretary'],
   },
 ];
