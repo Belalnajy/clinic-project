@@ -27,7 +27,7 @@ import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import { useMedicalRecords } from '@/hooks/useMedicalRecords';
-import { getLatestPatientAppointment, markAppointmentAsCompleted } from '@/api/appointments';
+import { getLatestPatientAppointment } from '@/api/appointments';
 import LoadingState from '@/components/LoadingState';
 import CustomAlert from '@/components/CustomAlert';
 
@@ -83,10 +83,9 @@ const MedicalRecord = ({ open, onOpenChange }) => {
       await createMedicalRecord({
         ...values,
         patient_id: +patientId,
-        doctor_id: user.id,
+        doctor_id: 25,
         appointment_id: appointment.id,
       });
-      await markAppointmentAsCompleted(appointment.appointment_id);
 
       toast.success('Success', {
         description: 'Medical record created successfully.',
@@ -96,7 +95,7 @@ const MedicalRecord = ({ open, onOpenChange }) => {
     } catch (error) {
       console.error('Error creating medical record:', error);
       toast.error('Error', {
-        description: error.response?.data?.detail || 'Failed to create medical record.',
+        description: error.response?.data?.message || 'Failed to create medical record.',
       });
     }
   };
