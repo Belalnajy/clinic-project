@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +22,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+} from "@/components/ui/alert-dialog";
+import { updatePassword, deleteAccount } from "@/api/settings";
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const passwordSchema = z.object({
   currentPassword: z.string()
@@ -40,6 +56,10 @@ const passwordSchema = z.object({
 });
 
 function AccountSettings() {
+  const { user, logout } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -50,18 +70,36 @@ function AccountSettings() {
   });
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updatePassword({
+        old_password: data.currentPassword,
+        new_password: data.newPassword,
+      });
       toast.success("Password updated successfully!");
       form.reset();
     } catch (error) {
-      toast.error("Failed to update password. Please try again.");
+      toast.error("Failed to update password", {
+        description: error.message || "Please try again",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteAccount = () => {
-    toast.warning("Account deletion is not yet implemented.");
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+      toast.success("Account deleted successfully");
+      logout();
+    } catch (error) {
+      toast.error("Failed to delete account", {
+        description: error.message || "Please try again",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -79,7 +117,7 @@ function AccountSettings() {
               <Input
                 id="username"
                 disabled
-                defaultValue="doctor"
+                defaultValue={user?.username || ""}
               />
               <p className="text-xs text-slate-500">
                 Username cannot be changed
@@ -139,11 +177,12 @@ function AccountSettings() {
                 type="button"
                 variant="outline"
                 onClick={() => form.reset()}
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit">
-                Update Password
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Updating..." : "Update Password"}
               </Button>
             </div>
           </form>
@@ -156,9 +195,34 @@ function AccountSettings() {
           <p className="text-sm text-slate-500">
             Once you delete your account, there is no going back. Please be certain.
           </p>
-          <Button variant="destructive" onClick={handleDeleteAccount}>
-            Delete Account
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Delete Account"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogPortal>
+              <AlertDialogOverlay className="fixed inset-0 bg-black/30" />
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your
+                    account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete Account
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogPortal>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>
