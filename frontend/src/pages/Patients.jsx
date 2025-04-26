@@ -1,52 +1,69 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
-import axiosInstance from '@/lib/axios';
+import { usePatients } from '@/hooks/usePatients';
 import PatientModal from '../components/modals/PatientModal';
 import PatientList from '@/components/PatientList';
-import CustomPagination from '@/components/CustomPagination'; // Import CustomPagination
-import { useAuth } from '@/contexts/Auth/useAuth'; // Import useAuth
+import CustomPagination from '@/components/CustomPagination';
+import CustomTabsList from '@/components/CustomTabsList';
+import { Tabs } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const Patients = () => {
-  const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('activated');
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get the logged-in user
+  const { user } = useAuth();
+
+  const {
+    usePatientsList,
+    useDeactivatedPatients,
+    createPatient,
+    updatePatient,
+    deletePatient,
+    activatePatient,
+    deactivatePatient,
+  } = usePatients();
+
+  const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList(
+    currentPage,
+    searchTerm
+  );
+  const { data: deactivatedPatientsData, isLoading: isLoadingDeactivatedPatients } =useDeactivatedPatients();
+
+  const patients = patientsData?.results || [];
+  const deactivatedPatients = deactivatedPatientsData || [];
+
+  // Filter deactivated patients based on search term (name, ID, or phone number)
+  const filteredDeactivatedPatients = deactivatedPatients.filter((patient) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchLower) ||
+      patient.id.toString().includes(searchLower) ||
+      (patient.phone_number || '').toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Pagination logic
   const itemsPerPage = 10;
+  const totalActivatedItems = patientsData?.count || 0;
+  const totalDeactivatedItems = filteredDeactivatedPatients.length || 0;
 
-  const fetchPatients = async (page = 1, search = '') => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get('/patients/patients/', {
-        params: { page, search },
-      });
-      setPatients(response.data.results);
-      setTotalItems(response.data.count); 
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to fetch patients');
-      setLoading(false);
-    }
-  };
+  // Paginate filtered deactivated patients
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDeactivatedPatients = filteredDeactivatedPatients.slice(startIndex, endIndex);
 
-  useEffect(() => {
-    fetchPatients(currentPage, searchTerm);
-  }, [currentPage, searchTerm]);
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
+  // Determine total items and displayed patients based on the active tab
+  const totalItems = activeTab === 'activated' ? totalActivatedItems : totalDeactivatedItems;
+  const displayedPatients = activeTab === 'activated' ? patients : paginatedDeactivatedPatients;
 
   const openModal = (patient = null) => {
     setSelectedPatient(patient);
@@ -58,84 +75,75 @@ const Patients = () => {
     setIsModalOpen(false);
   };
 
-  const handlePatientAction = (action, patientId) => {
-    switch (action) {
-      case 'view':
-        handleViewPatient(patientId);
-        break;
-      case 'edit':
-        const patientToEdit = patients.find((p) => p.id === patientId);
-        openModal(patientToEdit);
-        break;
-      case 'delete':
-        handleDeletePatient(patientId);
-        break;
-      case 'activate':
-        handleActivatePatient(patientId);
-        break;
-      case 'deactivate':
-        handleDeactivatePatient(patientId);
-        break;
-      default:
-        break;
-    }
-  };
-  const handleViewPatient =async (patientId) => {
-    try {
-      await axiosInstance.get(`/patients/patients/${patientId}/`);
-      navigate(`/patients/patients/${patientId}`);
-    } catch (error) {
-      toast.error('Failed to fetch patient details');
-    }
-  }
-  const handleDeletePatient = async (patientId) => {
-    try {
-      await axiosInstance.delete(`/patients/patients/${patientId}/`);
-      toast.success('Patient deleted successfully');
-      fetchPatients(currentPage, searchTerm);
-    } catch (error) {
-      toast.error('Failed to delete patient');
-    }
-  };
-
-  const handleActivatePatient = async (patientId) => {
-    try {
-      await axiosInstance.post(`/patients/patients/${patientId}/activate/`);
-      toast.success('Patient activated successfully');
-      fetchPatients(currentPage, searchTerm);
-    } catch (error) {
-      toast.error('Failed to activate patient');
-    }
-  };
-
-  const handleDeactivatePatient = async (patientId) => {
-    try {
-      await axiosInstance.post(`/patients/patients/${patientId}/deactivate/`);
-      toast.success('Patient deactivated successfully');
-      fetchPatients(currentPage, searchTerm);
-    } catch (error) {
-      toast.error('Failed to deactivate patient');
-    }
-  };
-
   const handleSavePatient = async (patientData) => {
     try {
       if (selectedPatient) {
-        await axiosInstance.put(`/patients/patients/${selectedPatient.id}/`, patientData);
+        await updatePatient({ id: selectedPatient.id, data: patientData });
         toast.success('Patient updated successfully');
       } else {
-        await axiosInstance.post('/patients/patients/', patientData);
+        await createPatient(patientData);
         toast.success('Patient created successfully');
       }
-      fetchPatients(currentPage, searchTerm);
       closeModal();
     } catch (error) {
       toast.error(`Failed to ${selectedPatient ? 'update' : 'create'} patient`);
+      console.error(error);
     }
   };
-  const handlePageChange = (page) => {
-    setCurrentPage(page); 
+
+  const handlePatientAction = async (action, patientId) => {
+    try {
+      switch (action) {
+        case 'view':
+          navigate(`/patients/patients/${patientId}`);
+          break;
+        case 'edit':
+          // Find the patient from the correct list based on the active tab
+          const patientToEdit = (activeTab === 'activated' ? patients : deactivatedPatients).find(
+            (p) => p.id === patientId
+          );
+          openModal(patientToEdit);
+          break;
+        case 'delete':
+          await deletePatient(patientId);
+          toast.success('Patient deleted successfully');
+          break;
+        case 'activate':
+          await activatePatient(patientId);
+          toast.success('Patient activated successfully');
+          break;
+        case 'deactivate':
+          await deactivatePatient(patientId);
+          toast.success('Patient deactivated successfully');
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      toast.error(`Failed to ${action} patient`);
+      console.error(error);
+    }
   };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when switching tabs
+  };
+
+  const tabsData = [
+    { value: 'activated', label: 'Activated Patients' },
+    { value: 'deactivated', label: 'Deactivated Patients' },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col">
@@ -170,39 +178,44 @@ const Patients = () => {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead>
-                <tr className="border-b bg-slate-50">
-                  <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
-                    Patient
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    ID
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Gender
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Age
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Contact
-                  </th>
-                  <th className="h-12 px-4 text-center align-middle font-medium text-slate-500">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <PatientList
-                patients={patients}
-                loading={loading}
-                searchTerm={searchTerm}
-                handlePatientAction={handlePatientAction}
-                openModal={openModal}
-              />
-            </table>
-          </div>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <CustomTabsList tabsData={tabsData} />
+            <div className="overflow-x-auto">
+              <table className="w-full caption-bottom text-sm">
+                <thead>
+                  <tr className="border-b bg-slate-50">
+                    <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
+                      Patient
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      ID
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Gender
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Age
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Contact
+                    </th>
+                    <th className="h-12 px-4 text-center align-middle font-medium text-slate-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <PatientList
+                  patients={displayedPatients}
+                  loading={
+                    activeTab === 'activated' ? isLoadingPatients : isLoadingDeactivatedPatients
+                  }
+                  searchTerm={searchTerm}
+                  handlePatientAction={handlePatientAction}
+                  openModal={openModal}
+                />
+              </table>
+            </div>
+          </Tabs>
         </CardContent>
       </Card>
       <CustomPagination

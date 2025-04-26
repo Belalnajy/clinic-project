@@ -24,7 +24,6 @@ const patients = z.object({
       policyNumber: z.string().optional(),
       expiryDate: z
         .string()
-        .refine((val) => !val || new Date(val) >= new Date(), 'Insurance cannot be expired')
         .optional(),
     })
     .optional(),
