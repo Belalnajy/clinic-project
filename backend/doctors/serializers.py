@@ -45,8 +45,13 @@ class DoctorRegistrationSerializer(serializers.Serializer):
         return value
 
     def validate_license_number(self, value):
-        if value and Doctor.objects.filter(license_number=value).exists():
-            raise serializers.ValidationError("This license number is already in use.")
+        if value:
+            # Check if license number exists but exclude current instance
+            existing = Doctor.objects.filter(license_number=value)
+            if self.instance:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise serializers.ValidationError("This license number is already in use.")
         return value
 
     def validate_years_of_experience(self, value):
@@ -87,8 +92,13 @@ class DoctorSerializer(serializers.ModelSerializer):
         ]
     
     def validate_license_number(self, value):
-        if value and Doctor.objects.filter(license_number=value).exists():
-            raise serializers.ValidationError("This license number is already in use.")
+        if value:
+            # Check if license number exists but exclude current instance
+            existing = Doctor.objects.filter(license_number=value)
+            if self.instance:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise serializers.ValidationError("This license number is already in use.")
         return value
     
     def validate_years_of_experience(self, value):
@@ -119,10 +129,14 @@ class DoctorSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
+        print('DoctorSerializer.update called with:', validated_data)
         if 'user' in validated_data and 'is_active' in validated_data['user']:
             user = instance.user
             user.is_active = validated_data['user']['is_active']
             user.save()
             validated_data.pop('user')
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+        instance.save()
+        print('Doctor after save:', instance.license_number, instance.years_of_experience, instance.qualifications, instance.bio)
+        return instance
 
