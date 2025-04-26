@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import {
   getAppointmentMetrics,
@@ -10,14 +10,14 @@ import {
 } from '@/api/reports';
 
 export const useReports = () => {
-  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  // Filters from URL
   const currentPage = Number(searchParams.get('page')) || 1;
   const doctor = searchParams.get('doctor') || '';
   const specialization = searchParams.get('specialization') || '';
   const status = searchParams.get('status') || '';
 
-  // Handle date and date range from URL
+  // Date filter
   const startDateStr = searchParams.get('startDate');
   const endDateStr = searchParams.get('endDate');
   let date = null;
@@ -30,54 +30,35 @@ export const useReports = () => {
     date = new Date(searchParams.get('date'));
   }
 
-  // Fetch appointment metrics
-  const {
-    data: appointmentMetrics,
-    isLoading: isLoadingAppointmentMetrics,
-    error: appointmentMetricsError,
-  } = useQuery({
+  // Queries
+  const appointmentMetricsQuery = useQuery({
     queryKey: ['appointmentMetrics'],
     queryFn: getAppointmentMetrics,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch patient analysis
-  const {
-    data: patientAnalysis,
-    isLoading: isLoadingPatientAnalysis,
-    error: patientAnalysisError,
-  } = useQuery({
+  const patientAnalysisQuery = useQuery({
     queryKey: ['patientAnalysis'],
     queryFn: getPatientAnalysis,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch doctors
-  const {
-    data: doctors,
-    isLoading: isLoadingDoctors,
-    error: doctorsError,
-  } = useQuery({
+  const doctorsQuery = useQuery({
     queryKey: ['doctors'],
     queryFn: getDoctors,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch specializations
-  const {
-    data: specializations,
-    isLoading: isLoadingSpecializations,
-    error: specializationsError,
-  } = useQuery({
+  const specializationsQuery = useQuery({
     queryKey: ['specializations'],
     queryFn: getSpecializations,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const doctorPerformanceQuery = useQuery({
     queryKey: ['doctorPerformance', currentPage],
     queryFn: () => getDoctorPerformance(currentPage),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const appointmentsQuery = useQuery({
@@ -87,29 +68,34 @@ export const useReports = () => {
       doctor,
       specialization,
       status,
-      date
+      date,
     }),
-    keepPreviousData: true, // Keep previous data while loading new data
+    keepPreviousData: true,
   });
 
   return {
-    appointmentMetrics,
-    isLoadingAppointmentMetrics,
-    appointmentMetricsError,
-    patientAnalysis,
-    isLoadingPatientAnalysis,
-    patientAnalysisError,
+    // Appointment metrics
+    appointmentMetrics: appointmentMetricsQuery.data,
+    isLoadingAppointmentMetrics: appointmentMetricsQuery.isLoading,
+    appointmentMetricsError: appointmentMetricsQuery.error,
+    // Patient analysis
+    patientAnalysis: patientAnalysisQuery.data,
+    isLoadingPatientAnalysis: patientAnalysisQuery.isLoading,
+    patientAnalysisError: patientAnalysisQuery.error,
+    // Doctor performance
     doctorPerformanceData: doctorPerformanceQuery.data,
     isLoadingDoctorPerformance: doctorPerformanceQuery.isLoading,
     doctorPerformanceError: doctorPerformanceQuery.error,
+    // Appointments
     appointmentsData: appointmentsQuery.data,
     isLoadingAppointments: appointmentsQuery.isLoading,
     appointmentsError: appointmentsQuery.error,
-    doctors,
-    isLoadingDoctors,
-    doctorsError,
-    specializations,
-    isLoadingSpecializations,
-    specializationsError,
+    // Doctors and specializations
+    doctors: doctorsQuery.data,
+    isLoadingDoctors: doctorsQuery.isLoading,
+    doctorsError: doctorsQuery.error,
+    specializations: specializationsQuery.data,
+    isLoadingSpecializations: specializationsQuery.isLoading,
+    specializationsError: specializationsQuery.error,
   };
 };
