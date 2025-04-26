@@ -6,61 +6,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniqueProviders }) => {
+const TableFilters = ({ filters, handleFilterChange, doctors = [], specializations = [] }) => {
   return (
     <div className="mb-4 mt-5 flex flex-wrap gap-4">
       <Select
-        defaultValue="all"
-        onValueChange={(value) => handleFilterChange('location', value === 'all' ? '' : value)}
+        value={filters.doctor || 'all'}
+        onValueChange={(value) => handleFilterChange('doctor', value === 'all' ? '' : value)}
       >
         <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Select Specialization" />
+          <SelectValue placeholder="Select Doctor" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Specializations</SelectItem>
-          {uniqueSpecializations.map((specialization, index) => (
-            <SelectItem key={index} value={specialization}>
-              {specialization}
-            </SelectItem>
-          ))}
+          <SelectItem value="all">All Doctors</SelectItem>
+          {Array.isArray(doctors) &&
+            doctors.map((doctor) => (
+              <SelectItem key={doctor.id} value={doctor.id}>
+                {`${doctor.first_name} ${doctor.last_name}`}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
 
       <Select
-        defaultValue="all"
-        onValueChange={(value) => handleFilterChange('provider', value === 'all' ? '' : value)}
-      >
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Select Provider" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Providers</SelectItem>
-          {uniqueProviders.map((provider) => (
-            <SelectItem key={provider.id} value={provider.id}>
-              {provider.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Select
-        defaultValue="all"
-        onValueChange={(value) =>
-          handleFilterChange('appointmentType', value === 'all' ? '' : value)
-        }
-      >
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Select Type" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Types</SelectItem>
-          <SelectItem value="Consultation">Consultation</SelectItem>
-          <SelectItem value="Follow-up">Follow-up</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select
-        defaultValue="all"
+        value={filters.status || 'all'}
         onValueChange={(value) => handleFilterChange('status', value === 'all' ? '' : value)}
       >
         <SelectTrigger className="w-full md:w-[180px]">
@@ -68,9 +36,28 @@ const TableFilters = ({ filters, handleFilterChange, uniqueSpecializations, uniq
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="Scheduled">Scheduled</SelectItem>
-          <SelectItem value="Completed">Completed</SelectItem>
-          <SelectItem value="Cancelled">Cancelled</SelectItem>
+          <SelectItem value="scheduled">Scheduled</SelectItem>
+          <SelectItem value="completed">Completed</SelectItem>
+          <SelectItem value="canceled">Canceled</SelectItem>
+          <SelectItem value="in_queue">In Queue</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={filters.date_filter || 'all'}
+        onValueChange={(value) => handleFilterChange('date_filter', value === 'all' ? '' : value)}
+      >
+        <SelectTrigger className="w-full md:w-[180px]">
+          <SelectValue placeholder="Select Date Range" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Dates</SelectItem>
+          <SelectItem value="today">Today</SelectItem>
+          <SelectItem value="yesterday">Yesterday</SelectItem>
+          <SelectItem value="this_week">This Week</SelectItem>
+          <SelectItem value="last_week">Last Week</SelectItem>
+          <SelectItem value="this_month">This Month</SelectItem>
+          <SelectItem value="last_month">Last Month</SelectItem>
         </SelectContent>
       </Select>
     </div>

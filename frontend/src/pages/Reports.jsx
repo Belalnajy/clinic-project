@@ -4,6 +4,7 @@ import { Tabs } from '@/components/ui/tabs';
 import TabList from '@/components/Reports/tabs-list/TabList';
 import OverviewTab from '@/components/Reports/tabs/OverviewTab';
 import LoadingState from '@/components/LoadingState';
+import AppointmentsTab from '@/components/Reports/tabs/AppointmentsTab';
 
 const Reports = () => {
   const [searchParams] = useSearchParams();
@@ -18,16 +19,11 @@ const Reports = () => {
     isLoadingDoctorPerformance,
     appointmentsData,
     isLoadingAppointments,
+    doctors,
+    isLoadingDoctors,
+    specializations,
+    isLoadingSpecializations,
   } = useReports();
-
-  if (
-    isLoadingAppointmentMetrics ||
-    isLoadingPatientAnalysis ||
-    isLoadingDoctorPerformance ||
-    isLoadingAppointments
-  ) {
-    return <LoadingState fullPage={true} message="Loading reports and analytics..." />;
-  }
 
   return (
     <>
@@ -39,7 +35,21 @@ const Reports = () => {
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <Tabs defaultValue="overview" className="w-full">
           <TabList user={{ role: 'manager' }} />
-          <OverviewTab appointmentMetrics={appointmentMetrics} patientAnalysis={patientAnalysis} />
+          {/* Overview Tab */}
+          <OverviewTab
+            appointmentMetrics={appointmentMetrics}
+            patientAnalysis={patientAnalysis}
+            isLoading={isLoadingAppointmentMetrics || isLoadingPatientAnalysis}
+          />
+          {/* Appointments Tab */}
+          <AppointmentsTab
+            appointmentMetrics={appointmentMetrics}
+            appointmentsData={appointmentsData}
+            isLoadingAppointments={isLoadingAppointments}
+            doctors={doctors}
+            specializations={specializations}
+            isLoading={isLoadingDoctors || isLoadingSpecializations}
+          />
         </Tabs>
       </div>
     </>
