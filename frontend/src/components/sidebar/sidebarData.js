@@ -8,6 +8,7 @@ import {
   Stethoscope,
   Settings,
   UserRoundPlus,
+  GraduationCap,
 } from 'lucide-react';
 const navItems = [
   {
@@ -56,6 +57,12 @@ const navItems = [
     path: '/doctors',
     label: 'Doctors',
     icon: Stethoscope,
+    allowedRoles: ['manager'],
+  },
+  {
+    path: '/specializations',
+    label: 'Specializations',
+    icon: GraduationCap,
     allowedRoles: ['manager'],
   },
   {
