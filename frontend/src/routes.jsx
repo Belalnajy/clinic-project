@@ -20,6 +20,7 @@ import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
 import AiAssistant from "./pages/AiAssistant";
+import SpecializationsPage from './pages/specializations';
 
 const router = createBrowserRouter([
   {
@@ -90,6 +91,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['manager']}>
             <RegisterPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'specializations',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <SpecializationsPage />
           </ProtectedRoute>
         ),
       },
