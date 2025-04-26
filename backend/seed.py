@@ -89,6 +89,20 @@ def seed_database():
         "Migraine", "Infection", "Allergy", "Gastritis", "Anemia"
     ]
 
+    # Create admin user with superuser privileges
+    admin = User.objects.create_user(
+        email="admin@example.com",
+        password="password123",
+        role="admin",
+        first_name="Admin",
+        last_name="One",
+        is_staff=True,
+        is_active=True,
+        is_superuser=True,  # Added to grant full admin access
+        date_joined=timezone.now(),
+        status="available"
+    )
+
     # Create specializations
     print("Creating specializations...")
     specializations = []

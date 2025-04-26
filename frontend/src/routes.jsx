@@ -3,6 +3,7 @@ import MainLayout from './pages/layouts/MainLayout';
 import SettingsPage from './pages/SettingsPage';
 import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
+import ProfessionalSettings from './components/settings/ProfessionalSettings';
 import Dashboard from './pages/Dashboard';
 import Patients from './pages/Patients';
 import LoginPage from './pages/Login';
@@ -20,6 +21,7 @@ import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
 import AiAssistant from "./pages/AiAssistant";
+import SpecializationsPage from './pages/specializations';
 
 const router = createBrowserRouter([
   {
@@ -59,6 +61,7 @@ const router = createBrowserRouter([
           { index: true, element: <Navigate to="profile" replace /> },
           { path: 'profile', element: <ProfileSettings /> },
           { path: 'account', element: <AccountSettings /> },
+          { path: 'professional', element: <ProfessionalSettings /> },
         ],
       },
       {
@@ -90,6 +93,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['manager']}>
             <RegisterPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'specializations',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <SpecializationsPage />
           </ProtectedRoute>
         ),
       },

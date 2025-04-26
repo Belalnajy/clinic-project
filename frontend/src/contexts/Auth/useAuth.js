@@ -72,5 +72,6 @@ export const useAuth = () => {
     login,
     logout,
     register,
+    updateUser: setUser,
   };
 };
