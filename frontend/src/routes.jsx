@@ -19,6 +19,8 @@ import MedicationsPage from './pages/MedicationsPage';
 import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
+import AiAssistant from "./pages/AiAssistant";
+import SpecializationsPage from './pages/specializations';
 
 const router = createBrowserRouter([
   {
@@ -93,6 +95,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'specializations',
+        element: (
+          <ProtectedRoute allowedRoles={['manager']}>
+            <SpecializationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'reports',
         element: (
           <ProtectedRoute allowedRoles={['manager']}>
@@ -151,8 +161,17 @@ const router = createBrowserRouter([
           },
         ],
       },
-    ],
-  },
+
+      {
+        path: "ai-assistant",
+        element: (
+          <ProtectedRoute allowedRoles={["doctor","secretary","manager"]}>
+            <AiAssistant/>
+          </ProtectedRoute>
+        )
+      }
+    ]
+  }
 ]);
 
 export default router;

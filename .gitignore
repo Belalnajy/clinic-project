@@ -1,17 +1,48 @@
-# Root
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/venv/
+
+# Environment Variables
 *.env
+.env.local
+frontend/.env.local
+backend/.env
+
+# Build & Cache
 __pycache__/
 *.pyc
-
-# Backend
-backend/venv/
-backend/*.sqlite3
+frontend/dist/
 backend/staticfiles/
 
+# Database
+backend/*.sqlite3
+*.sqlite3
 
-node_modules/
+# Media Files
+backend/doctor_profile_pictures/
+backend/media/
+backend/uploads/
+backend/chat_images/
 
-# Frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env.local
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.coverage
+htmlcov/
