@@ -83,7 +83,7 @@ const MedicalRecord = ({ open, onOpenChange }) => {
       await createMedicalRecord({
         ...values,
         patient_id: +patientId,
-        doctor_id: 25,
+        doctor_id: user.doctor.id,
         appointment_id: appointment.id,
       });
 

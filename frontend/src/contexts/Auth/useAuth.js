@@ -64,7 +64,6 @@ export const useAuth = () => {
     // Use navigate instead of window.location
     navigate('/login');
   };
-  console.log(user);
   return {
     user,
     isLoading,
