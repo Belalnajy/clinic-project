@@ -15,6 +15,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useAuth } from "@/contexts/Auth/useAuth";
+import axios from "axios";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const baseFormSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -37,6 +40,8 @@ export function BaseRegisterForm({
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register: registerUser } = useAuth();
+  const navigate = useNavigate();
+  
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,7 +49,13 @@ export function BaseRegisterForm({
       password: "",
       first_name: "",
       last_name: "",
-      role: role
+      role: role,
+      specialization_id: "",
+      license_number: "",
+      years_of_experience: "",
+      qualifications: "",
+      bio: "",
+      profile_picture: null
     }
   });
 
@@ -52,14 +63,68 @@ export function BaseRegisterForm({
     try {
       setIsSubmitting(true);
 
-      const formData = new FormData();
-      Object.keys(data).forEach(key => {
-        formData.append(key, data[key]);
-      });
+      if (data.role === 'doctor') {
+        // For doctors, use the new registration endpoint
+        const formData = new FormData();
+        
+        // Add user fields
+        formData.append('email', data.email);
+        formData.append('password', data.password);
+        formData.append('first_name', data.first_name);
+        formData.append('last_name', data.last_name);
+        
+        // Add doctor fields
+        if (data.specialization_id) {
+          formData.append('specialization', data.specialization_id);
+        }
+        if (data.license_number) {
+          formData.append('license_number', data.license_number);
+        }
+        if (data.years_of_experience) {
+          formData.append('years_of_experience', data.years_of_experience);
+        }
+        if (data.bio) {
+          formData.append('bio', data.bio);
+        }
+        if (data.qualifications) {
+          formData.append('qualifications', data.qualifications);
+        }
+        if (data.profile_picture) {
+          formData.append('profile_picture', data.profile_picture);
+        }
 
-      await registerUser(formData);
+        try {
+          const response = await axios.post('/api/doctors/doctorsList/register/', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          console.log('Doctor registered successfully:', response.data);
+          toast.success('Registration successful! Welcome to the clinic.');
+          navigate('/');
+        } catch (error) {
+          console.error('Error registering doctor:', error);
+          if (error.response) {
+            console.error('Error response:', error.response.data);
+            toast.error(error.response.data.message || 'Failed to register. Please try again.');
+          }
+          throw error;
+        }
+      } else {
+        // For other roles, use the regular registration
+        const userFormData = new FormData();
+        userFormData.append('email', data.email);
+        userFormData.append('password', data.password);
+        userFormData.append('first_name', data.first_name);
+        userFormData.append('last_name', data.last_name);
+        userFormData.append('role', data.role);
+        await registerUser(userFormData);
+        toast.success('Registration successful! Welcome to the clinic.');
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error("Error during registration:", error);
+      toast.error('Registration failed. Please check your information and try again.');
     } finally {
       setIsSubmitting(false);
     }

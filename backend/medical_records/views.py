@@ -14,6 +14,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsDoctorOrManager
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 
 class CustomPagination(PageNumberPagination):
     """
@@ -34,6 +36,19 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
     filterset_class = MedicalRecordFilter
     filter_fields = ['created_at', 'patient', 'doctor']
     permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+
+        except Exception as e:
+            if 'medical_records_medicalrecord_appointment_id_key' in str(e):
+                return Response({
+                        "error": "Conflict",
+                        "message": "This appointment already has a medical record."
+                    }, status=status.HTTP_409_CONFLICT)
+            
+            raise
 
     @action(detail=False, methods=["get"], url_path="latest")
     def latest_medical_record(self, request):
@@ -72,6 +87,18 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PrescriptionFilter
     permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+
+        except Exception as e:
+            if 'medical_records_prescription_medical_record_id_key' in str(e):
+                return Response({
+                        "error": "Conflict",
+                        "message": "This medical record already has a prescription."
+                    }, status=status.HTTP_409_CONFLICT)
+            raise 
 
     @action(detail=False, methods=["get"], url_path="latest")
     def latest_prescription(self, request):

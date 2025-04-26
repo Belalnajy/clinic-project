@@ -2,7 +2,16 @@ import { useDoctors } from '@/hooks/useDoctors';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import DoctorCard from '../components/doctors/DoctorCard';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export const DoctorsPage = () => {
   const {
@@ -19,11 +28,40 @@ export const DoctorsPage = () => {
     previousPage,
     nextPage,
     goToPage,
+    setPageSize,
   } = useDoctors();
 
-  console.log('Loading state:', isLoading);
-  console.log('Doctors data:', doctors);
-  console.log('Total doctors:', totalDoctors);
+  // Calculate visible page numbers
+  const getVisiblePages = () => {
+    const delta = 1; // Number of pages to show on each side of current page
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= page - delta && i <= page + delta)
+      ) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -42,9 +80,29 @@ export const DoctorsPage = () => {
             className="pl-10"
           />
         </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalDoctors)} of {totalDoctors} doctors
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
+          <p className="text-sm text-gray-500">
+            Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalDoctors)} of {totalDoctors} doctors
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Show</span>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => setPageSize(Number(value))}
+            >
+              <SelectTrigger className="w-[70px]">
+                <SelectValue placeholder={pageSize} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="6">6</SelectItem>
+                <SelectItem value="12">12</SelectItem>
+                <SelectItem value="24">24</SelectItem>
+                <SelectItem value="48">48</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-gray-600">per page</span>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -63,44 +121,57 @@ export const DoctorsPage = () => {
         </div>
       )}
 
-      {/* Pagination Controls */}
-      <div className="mt-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={previousPage}
-            disabled={!canPreviousPage}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={nextPage}
-            disabled={!canNextPage}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">
-            Page {page} of {totalPages}
-          </span>
-          <select
-            className="border rounded px-2 py-1"
-            value={page}
-            onChange={(e) => goToPage(Number(e.target.value))}
-          >
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <option key={pageNum} value={pageNum}>
-                {pageNum}
-              </option>
+      {/* Responsive Pagination */}
+      <div className="mt-8">
+        <Pagination>
+          <PaginationContent className="flex-wrap justify-center gap-2">
+            <PaginationItem className="hidden sm:inline-block">
+              <PaginationPrevious 
+                onClick={previousPage}
+                disabled={!canPreviousPage}
+              />
+            </PaginationItem>
+            <PaginationItem className="sm:hidden">
+              <PaginationLink
+                onClick={previousPage}
+                disabled={!canPreviousPage}
+              >
+                ←
+              </PaginationLink>
+            </PaginationItem>
+            
+            {getVisiblePages().map((pageNum, idx) => (
+              <PaginationItem key={idx} className={pageNum === '...' ? 'hidden sm:inline-block' : ''}>
+                {pageNum === '...' ? (
+                  <PaginationLink disabled>...</PaginationLink>
+                ) : (
+                  <PaginationLink
+                    className="text-black"
+                    isActive={page === pageNum}
+                    onClick={() => goToPage(pageNum)}
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                )}
+              </PaginationItem>
             ))}
-          </select>
-        </div>
+
+            <PaginationItem className="hidden sm:inline-block ">
+              <PaginationNext
+                onClick={nextPage}
+                disabled={!canNextPage}
+              />
+            </PaginationItem>
+            <PaginationItem className="sm:hidden">
+              <PaginationLink
+                onClick={nextPage}
+                disabled={!canNextPage}
+              >
+                →
+              </PaginationLink>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );

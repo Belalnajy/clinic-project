@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export const useDoctors = () => {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(6);
   const queryClient = useQueryClient();
 
   // Fetch doctors
@@ -53,6 +53,7 @@ export const useDoctors = () => {
     setQuery,
     page,
     pageSize,
+    setPageSize,
     totalPages,
     canPreviousPage,
     canNextPage,
