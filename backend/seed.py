@@ -38,6 +38,28 @@ def seed_database():
     """Seed database with sample data"""
     print("Seeding database...")
 
+    # Get or create admin user
+    admin, created = User.objects.get_or_create(
+        email="admin@example.com",
+        defaults={
+            "password": "password123",
+            "role": "admin",
+            "first_name": "Admin",
+            "last_name": "One",
+            "is_staff": True,
+            "is_active": True,
+            "is_superuser": True,
+            "date_joined": timezone.now(),
+            "status": "available"
+        }
+    )
+    if created:
+        admin.set_password("password123")
+        admin.save()
+        print("Created admin user")
+    else:
+        print("Using existing admin user")
+
     # Predefined data
     cities = [
         "Cairo", "Alexandria", "Giza", "Luxor", "Aswan", "Mansoura", "Tanta",
@@ -66,19 +88,6 @@ def seed_database():
         "Hypertension", "Diabetes", "Common Cold", "Asthma", "Arthritis",
         "Migraine", "Infection", "Allergy", "Gastritis", "Anemia"
     ]
-
-    # Create admin user with superuser privileges
-    admin = User.objects.create_user(
-        email="admin@example.com",
-        password="password123",
-        role="admin",
-        first_name="Admin",
-        last_name="One",
-        is_staff=True,
-        is_active=True,
-        is_superuser=True,  # Added to grant full admin access
-        date_joined=timezone.now(),
-        status="available"
 
     # Create specializations
     print("Creating specializations...")

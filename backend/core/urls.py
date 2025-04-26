@@ -40,6 +40,7 @@ urlpatterns = [
                 path('medications/', include('medications.urls')),
                 path("reports/", include("reports.urls")),
 
+                 path("chatbot/", include("chatbot.urls")),
                 path(
                     "docs/",
                     schema_view.with_ui("swagger", cache_timeout=0),

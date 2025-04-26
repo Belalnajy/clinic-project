@@ -70,6 +70,12 @@ const navItems = [
     icon: Settings,
     allowedRoles: ['manager', 'doctor', 'secretary'],
   },
+  {
+    path: '/ai-assistant',
+    label: 'AI Assistant',
+    icon: Stethoscope,
+    allowedRoles: ['manager', 'doctor', 'secretary'],
+  },
 ];
 
 export const getNavItems = (user) => {
