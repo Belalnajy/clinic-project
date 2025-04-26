@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { tabsData } from './tabsData';
 import { getPatientById } from '@/utils/patient';
 //**  ShadCN UI Components **//
@@ -14,6 +14,7 @@ import {
   Prescriptions,
 } from '@/components/patient-details/tabs';
 import QuickActions from '@/components/patient-details/quick-actions/QuickActions';
+import CustomPageTabs from '@/components/CustomPageTabs';
 
 const PatientDetails = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const PatientDetails = () => {
   const patientId = 1;
   const patient = getPatientById(patientId);
   const patientName = patient ? `${patient.firstName} ${patient.lastName}` : 'Unknown Patient';
+  const tabsData = ['overview', 'medical-records', 'prescriptions', 'lab-results'];
 
   if (!patient) {
     return (
@@ -45,17 +47,19 @@ const PatientDetails = () => {
       {/* Quick Actions */}
       <QuickActions />
 
+      <CustomPageTabs tabs={tabsData} />
+      <Outlet />
       {/* Patient Information Tabs */}
-      <Tabs defaultValue="overview">
-        {/* Tabs List */}
-        <CustomTabsList tabsData={tabsData} />
+      {/* <Tabs defaultValue="overview"> */}
+      {/* Tabs List */}
+      {/* <CustomTabsList tabsData={tabsData} /> */}
 
-        {/* Tabs Content */}
-        <Overview patient={patient} />
+      {/* Tabs Content */}
+      {/* <Overview patient={patient} />
         <MedicalRecords />
         <Prescriptions patientId={patient.id} />
         <LabResults patientId={patient.id} />
-      </Tabs>
+      </Tabs> */}
     </>
   );
 };

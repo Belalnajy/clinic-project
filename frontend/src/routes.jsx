@@ -21,6 +21,12 @@ import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
 import AiAssistant from './pages/AiAssistant';
 import SpecializationsPage from './pages/specializations';
+import {
+  LabResults,
+  MedicalRecords,
+  Overview,
+  Prescriptions,
+} from './components/patient-details/tabs';
 
 const router = createBrowserRouter([
   {
@@ -137,6 +143,28 @@ const router = createBrowserRouter([
             <PatientDetails />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="medical-records" replace />,
+          },
+          // {
+          //   path: 'overview',
+          //   element: <Overview />,
+          // },
+          {
+            path: 'medical-records',
+            element: <MedicalRecords />,
+          },
+          {
+            path: 'prescriptions',
+            element: <Prescriptions />,
+          },
+          // {
+          //   path: 'lab-results',
+          //   element: <LabResults />,
+          // },
+        ],
       },
       {
         path: 'appointments',

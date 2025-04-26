@@ -7,9 +7,9 @@ import { TabsContent } from '../../ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 
 const Overview = ({ patient }) => {
-  const emergencyContacts = getPatientEmergencyContacts(patient.id);
-  const currentCondition = getCurrentCondition(patient.id);
-  const currentMedications = getCurrentMedications(patient.id);
+  const emergencyContacts = getPatientEmergencyContacts(1);
+  const currentCondition = getCurrentCondition(1);
+  const currentMedications = getCurrentMedications(1);
 
   return (
     <TabsContent value="overview">

@@ -24,55 +24,45 @@ const MedicalRecords = () => {
   };
 
   if (isLoadingMedicalRecords) {
-    return (
-      <TabsContent value="medical-records">
-        <LoadingState message="Loading medical records..." />
-      </TabsContent>
-    );
+    return <LoadingState message="Loading medical records..." />;
   }
 
   if (medicalRecordsError) {
-    return (
-      <TabsContent value="medical-records">
-        <CustomAlert message="Error loading medical records. Please try again later." />
-      </TabsContent>
-    );
+    return <CustomAlert message="Error loading medical records. Please try again later." />;
   }
 
   return (
-    <TabsContent value="medical-records">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Previous Diagnoses</CardTitle>
-          <Button variant="outline" size="sm">
-            <i className="fas fa-file-export mr-2"></i> Export History
-          </Button>
-        </CardHeader>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Previous Diagnoses</CardTitle>
+        <Button variant="outline" size="sm">
+          <i className="fas fa-file-export mr-2"></i> Export History
+        </Button>
+      </CardHeader>
 
-        <CardContent>
-          <div className="space-y-3">
-            {medicalRecords?.length > 0 ? (
-              medicalRecords.map((record) => (
-                <div key={record.id} className="border p-4 rounded-md">
-                  <h3 className="text-lg font-semibold mb-2">{record.diagnosis}</h3>
-                  <p className="mb-2">{record.description}</p>
-                  <p className="text-sm text-gray-500 mb-2">{record.notes}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(record.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p>No previous diagnoses found.</p>
-            )}
-          </div>
+      <CardContent>
+        <div className="space-y-3">
+          {medicalRecords?.length > 0 ? (
+            medicalRecords.map((record) => (
+              <div key={record.id} className="border p-4 rounded-md">
+                <h3 className="text-lg font-semibold mb-2">{record.diagnosis}</h3>
+                <p className="mb-2">{record.description}</p>
+                <p className="text-sm text-gray-500 mb-2">{record.notes}</p>
+                <p className="text-sm text-gray-500">
+                  {new Date(record.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No previous diagnoses found.</p>
+          )}
+        </div>
 
-          <div className="mt-4">
-            <CustomPagination pagination={pagination} />
-          </div>
-        </CardContent>
-      </Card>
-    </TabsContent>
+        <div className="mt-4">
+          <CustomPagination pagination={pagination} />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
