@@ -1,6 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import React from 'react';
+import { StatusSelector } from '@/components/ui/StatusSelector';
+
 const Header = ({ toggleSidebar, title, user }) => {
   //! For Testing
   const handleLogout = () => {
@@ -47,6 +50,10 @@ const Header = ({ toggleSidebar, title, user }) => {
             </Avatar>
           </Button>
         </div>
+      </div>
+
+      <div className="flex items-center space-x-6">
+        <StatusSelector />
       </div>
     </header>
   );
