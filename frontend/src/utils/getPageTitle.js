@@ -14,6 +14,8 @@ export const getPageTitle = (path) => {
     return 'Settings';
   } else if (path.includes('/ai-assistant')) {
     return 'AI Assistant';
+  } else if (path.includes('/specializations')) {
+    return 'Specializations';
   }
   return 'Dashboard';
 };

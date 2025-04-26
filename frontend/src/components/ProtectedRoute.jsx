@@ -11,6 +11,7 @@ const roleAccess = {
     '/appointments',
     '/settings',
     '/medications',
+    '/ai-assistant',
   ],
   secretary: [
     '/',
@@ -19,6 +20,7 @@ const roleAccess = {
     '/patient/:id',
     '/appointments',
     '/settings',
+    '/ai-assistant',
   ],
   manager: [
     '/',
@@ -31,6 +33,7 @@ const roleAccess = {
     '/settings',
     '/register',
     '/medications',
+    '/ai-assistant',
   ],
 };
 
