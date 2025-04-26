@@ -6,6 +6,7 @@ from .serializers import (
     LabResultSerializer,
     PrescriptionSerializer,
     PrescriptionMedicationSerializer,
+    BulkPrescriptionMedicationSerializer,
 )
 from rest_framework.pagination import PageNumberPagination
 from .filters import (
@@ -157,6 +158,27 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    @action(detail=True, methods=["post"], url_path="add-medications")
+    def add_medications(self, request, pk=None):
+        prescription = self.get_object()
+        serializer = BulkPrescriptionMedicationSerializer(
+            data=request.data, context={"prescription_id": prescription.id}
+        )
+
+        if serializer.is_valid():
+            try:
+                medications = serializer.save()
+                response_serializer = PrescriptionMedicationSerializer(
+                    medications, many=True
+                )
+                return Response(
+                    response_serializer.data, status=status.HTTP_201_CREATED
+                )
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     """
@@ -169,6 +191,23 @@ class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PrescriptionMedicationFilter
     permission_classes = [IsAuthenticated, IsDoctorOrManager]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                result = serializer.save()
+                # Check if it's a bulk creation (returns a list) or single creation (returns an object)
+                if isinstance(result, list):
+                    response_serializer = self.get_serializer(result, many=True)
+                else:
+                    response_serializer = self.get_serializer(result)
+                return Response(
+                    response_serializer.data, status=status.HTTP_201_CREATED
+                )
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=["get"], url_path="latest")
     def latest_prescription_medication(self, request):
