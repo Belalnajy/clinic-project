@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/Auth/useAuth';
 import {
   Dialog,
   DialogContent,
@@ -28,40 +28,13 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import axiosInstance from '@/lib/axios';
+import patients from '@/schemas/patients';
 
-const phoneRegex = /^\+20\d{10}$/; 
-
-const patientSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  dateOfBirth: z
-    .string()
-    .refine((val) => new Date(val) <= new Date(), 'Date of birth cannot be in the future'),
-  gender: z.string().min(1, 'Gender is required'),
-  email: z.string().email('Invalid email format').optional(),
-  phone: z.string().regex(phoneRegex, 'Phone format must be +20XXXXXXXXXX'),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  bloodType: z.string().optional(),
-  height: z.string().optional(),
-  weight: z.string().optional(),
-  paymentType: z.string().min(1, 'Payment type is required'),
-  creditCardNumber: z.string().optional(),
-  insuranceInfo: z.object({
-    provider: z.string().min(1, 'Insurance provider is required').optional(),
-    policyNumber: z.string().min(1, 'Policy number is required').optional(),
-    expiryDate: z
-      .string()
-      .refine((val) => new Date(val) >= new Date(), 'Insurance cannot be expired')
-      .optional(),
-  }),
-});
-
-const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
+const PatientModal = ({ isOpen, onClose, onSave, patientData }) => {
+  const { user } = useAuth(); 
   const [paymentType, setPaymentType] = useState('');
   const form = useForm({
-    resolver: zodResolver(patientSchema),
+    resolver: zodResolver(patients),
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -128,28 +101,23 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
         weight: data.weight,
         payment_type: data.paymentType,
         credit_card_number: data.creditCardNumber,
-        insurance_provider: data.insuranceInfo?.provider,
-        insurance_number: data.insuranceInfo?.policyNumber,
-        insurance_expiration_date: data.insuranceInfo?.expiryDate,
-        created_by: 1
+        insurance_provider: data.insuranceInfo.provider,
+        insurance_number: data.insuranceInfo.policyNumber,
+        insurance_expiration_date: data.insuranceInfo.expiryDate,
+        created_by: user?.id || 'unknown',
       };
-      console.log('Data sent to API:', payload);
-      const response = await axiosInstance.post('/patients/patients/', payload);
 
-      toast.success(`Patient ${data.firstName} ${data.lastName} saved successfully`);
-      onSave(response.data);
-      form.reset();
-      onClose();
+      onSave(payload);
     } catch (error) {
       toast.error('Failed to save patient. Please try again.');
-      console.error('test');
+      console.error(error);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-lg w-full mx-auto px-6 py-4 bg-white rounded-lg shadow-lg" 
+        className="max-w-lg w-full mx-auto px-6 py-4 bg-white rounded-lg shadow-lg"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
         aria-describedby="add-patient-description"
@@ -408,7 +376,7 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">
-                      Credit Card Number *
+                      Credit Card Number
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -422,7 +390,6 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
                 )}
               />
             )}
-
             {paymentType === 'insurance' && (
               <div className="space-y-4">
                 <FormField
@@ -431,7 +398,7 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700">
-                        Insurance Provider *
+                        Insurance Provider
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -450,7 +417,7 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700">
-                        Policy Number *
+                        Policy Number
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -469,7 +436,7 @@ const PatientModal = ({ isOpen, onClose, onSave, user, patientData }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700">
-                        Insurance Expiry Date *
+                        Insurance Expiry Date
                       </FormLabel>
                       <FormControl>
                         <Input

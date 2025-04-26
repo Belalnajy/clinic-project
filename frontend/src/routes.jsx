@@ -127,7 +127,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'patient/:id',
+        path: '/patients/patients/:patientId',
         element: (
           <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
             <PatientDetails />
@@ -163,15 +163,15 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "ai-assistant",
+        path: 'ai-assistant',
         element: (
-          <ProtectedRoute allowedRoles={["doctor","secretary","manager"]}>
-            <AiAssistant/>
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <AiAssistant />
           </ProtectedRoute>
-        )
-      }
-    ]
-  }
+        ),
+      },
+    ],
+  },
 ]);
 
 export default router;
