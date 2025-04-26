@@ -27,6 +27,7 @@ import {
   Overview,
   Prescriptions,
 } from './components/patient-details/tabs';
+import NotFound from './pages/NotFound';
 
 const router = createBrowserRouter([
   {
@@ -49,7 +50,6 @@ const router = createBrowserRouter([
         <MainLayout />
       </ProtectedRoute>
     ),
-    errorElement: <div>404 Not Found</div>,
     children: [
       {
         index: true,
@@ -203,6 +203,10 @@ const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ]);
 
