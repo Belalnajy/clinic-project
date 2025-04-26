@@ -10,6 +10,7 @@ from doctors.serializers import DoctorSerializer
 from appointments.serializers import AppointmentSerializer
 from medications.serializers import MedicationSerializer
 
+
 class MedicalRecordSerializer(serializers.ModelSerializer):
     patient_id = serializers.PrimaryKeyRelatedField(
         queryset=Patient.objects.all(), source="patient", write_only=True
@@ -24,17 +25,21 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicalRecord
-        exclude = ["patient","doctor","is_active"]
-        read_only_fields = ['appointment']
+        exclude = ["patient", "doctor", "is_active"]
+        read_only_fields = ["appointment"]
 
     def validate(self, data):
         # Check if diagnosis is empty
         if not data.get("diagnosis"):
-            raise serializers.ValidationError({"diagnosis": "Diagnosis cannot be empty."})
+            raise serializers.ValidationError(
+                {"diagnosis": "Diagnosis cannot be empty."}
+            )
 
         # Check if description is empty
         if not data.get("description"):
-            raise serializers.ValidationError({"description": "Description cannot be empty."})
+            raise serializers.ValidationError(
+                {"description": "Description cannot be empty."}
+            )
 
         return data
 
@@ -47,8 +52,8 @@ class LabResultSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LabResult
-        fields = '__all__'
-        read_only_fields = ['medical_record']
+        fields = "__all__"
+        read_only_fields = ["medical_record"]
 
     def validate_test_date(self, value):
         # Check if the test_date is in the future
@@ -59,28 +64,14 @@ class LabResultSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # Check if test_name is empty
         if not data.get("test_name"):
-            raise serializers.ValidationError({"test_name": "Test name cannot be empty."})
+            raise serializers.ValidationError(
+                {"test_name": "Test name cannot be empty."}
+            )
 
         # Check if results are empty
         if not data.get("results"):
             raise serializers.ValidationError({"results": "Results cannot be empty."})
 
-        return data
-
-
-class PrescriptionSerializer(serializers.ModelSerializer):
-    medical_record_id = serializers.PrimaryKeyRelatedField(
-        queryset=MedicalRecord.objects.all(), source="medical_record", write_only=True
-    )
-    medical_record = MedicalRecordSerializer(read_only=True)
-
-    class Meta:
-        model = Prescription
-        fields = '__all__'
-        read_only_fields = ['medical_record']
-
-    def validate(self, data):
-        # Add any specific validation for prescriptions if needed
         return data
 
 
@@ -91,13 +82,24 @@ class PrescriptionMedicationSerializer(serializers.ModelSerializer):
     medication_id = serializers.PrimaryKeyRelatedField(
         queryset=Medication.objects.all(), source="medication", write_only=True
     )
-    prescription = PrescriptionSerializer(read_only=True)
     medication = MedicationSerializer(read_only=True)
 
     class Meta:
         model = PrescriptionMedication
-        fields = '__all__'
-        read_only_fields = ['prescription', 'medication']
+        fields = [
+            "id",
+            "prescription_id",
+            "medication_id",
+            "medication",
+            "dosage",
+            "frequency",
+            "duration",
+            "instructions",
+            "created_at",
+            "updated_at",
+            "is_active",
+        ]
+        read_only_fields = ["medication"]
 
     def validate(self, data):
         # Check if dosage is empty
@@ -106,10 +108,43 @@ class PrescriptionMedicationSerializer(serializers.ModelSerializer):
 
         # Check if frequency is empty
         if not data.get("frequency"):
-            raise serializers.ValidationError({"frequency": "Frequency cannot be empty."})
+            raise serializers.ValidationError(
+                {"frequency": "Frequency cannot be empty."}
+            )
 
         # Check if duration is empty
         if not data.get("duration"):
             raise serializers.ValidationError({"duration": "Duration cannot be empty."})
 
+        return data
+
+
+class PrescriptionSerializer(serializers.ModelSerializer):
+    medical_record_id = serializers.PrimaryKeyRelatedField(
+        queryset=MedicalRecord.objects.all(), source="medical_record", write_only=True
+    )
+    medical_record = MedicalRecordSerializer(read_only=True)
+    medications = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Prescription
+        fields = [
+            "id",
+            "medical_record_id",
+            "medical_record",
+            "medications",
+            "created_at",
+            "updated_at",
+            "is_active",
+        ]
+        read_only_fields = ["medical_record"]
+
+    def get_medications(self, obj):
+        # Get all active medications for this prescription
+        medications = obj.medications.filter(is_active=True)
+        serializer = PrescriptionMedicationSerializer(medications, many=True)
+        return serializer.data
+
+    def validate(self, data):
+        # Add any specific validation for prescriptions if needed
         return data

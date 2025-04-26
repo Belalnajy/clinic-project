@@ -8,7 +8,12 @@ from .serializers import (
     PrescriptionMedicationSerializer,
 )
 from rest_framework.pagination import PageNumberPagination
-from .filters import MedicalRecordFilter, LabResultFilter, PrescriptionFilter, PrescriptionMedicationFilter
+from .filters import (
+    MedicalRecordFilter,
+    LabResultFilter,
+    PrescriptionFilter,
+    PrescriptionMedicationFilter,
+)
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -17,24 +22,28 @@ from core.permissions import IsDoctorOrManager
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+
 class CustomPagination(PageNumberPagination):
     """
     Custom pagination class to set default page size and allow users to specify items per page.
     """
+
     page_size = 10
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 100
+
 
 class MedicalRecordViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing medical record instances.
     """
+
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = MedicalRecordFilter
-    filter_fields = ['created_at', 'patient', 'doctor']
+    filter_fields = ["created_at", "patient", "doctor"]
     permission_classes = [IsAuthenticated, IsDoctorOrManager]
 
     def create(self, request, *args, **kwargs):
@@ -42,12 +51,15 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
             return super().create(request, *args, **kwargs)
 
         except Exception as e:
-            if 'medical_records_medicalrecord_appointment_id_key' in str(e):
-                return Response({
+            if "medical_records_medicalrecord_appointment_id_key" in str(e):
+                return Response(
+                    {
                         "error": "Conflict",
-                        "message": "This appointment already has a medical record."
-                    }, status=status.HTTP_409_CONFLICT)
-            
+                        "message": "This appointment already has a medical record.",
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
             raise
 
     @action(detail=False, methods=["get"], url_path="latest")
@@ -58,10 +70,12 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"detail": "No medical records found."}, status=404)
 
+
 class LabResultViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing lab result instances.
     """
+
     queryset = LabResult.objects.all()
     serializer_class = LabResultSerializer
     pagination_class = CustomPagination
@@ -77,10 +91,12 @@ class LabResultViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"detail": "No lab results found."}, status=404)
 
+
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing prescription instances.
     """
+
     queryset = Prescription.objects.all()
     serializer_class = PrescriptionSerializer
     pagination_class = CustomPagination
@@ -93,12 +109,15 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
             return super().create(request, *args, **kwargs)
 
         except Exception as e:
-            if 'medical_records_prescription_medical_record_id_key' in str(e):
-                return Response({
+            if "medical_records_prescription_medical_record_id_key" in str(e):
+                return Response(
+                    {
                         "error": "Conflict",
-                        "message": "This medical record already has a prescription."
-                    }, status=status.HTTP_409_CONFLICT)
-            raise 
+                        "message": "This medical record already has a prescription.",
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+            raise
 
     @action(detail=False, methods=["get"], url_path="latest")
     def latest_prescription(self, request):
@@ -108,10 +127,42 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"detail": "No prescriptions found."}, status=404)
 
+    @action(detail=False, methods=["get"], url_path="by-patient")
+    def by_patient(self, request):
+        patient_id = request.query_params.get("patient_id")
+        if not patient_id:
+            return Response(
+                {"error": "patient_id parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Get prescriptions through medical records for the patient
+            prescriptions = self.queryset.filter(
+                medical_record__patient_id=patient_id, is_active=True
+            ).order_by("-created_at")
+
+            # Apply pagination
+            page = self.paginate_queryset(prescriptions)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(prescriptions, many=True)
+            return Response(serializer.data)
+
+        except ValueError:
+            return Response(
+                {"error": "Invalid patient_id format"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
 class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
     """
     A viewset for viewing and editing prescription medication instances.
     """
+
     queryset = PrescriptionMedication.objects.all()
     serializer_class = PrescriptionMedicationSerializer
     pagination_class = CustomPagination
@@ -126,4 +177,3 @@ class PrescriptionMedicationViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(latest_medication)
             return Response(serializer.data)
         return Response({"detail": "No prescription medications found."}, status=404)
-
