@@ -14,8 +14,21 @@ export const useReports = () => {
   const [searchParams] = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
   const doctor = searchParams.get('doctor') || '';
+  const specialization = searchParams.get('specialization') || '';
   const status = searchParams.get('status') || '';
-  const date_filter = searchParams.get('date_filter') || '';
+
+  // Handle date and date range from URL
+  const startDateStr = searchParams.get('startDate');
+  const endDateStr = searchParams.get('endDate');
+  let date = null;
+  if (startDateStr && endDateStr) {
+    date = {
+      startDate: new Date(startDateStr),
+      endDate: new Date(endDateStr),
+    };
+  } else if (searchParams.get('date')) {
+    date = new Date(searchParams.get('date'));
+  }
 
   // Fetch appointment metrics
   const {
@@ -67,14 +80,14 @@ export const useReports = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Separate appointments query with its own loading state
   const appointmentsQuery = useQuery({
-    queryKey: ['appointments', currentPage, doctor, status, date_filter],
+    queryKey: ['appointments', currentPage, doctor, specialization, status, date],
     queryFn: () => getAppointments({
       page: currentPage,
       doctor,
+      specialization,
       status,
-      date_filter
+      date
     }),
     keepPreviousData: true, // Keep previous data while loading new data
   });
