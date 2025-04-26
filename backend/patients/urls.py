@@ -5,7 +5,6 @@ from .views import PatientViewSet, EmergencyContactViewSet
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patient')
 router.register(r'emergency-contacts', EmergencyContactViewSet, basename='emergency-contact')
-
 app_name = 'patients'
 
 urlpatterns = [

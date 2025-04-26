@@ -55,25 +55,33 @@ class PatientViewSet(viewsets.ModelViewSet):
         instance.is_active = False
         instance.save()
 
-        # Deactivate related data
+        # Deactivate related appointments
         instance.appointments.update(is_active=False)
-        instance.medical_records.update(is_active=False)
-        instance.emergency_contacts.update(is_active=False)
 
-        # Add any other related data deactivation logic here
+        # Deactivate related medical records
+        instance.medical_records.update(is_active=False)
+
+        # Deactivate related lab results
+        for record in instance.medical_records.all():
+            record.lab_results.update(is_active=False)
+
+        # Deactivate related prescriptions
+        for record in instance.medical_records.all():
+            if record.prescriptions:
+                record.prescriptions.is_active = False
+                record.prescriptions.save()
+
+        # Deactivate related payments
+        instance.payments.update(is_active=False)
 
     def destroy(self, request, *args, **kwargs):
         """
-        Handles the DELETE request to deactivate a patient and its related data.
+        Handles the DELETE request to deactivate a patient and all related data.
         """
         instance = self.get_object()
-        try:
-            self.perform_destroy(instance)
-            return Response({"message": "Patient and related data deactivated successfully."}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.perform_destroy(instance)
+        return Response({"message": "Patient and all related data deactivated successfully."}, status=status.HTTP_200_OK)
 
-    
     @action(detail=True, methods=['get'])
     def emergency_contacts(self, request, pk=None):
         """
@@ -82,6 +90,15 @@ class PatientViewSet(viewsets.ModelViewSet):
         patient = self.get_object()
         contacts = patient.emergency_contacts.all()
         serializer = EmergencyContactSerializer(contacts, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='deactivated')
+    def deactivated_patients(self, request):
+        """
+        API endpoint to retrieve all deactivated patients.
+        """
+        queryset = self.queryset.filter(is_active=False)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
 
