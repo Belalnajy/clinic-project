@@ -143,16 +143,8 @@ const MedicationsTable = () => {
         </Table>
       </div>
 
-      <div className="mt-6">
-        <CustomPagination
-          totalItems={pagination.count}
-          currentPage={pagination.currentPage}
-          onPageChange={(page) => {
-            navigate(`/medications?page=${page}`);
-          }}
-          hasNextPage={!!pagination.next}
-          hasPreviousPage={!!pagination.previous}
-        />
+      <div className="mt-4">
+        <CustomPagination pagination={pagination} />
       </div>
 
       <DeleteConfirmationDialog

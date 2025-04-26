@@ -2,7 +2,7 @@ import axiosInstance from '@/lib/axios';
 
 export const getPatientPrescriptions = async (page = 1, patientId) => {
   const response = await axiosInstance.get(
-    `/prescriptions/by-patient/?page=${page}&patient_id=${patientId}`
+    `/prescriptions/by-patient/?page=${page}&patient_id=${patientId}&page_size=2`
   );
   return response.data;
 };

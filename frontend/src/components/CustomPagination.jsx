@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -9,81 +9,53 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-const CustomPagination = ({
-  totalItems,
-  itemsPerPage = 10,
-  currentPage: externalCurrentPage,
-  onPageChange,
-  maxVisiblePages = 5,
-}) => {
-  const [currentPage, setCurrentPage] = useState(externalCurrentPage || 1);
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  useEffect(() => {
-    if (externalCurrentPage !== undefined) {
-      setCurrentPage(externalCurrentPage);
-    }
-  }, [externalCurrentPage]);
+const CustomPagination = ({ pagination, pageSize = 10 }) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(pagination.count / pageSize);
 
   const handlePageChange = (page) => {
-    const newPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(newPage);
-    onPageChange?.(newPage);
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page);
+    navigate({ search: params.toString() });
   };
 
-  const renderPageNumbers = () => {
+  if (totalPages <= 1) return null;
+
+  const getPageNumbers = () => {
     const pages = [];
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const delta = 2; // Number of pages to show on each side of current page
 
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    // Always show first page
+    pages.push(1);
+
+    // Calculate range around current page
+    const rangeStart = Math.max(2, currentPage - delta);
+    const rangeEnd = Math.min(totalPages - 1, currentPage + delta);
+
+    // Add ellipsis after first page if needed
+    if (rangeStart > 2) {
+      pages.push('...');
     }
 
-    if (startPage > 1) {
-      pages.push(
-        <PaginationItem key={1}>
-          <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
-        </PaginationItem>
-      );
-      if (startPage > 2) {
-        pages.push(
-          <PaginationItem key="ellipsis-start">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
+    // Add pages in range
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+      pages.push(i);
     }
 
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationItem key={i}>
-          <PaginationLink isActive={currentPage === i} onClick={() => handlePageChange(i)}>
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
+    // Add ellipsis before last page if needed
+    if (rangeEnd < totalPages - 1) {
+      pages.push('...');
     }
 
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(
-          <PaginationItem key="ellipsis-end">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-      pages.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink onClick={() => handlePageChange(totalPages)}>{totalPages}</PaginationLink>
-        </PaginationItem>
-      );
+    // Always show last page if there's more than one page
+    if (totalPages > 1) {
+      pages.push(totalPages);
     }
 
     return pages;
   };
-
-  if (totalPages <= 1) return null;
 
   return (
     <Pagination>
@@ -91,14 +63,33 @@ const CustomPagination = ({
         <PaginationItem>
           <PaginationPrevious
             onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+            variant="ghost"
           />
         </PaginationItem>
-        {renderPageNumbers()}
+
+        {getPageNumbers().map((page, index) => (
+          <PaginationItem key={index}>
+            {page === '...' ? (
+              <PaginationEllipsis />
+            ) : (
+              <PaginationLink
+                onClick={() => handlePageChange(page)}
+                isActive={currentPage === page}
+                className="min-w-[2.5rem]"
+                variant="ghost"
+              >
+                {page}
+              </PaginationLink>
+            )}
+          </PaginationItem>
+        ))}
+
         <PaginationItem>
           <PaginationNext
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+            variant="ghost"
           />
         </PaginationItem>
       </PaginationContent>

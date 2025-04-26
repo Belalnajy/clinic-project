@@ -67,17 +67,9 @@ const MedicalRecords = () => {
             )}
           </div>
 
-          {pagination.count > 0 && (
-            <div className="mt-4">
-              <CustomPagination
-                totalItems={pagination.count}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-                hasNextPage={!!pagination.next}
-                hasPreviousPage={!!pagination.previous}
-              />
-            </div>
-          )}
+          <div className="mt-4">
+            <CustomPagination pagination={pagination} />
+          </div>
         </CardContent>
       </Card>
     </TabsContent>
