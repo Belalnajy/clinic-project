@@ -6,6 +6,7 @@ import OverviewTab from '@/components/Reports/tabs/OverviewTab';
 import LoadingState from '@/components/LoadingState';
 import AppointmentsTab from '@/components/Reports/tabs/AppointmentsTab';
 import PatientTab from '@/components/Reports/tabs/PatientTab';
+import DoctorsTab from '@/components/Reports/tabs/DoctorsTab';
 
 const Reports = () => {
   const [searchParams] = useSearchParams();
@@ -53,6 +54,8 @@ const Reports = () => {
           />
           {/* Patient Tab */}
           <PatientTab />
+          {/* Doctors Tab */}
+          <DoctorsTab />
         </Tabs>
       </div>
     </>

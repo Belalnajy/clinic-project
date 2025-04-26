@@ -25,25 +25,3 @@ export const tablistItems = [
   },
 ];
 
-export const selectItems = [
-  {
-    id: 1,
-    value: '7days',
-    title: 'Last 7 Days',
-  },
-  {
-    id: 2,
-    value: '30days',
-    title: 'Last 30 Days',
-  },
-  {
-    id: 3,
-    value: '90days',
-    title: 'Last 90 Days',
-  },
-  {
-    id: 4,
-    value: 'year',
-    title: 'This Year',
-  },
-];
