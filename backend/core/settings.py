@@ -171,6 +171,9 @@ DJOSER = {
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
          'set_password': 'users.serializers.CustomSetPasswordSerializer',  # Add this line
     },
+    'PERMISSIONS': {
+        'user_create': ['rest_framework.permissions.IsAuthenticated','core.permissions.IsManager'],
+    }
 }
 
 AUTH_USER_MODEL = "users.User"
