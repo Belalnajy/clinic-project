@@ -42,10 +42,11 @@ const formSchema = z.object({
 });
 
 function ProfessionalSettings() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, replaceUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [specializations, setSpecializations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [justUpdated, setJustUpdated] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -76,8 +77,11 @@ function ProfessionalSettings() {
     return () => fetchSpecializations.cancel();
   }, []);
 
-  // Ensure form reset depends on user
   useEffect(() => {
+    if (justUpdated) {
+      setJustUpdated(false);
+      return;
+    }
     if (user?.doctor_profile) {
       form.reset({
         license_number: user.doctor_profile.license_number || '',
@@ -86,10 +90,8 @@ function ProfessionalSettings() {
         bio: user.doctor_profile.bio || '',
         specialization_id: user.doctor_profile.specialization?.id?.toString() || '',
       });
-      console.log('Form reset with user:', user);
-      console.log('Form values after reset:', form.getValues());
     }
-  }, [user, form]);
+  }, [user?.doctor_profile, form, justUpdated]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -98,20 +100,21 @@ function ProfessionalSettings() {
       if (!doctorId) {
         throw new Error('Doctor profile not found');
       }
-      // Prepare all required doctor fields for PUT
+  
       const doctorData = {
-        license_number: user.doctor_profile?.license_number || '',
         years_of_experience: data.years_of_experience ? Number(data.years_of_experience) : 0,
         qualifications: data.qualifications?.trim() || '',
         bio: data.bio?.trim() || '',
         specialization: data.specialization_id || null,
         is_active: user.is_active !== undefined ? user.is_active : true,
       };
-      // Use PATCH instead of PUT to avoid unique constraint issues
-      await axiosInstance.patch(`/doctors/doctorsList/${doctorId}/`, doctorData);
-      const updatedUser = await getUserProfile();
-      if (updateUser) updateUser(updatedUser);
+  
+      const response = await axiosInstance.patch(`/auth/users/${doctorId}/`, doctorData);
+      const updatedUser = response.data;
+      if (replaceUser) replaceUser(updatedUser);
+      setJustUpdated(true);
       form.reset({
+        license_number: updatedUser.doctor_profile?.license_number || '',
         years_of_experience: updatedUser.doctor_profile?.years_of_experience || '',
         qualifications: updatedUser.doctor_profile?.qualifications || '',
         bio: updatedUser.doctor_profile?.bio || '',
@@ -119,12 +122,12 @@ function ProfessionalSettings() {
       });
       toast.success('Professional information updated successfully');
     } catch (error) {
-      const errorMessage = error.response?.data?.detail || 
-                         Object.entries(error.response?.data || {})
-                           .map(([key, value]) => `${key}: ${value}`)
-                           .join('\n') ||
-                         error.message ||
-                         'Please try again';
+      const errorMessage = error.response?.data?.detail ||
+                           Object.entries(error.response?.data || {})
+                             .map(([key, value]) => `${key}: ${value}`)
+                             .join('\n') ||
+                           error.message ||
+                           'Please try again';
       toast.error('Failed to update professional information', {
         description: errorMessage
       });
@@ -132,6 +135,8 @@ function ProfessionalSettings() {
       setIsSubmitting(false);
     }
   };
+  
+  
 
   if (user?.role !== 'doctor') {
     return null;
