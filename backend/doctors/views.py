@@ -1,10 +1,12 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import Doctor, Specialization
 from .serializers import DoctorSerializer, SpecializationSerializer, DoctorRegistrationSerializer
 from django.db import transaction
 from users.models import User
+from core.permissions import IsManager
 
 
 class SpecializationViewSet(viewsets.ModelViewSet):
@@ -66,3 +68,27 @@ class DoctorViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SimpleDoctorsListView(APIView):
+    permission_classes = [IsManager]
+
+    def get(self, request):
+        doctors = Doctor.objects.all()
+        data = [{
+            'id': doctor.id,
+            'name': f"{doctor.user.first_name} {doctor.user.last_name}"
+        } for doctor in doctors]
+        return Response(data)
+
+
+class SimpleSpecializationsListView(APIView):
+    permission_classes = [IsManager]
+
+    def get(self, request):
+        specializations = Specialization.objects.filter(is_active=True).order_by('name')
+        data = [{
+            'id': spec.id,
+            'name': spec.name
+        } for spec in specializations]
+        return Response(data)
