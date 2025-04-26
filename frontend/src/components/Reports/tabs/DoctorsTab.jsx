@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 const DoctorsTab = () => {
   const { doctorPerformanceData, isLoadingDoctorPerformance } = useReports();
   const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
+  const currentPage = Number(searchParams.get('doctorPage')) || 1;
 
   // Calculate total pages based on count and page size (10 from backend)
   const pageSize = 10;
@@ -17,7 +17,7 @@ const DoctorsTab = () => {
 
   const handlePageChange = (page) => {
     setSearchParams((prev) => {
-      prev.set('page', page);
+      prev.set('doctorPage', page);
       return prev;
     });
   };

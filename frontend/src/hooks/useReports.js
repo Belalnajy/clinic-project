@@ -13,6 +13,7 @@ export const useReports = () => {
   const [searchParams] = useSearchParams();
   // Filters from URL
   const currentPage = Number(searchParams.get('page')) || 1;
+  const doctorPage = Number(searchParams.get('doctorPage')) || 1;
   const doctor = searchParams.get('doctor') || '';
   const specialization = searchParams.get('specialization') || '';
   const status = searchParams.get('status') || '';
@@ -56,8 +57,8 @@ export const useReports = () => {
   });
 
   const doctorPerformanceQuery = useQuery({
-    queryKey: ['doctorPerformance', currentPage],
-    queryFn: () => getDoctorPerformance(currentPage),
+    queryKey: ['doctorPerformance', doctorPage],
+    queryFn: () => getDoctorPerformance(doctorPage),
     staleTime: 5 * 60 * 1000,
   });
 
