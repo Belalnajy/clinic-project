@@ -31,15 +31,19 @@ class PatientViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Returns the queryset of patients with optional filtering.
+        Returns the queryset of patients created by the current doctor, with optional filtering.
         """
         queryset = self.queryset
-        
+
+        user = self.request.user
+        if hasattr(user, 'role') and user.role == 'doctor' and hasattr(user, 'doctor_profile'):
+            queryset = queryset.filter(doctor=user.doctor_profile)
+
         # Filter by active status if provided
         is_active = self.request.query_params.get('is_active')
         if is_active is not None:
             queryset = queryset.filter(is_active=is_active.lower() == 'true')
-            
+
         return queryset
 
     def perform_create(self, serializer):
