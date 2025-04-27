@@ -167,10 +167,14 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': False,
     'SERIALIZERS': {
         'user_create': 'users.serializers.UserCreateSerializer',
-        'user': 'users.serializers.UserCreateSerializer',
+        'user': 'users.serializers.UserProfileSerializer',
+        'current_user': 'users.serializers.UserProfileSerializer',
         'user_delete': 'djoser.serializers.UserDeleteSerializer',
-         'set_password': 'users.serializers.CustomSetPasswordSerializer',  # Add this line
+        'set_password': 'users.serializers.CustomSetPasswordSerializer',
     },
+    'PERMISSIONS': {
+        'user_create': ['rest_framework.permissions.IsAuthenticated','core.permissions.IsManager'],
+    }
 }
 
 AUTH_USER_MODEL = "users.User"

@@ -9,10 +9,10 @@ from django.db.models import Count
 from patients.models import Patient
 from doctors.models import Doctor
 from rest_framework.pagination import PageNumberPagination
-
+from core.permissions import IsManager
 
 class AppointmentMetricsView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsManager]
 
     def get(self, request):
         # Appointment Status Data
@@ -46,6 +46,8 @@ class AppointmentMetricsView(APIView):
 
 
 class PatientAnalysisView(APIView):
+    permission_classes = [IsAuthenticated,IsManager]
+
     def get(self, request):
         # Age Distribution
         today = now().date()
@@ -120,7 +122,7 @@ class DoctorPerformancePagination(PageNumberPagination):
 
 
 class DoctorPerformanceView(APIView):
-   
+    permission_classes = [IsAuthenticated,IsManager]
     def get(self, request):
         # Aggregate doctor performance data
         doctors = Doctor.objects.all().order_by('id')

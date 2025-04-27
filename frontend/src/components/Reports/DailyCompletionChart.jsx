@@ -60,11 +60,11 @@ export default function Component(props) {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          This chart visualizes the daily completion rates of appointments{' '}
+          This chart visualizes the daily completion rates of appointments for the last 7 days{' '}
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
-          It provides insights into the number of completed appointments over a specific date range.
+          It provides insights into the number of completed appointments over the past week.
         </div>
       </CardFooter>
     </Card>

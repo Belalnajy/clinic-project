@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -8,23 +7,29 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { useSearchParams } from 'react-router-dom';
 
 const AppointmentTable = ({ appointments }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
-
-  const totalPages = Math.ceil(appointments.length / rowsPerPage);
-  const paginatedAppointments = appointments.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.ceil(appointments.count / 8); // 8 is our page_size
 
   const handlePrevious = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
+    if (currentPage > 1) {
+      setSearchParams((prev) => {
+        prev.set('page', currentPage - 1);
+        return prev;
+      });
+    }
   };
 
   const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages) {
+      setSearchParams((prev) => {
+        prev.set('page', currentPage + 1);
+        return prev;
+      });
+    }
   };
 
   return (
@@ -34,7 +39,7 @@ const AppointmentTable = ({ appointments }) => {
           <TableRow>
             <TableHead>Appointment ID</TableHead>
             <TableHead>Patient Name</TableHead>
-            <TableHead>Provider</TableHead>
+            <TableHead>Doctor</TableHead>
             <TableHead>Specialization</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>
@@ -42,15 +47,15 @@ const AppointmentTable = ({ appointments }) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedAppointments.map((appointment) => (
-            <TableRow key={appointment.id}>
-              <TableCell>{appointment.id}</TableCell>
-              <TableCell>{appointment.patientName}</TableCell>
-              <TableCell>{appointment.providerName}</TableCell>
-              <TableCell>{appointment.specializationName}</TableCell>
+          {appointments.results?.map((appointment) => (
+            <TableRow key={appointment.appointment_id}>
+              <TableCell>{appointment.appointment_id}</TableCell>
+              <TableCell>{`${appointment.patient.first_name} ${appointment.patient.last_name}`}</TableCell>
+              <TableCell>{`${appointment.doctor.first_name} ${appointment.doctor.last_name}`}</TableCell>
+              <TableCell>{appointment.doctor.specialization}</TableCell>
               <TableCell>{appointment.status}</TableCell>
-              <TableCell>{appointment.date}</TableCell>
-              <TableCell>{appointment.time}</TableCell>
+              <TableCell>{appointment.appointment_date}</TableCell>
+              <TableCell>{appointment.appointment_time}</TableCell>
             </TableRow>
           ))}
         </TableBody>

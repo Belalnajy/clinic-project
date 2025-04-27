@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Patient, EmergencyContact
 from .serializers import PatientSerializer, EmergencyContactSerializer
+from medical_records.models import LabResult
+from medical_records.serializers import LabResultSerializer
 
 
 class ActivationSerializer(serializers.Serializer):
@@ -110,6 +112,17 @@ class PatientViewSet(viewsets.ModelViewSet):
         patient = self.get_object()
         contacts = patient.emergency_contacts.all()
         serializer = EmergencyContactSerializer(contacts, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'], url_path='lab-results')
+    def lab_results(self, request, pk=None):
+        """
+        Retrieves all lab results for a patient.
+        """
+        patient = self.get_object()
+        medical_records = patient.medical_records.filter(is_active=True).prefetch_related('lab_results')
+        lab_results = LabResult.objects.filter(medical_record__in=medical_records, is_active=True)
+        serializer = LabResultSerializer(lab_results, many=True)
         return Response(serializer.data)
 
 

@@ -61,9 +61,9 @@ export const useAuth = () => {
     toast('Goodbye!', {
       description: 'You have been successfully logged out',
     });
-    // Use navigate instead of window.location
     navigate('/login');
   };
+
   return {
     user,
     isLoading,
@@ -71,5 +71,6 @@ export const useAuth = () => {
     login,
     logout,
     register,
+    updateUser: setUser,
   };
 };
