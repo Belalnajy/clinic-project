@@ -3,8 +3,8 @@ from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Patient, EmergencyContact
-from .serializers import PatientSerializer, EmergencyContactSerializer
+from .models import Patient
+from .serializers import PatientSerializer
 
 
 class ActivationSerializer(serializers.Serializer):
@@ -98,26 +98,3 @@ class PatientViewSet(viewsets.ModelViewSet):
         return Response(
             {"message": "Patient reactivated successfully", "patient": serializer.data}
         )
-
-    @action(detail=True, methods=["get"])
-    def emergency_contacts(self, request, pk=None):
-        """
-        Retrieves all emergency contacts for a patient.
-        """
-        patient = self.get_object()
-        contacts = patient.emergency_contacts.all()
-        serializer = EmergencyContactSerializer(contacts, many=True)
-        return Response(serializer.data)
-
-
-class EmergencyContactViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing emergency contacts.
-    Provides CRUD operations for emergency contact records.
-    """
-
-    queryset = EmergencyContact.objects.all()
-    serializer_class = EmergencyContactSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ["is_active", "relationship"]
-    search_fields = ["first_name", "last_name", "phone_number"]
