@@ -4,24 +4,24 @@ import { getAppointments } from '@/api/reports';
 
 const useStats = () => {
   const { user } = useAuth();
-  const testDate = '2025-4-20';
+  const date = new Date('2025-04-20');
 
   // Query for all appointments
   const allAppointmentsQuery = useQuery({
-    queryKey: ['appointments', 'all', testDate],
+    queryKey: ['appointments', 'all', date],
     queryFn: () =>
       getAppointments({
-        appointment_date: testDate,
+        date,
       }),
     staleTime: 5 * 60 * 1000,
   });
 
   // Query for in_queue appointments
   const inQueueAppointmentsQuery = useQuery({
-    queryKey: ['appointments', 'in_queue', testDate],
+    queryKey: ['appointments', 'in_queue', date],
     queryFn: () =>
       getAppointments({
-        appointment_date: testDate,
+        date,
         status: 'in_queue',
       }),
     staleTime: 5 * 60 * 1000,
