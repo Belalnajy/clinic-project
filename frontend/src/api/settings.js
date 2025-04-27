@@ -4,18 +4,18 @@ const API_BASE_URL = import.meta.env.DEV
   ? '/api'
   : import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-export const getUserProfile = async () => {
+export const getUserProfile = async (userId) => {
   try {
-    const response = await axiosInstance.get('/auth/users/me/');
+    const response = await axiosInstance.get(`/auth/users/me/`);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
 };
 
-export const updateStatus = async (status) => {
+export const updateStatus = async (userId, status) => {
   try {
-    const response = await axiosInstance.put('/auth/users/me/', { status });
+    const response = await axiosInstance.patch(`/auth/users/${userId}/`, { status });
     return response.data;
   } catch (error) {
     const errorMessage = error.response?.data?.status?.[0] || error.response?.data || error.message;
@@ -23,22 +23,12 @@ export const updateStatus = async (status) => {
   }
 };
 
-export const updateProfile = async (profileData) => {
+export const updateDoctorProfilePicture = async (doctorId, file) => {
   try {
-    // Convert the data to FormData if it contains a file
     const formData = new FormData();
-    Object.keys(profileData).forEach((key) => {
-      if (profileData[key] instanceof File) {
-        formData.append(key, profileData[key]);
-      } else if (profileData[key] !== undefined && profileData[key] !== null) {
-        formData.append(key, profileData[key]);
-      }
-    });
-
-    const response = await axiosInstance.put('/auth/users/me/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    formData.append('profile_picture', file);
+    const response = await axiosInstance.patch(`/doctors/doctorsList/${doctorId}/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   } catch (error) {
@@ -46,9 +36,9 @@ export const updateProfile = async (profileData) => {
   }
 };
 
-export const updatePassword = async (passwordData) => {
+export const updatePassword = async (userId, passwordData) => {
   try {
-    const response = await axiosInstance.post('/auth/users/set_password/', passwordData);
+    const response = await axiosInstance.post(`/auth/users/${userId}/set_password/`, passwordData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -64,15 +54,33 @@ export const updatePassword = async (passwordData) => {
 //   }
 // };
 
-export const uploadAvatar = async (file) => {
+export const uploadAvatar = async (userId, file) => {
   try {
     const formData = new FormData();
     formData.append('avatar', file);
-    const response = await axiosInstance.put('/auth/users/me/', formData, {
+    const response = await axiosInstance.patch(`/auth/users/${userId}/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getDoctorProfileByUserId = async (userId) => {
+  try {
+    const response = await axiosInstance.get(`/doctors/doctorsList/by_user_id/?user_id=${userId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const updateDoctorProfile = async (doctorId, doctorData) => {
+  try {
+    const response = await axiosInstance.patch(`/doctors/doctorsList/${doctorId}/`, doctorData);
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;

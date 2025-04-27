@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,8 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import axiosInstance from '@/lib/axios';
-import { getUserProfile } from '@/api/settings';
+import { getDoctorProfileByUserId, updateDoctorProfile } from '@/api/settings';
 
 const formSchema = z.object({
   license_number: z.string().min(5, 'License number must be at least 5 characters').optional().or(z.literal('')),
@@ -42,12 +41,11 @@ const formSchema = z.object({
 });
 
 function ProfessionalSettings() {
-  const { user, updateUser, replaceUser } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const [doctorId, setDoctorId] = useState(null);
   const [specializations, setSpecializations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [justUpdated, setJustUpdated] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,88 +57,71 @@ function ProfessionalSettings() {
     },
   });
 
+  // Fetch specializations (unchanged)
   useEffect(() => {
-    // Debounced fetch to avoid redundant requests
     const fetchSpecializations = debounce(async () => {
       try {
-        const response = await axiosInstance.get('/doctors/specializations/');
+        const response = await import('@/lib/axios').then(m => m.default.get('/doctors/specializations/'));
         setSpecializations(response.data);
       } catch (error) {
-        console.error('Failed to fetch specializations:', error);
         toast.error('Failed to fetch specializations');
-      } finally {
-        setIsLoading(false);
       }
     }, 300);
-
     fetchSpecializations();
     return () => fetchSpecializations.cancel();
   }, []);
 
+  // Fetch doctor profile on mount
   useEffect(() => {
-    if (justUpdated) {
-      setJustUpdated(false);
-      return;
-    }
-    if (user?.doctor_profile) {
-      form.reset({
-        license_number: user.doctor_profile.license_number || '',
-        years_of_experience: user.doctor_profile.years_of_experience || '',
-        qualifications: user.doctor_profile.qualifications || '',
-        bio: user.doctor_profile.bio || '',
-        specialization_id: user.doctor_profile.specialization?.id?.toString() || '',
-      });
-    }
-  }, [user?.doctor_profile, form, justUpdated]);
+    const fetchDoctorProfile = async () => {
+      if (!user?.id) return;
+      try {
+        const doctor = await getDoctorProfileByUserId(user.id);
+        setDoctorId(doctor.id);
+        setProfilePicture(doctor.profile_picture || null);
+        form.reset({
+          license_number: doctor.license_number || '',
+          years_of_experience: doctor.years_of_experience || '',
+          qualifications: doctor.qualifications || '',
+          bio: doctor.bio || '',
+          specialization_id: doctor.specialization?.id?.toString() || '',
+        });
+      } catch (error) {
+        toast.error('Failed to fetch doctor profile');
+      }
+    };
+    fetchDoctorProfile();
+  }, [user?.id, form]);
 
+  // Update only doctor fields
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const doctorId = user?.id;
-      if (!doctorId) {
-        throw new Error('Doctor profile not found');
-      }
-  
+      if (!doctorId) throw new Error('Doctor profile not found');
       const doctorData = {
         years_of_experience: data.years_of_experience ? Number(data.years_of_experience) : 0,
         qualifications: data.qualifications?.trim() || '',
         bio: data.bio?.trim() || '',
         specialization: data.specialization_id || null,
-        is_active: user.is_active !== undefined ? user.is_active : true,
       };
-  
-      const response = await axiosInstance.patch(`/auth/users/${doctorId}/`, doctorData);
-      const updatedUser = response.data;
-      if (replaceUser) replaceUser(updatedUser);
-      setJustUpdated(true);
+      const updatedDoctor = await updateDoctorProfile(doctorId, doctorData);
       form.reset({
-        license_number: updatedUser.doctor_profile?.license_number || '',
-        years_of_experience: updatedUser.doctor_profile?.years_of_experience || '',
-        qualifications: updatedUser.doctor_profile?.qualifications || '',
-        bio: updatedUser.doctor_profile?.bio || '',
-        specialization_id: updatedUser.doctor_profile?.specialization?.id?.toString() || '',
+        license_number: updatedDoctor.license_number || '',
+        years_of_experience: updatedDoctor.years_of_experience || '',
+        qualifications: updatedDoctor.qualifications || '',
+        bio: updatedDoctor.bio || '',
+        specialization_id: updatedDoctor.specialization?.id?.toString() || '',
       });
       toast.success('Professional information updated successfully');
     } catch (error) {
-      const errorMessage = error.response?.data?.detail ||
-                           Object.entries(error.response?.data || {})
-                             .map(([key, value]) => `${key}: ${value}`)
-                             .join('\n') ||
-                           error.message ||
-                           'Please try again';
       toast.error('Failed to update professional information', {
-        description: errorMessage
+        description: error.message || 'Please try again'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  
 
-  if (user?.role !== 'doctor') {
-    return null;
-  }
 
   return (
     <Card>
@@ -150,7 +131,6 @@ function ProfessionalSettings() {
           Update your professional details and qualifications
         </CardDescription>
       </CardHeader>
-
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -236,6 +216,8 @@ function ProfessionalSettings() {
                 </FormItem>
               )}
             />
+            {/* Profile Picture Upload (only for doctor) */}
+
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => form.reset()} disabled={isSubmitting}>
                 Cancel
