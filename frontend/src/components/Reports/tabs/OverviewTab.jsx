@@ -26,7 +26,7 @@ const OverviewTab = ({ appointmentMetrics, patientAnalysis, isLoading }) => {
         <AppointmentCompletion
           completionRate={appointmentMetrics.completion.completionRate}
           total={appointmentMetrics.completion.total}
-          completed={appointmentMetrics.completed}
+          completed={appointmentMetrics.completion.completed}
           appointmentCompletionData={appointmentCompletionData}
         />
 
