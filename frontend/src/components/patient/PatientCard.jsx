@@ -27,7 +27,7 @@ const PatientCard = ({ patient, isActive = true }) => {
   };
 
   const handleEditPatient = (patientId) => {
-    navigate(`/patient/${patientId}/edit`);
+    navigate(`/patients/${patientId}/edit`);
   };
 
   const handleDeletePatient = async (patientId) => {
@@ -48,115 +48,82 @@ const PatientCard = ({ patient, isActive = true }) => {
   };
 
   return (
-    <div
-      className={cn(
-        'group relative p-6 border rounded-xl shadow-sm hover:shadow-md transition-all duration-200',
-        'bg-white',
-        'border-slate-200',
-        'hover:border-slate-300'
-      )}
-    >
-      {/* Status Badge */}
-      <div
-        className={cn(
-          'absolute -top-2 -right-2 px-2 py-1 rounded-full text-xs font-medium',
-          isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'
-        )}
-      >
-        {isActive ? 'Active' : 'Inactive'}
-      </div>
-
-      <div className="flex flex-col md:flex-row md:items-start gap-6">
-        {/* Left Section - Patient Info */}
-        <div className="flex-1 space-y-4">
-          <div>
-            <h3 className="text-xl font-semibold text-slate-900">
-              {patient.first_name} {patient.last_name}
-            </h3>
-            <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
-              <Mail className="h-4 w-4" />
-              <span>{patient.email}</span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-slate-500" />
-              <span className="text-slate-700">{patient.phone_number}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-4 w-4 text-slate-500" />
-              <span className="text-slate-700">{patient.insurance_provider}</span>
-            </div>
-          </div>
+    <div className="bg-white rounded-lg border p-6 space-y-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">
+            {patient.first_name} {patient.last_name}
+          </h3>
+          <p className="text-sm text-gray-500">ID: {patient.id}</p>
         </div>
-
-        {/* Right Section - Actions */}
-        <div className="flex flex-col md:items-end gap-3">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleViewPatient(patient.id)}
+            title="View Patient"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleEditPatient(patient.id)}
+            title="Edit Patient"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
           {isActive ? (
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleViewPatient(patient.id)}
-                className="h-9 w-9 p-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                title="View Patient"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleEditPatient(patient.id)}
-                className="h-9 w-9 p-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                title="Edit Patient"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 p-0 text-slate-600 hover:text-rose-600 hover:bg-rose-50"
-                    title="Delete Patient"
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" title="Delete Patient">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will deactivate the patient. You can reactivate them later if needed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDeletePatient(patient.id)}
                     disabled={isDeleting}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the patient and
-                      remove their data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDeletePatient(patient.id)}
-                      className="bg-rose-600 hover:bg-rose-700"
-                    >
-                      {isDeleting ? 'Deleting...' : 'Delete'}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+                    {isDeleting ? 'Deactivating...' : 'Deactivate'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           ) : (
             <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => handleReactivatePatient(patient.id)}
-              className="text-slate-600 hover:text-emerald-600 hover:border-emerald-600 hover:bg-emerald-50"
               disabled={isReactivating}
+              title="Reactivate Patient"
             >
-              <UserPlus className="h-4 w-4 mr-2" />
-              {isReactivating ? 'Reactivating...' : 'Reactivate Patient'}
+              <UserPlus className="h-4 w-4" />
             </Button>
           )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <Phone className="h-4 w-4 text-gray-500" />
+          <span className="text-sm">{patient.phone_number || 'N/A'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-gray-500" />
+          <span className="text-sm">{patient.email || 'N/A'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-gray-500" />
+          <span className="text-sm">{patient.blood_type || 'N/A'}</span>
         </div>
       </div>
     </div>

@@ -19,13 +19,13 @@ export const usePatientsList = (is_active = true) => {
     queryKey: ['patients', currentPage, search, is_active],
     queryFn: () => getPatients({ page: currentPage, search, is_active }),
   });
-  console.log(data);
+
   return {
     patientsData: data?.results || [],
     patientsLoading: isLoading,
     patientsError: error,
     pagination: {
-      count: 40,
+      count: data?.count || 0,
       currentPage,
     },
   };
@@ -34,8 +34,9 @@ export const usePatientsList = (is_active = true) => {
 export const usePatient = () => {
   const { id: patientId } = useParams();
   return useQuery({
-    queryKey: ['patient'],
+    queryKey: ['patient', patientId],
     queryFn: () => getPatient(patientId),
+    enabled: !!patientId,
   });
 };
 
@@ -47,19 +48,29 @@ export const useAddPatientMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
     },
+    onError: (error) => {
+      console.error('Error creating patient:', error);
+      throw error;
+    },
   });
   return { createPatient: mutation.mutateAsync, isCreating: mutation.isPending };
 };
+
 // Update Patient
 export const useUpdatePatientMutation = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: updatePatient,
+    mutationFn: ({ id, ...data }) => updatePatient(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient'] });
+    },
+    onError: (error) => {
+      console.error('Error updating patient:', error);
+      throw error;
     },
   });
-  return { UpdatePatient: mutation.mutateAsync, isUpdating: mutation.isPending };
+  return { updatePatient: mutation.mutateAsync, isUpdating: mutation.isPending };
 };
 
 // Delete patient mutation
@@ -69,6 +80,10 @@ export const useDeletePatientMutation = () => {
     mutationFn: deletePatient,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+    onError: (error) => {
+      console.error('Error deleting patient:', error);
+      throw error;
     },
   });
   return { deletePatient: mutation.mutateAsync, isDeleting: mutation.isPending };
@@ -81,6 +96,10 @@ export const useReactivatePatientMutation = () => {
     mutationFn: reActivatePatient,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+    onError: (error) => {
+      console.error('Error reactivating patient:', error);
+      throw error;
     },
   });
   return { reactivatePatient: mutation.mutateAsync, isReactivating: mutation.isPending };

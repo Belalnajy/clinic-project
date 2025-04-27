@@ -31,6 +31,7 @@ import {
 import NotFound from './pages/NotFound';
 import ActivePatients from './pages/patients/ActivePatients';
 import InactivePatients from './pages/patients/InactivePatients';
+import PatientForm from './pages/patients/PatientForm';
 
 const router = createBrowserRouter([
   {
@@ -146,6 +147,14 @@ const router = createBrowserRouter([
           {
             path: 'inactive-patients',
             element: <InactivePatients />,
+          },
+          {
+            path: 'add',
+            element: <PatientForm />,
+          },
+          {
+            path: ':id/edit',
+            element: <PatientForm />,
           },
         ],
       },

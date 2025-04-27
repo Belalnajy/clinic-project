@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { Outlet, useSearchParams, useNavigate } from 'react-router-dom';
 import CustomPageTabs from '@/components/CustomPageTabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ const Patients = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [activeTab, setActiveTab] = useState('active');
+  const navigate = useNavigate();
 
   const tabs = ['active-patients', 'inactive-patients'];
 
@@ -22,7 +23,7 @@ const Patients = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Patients</h1>
-        <Button>
+        <Button onClick={() => navigate('/patients/add')}>
           <Plus className="mr-2 h-4 w-4" />
           Add Patient
         </Button>

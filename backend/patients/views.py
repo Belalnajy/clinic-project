@@ -56,7 +56,7 @@ class PatientViewSet(viewsets.ModelViewSet):
         """
         Sets the created_by field to the current user when creating a patient.
         """
-        serializer.save()
+        serializer.save(created_by=self.request.user)
 
     def perform_destroy(self, instance):
         """
