@@ -5,7 +5,7 @@ import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
 import ProfessionalSettings from './components/settings/ProfessionalSettings';
 import Dashboard from './pages/Dashboard';
-import Patients from './pages/Patients';
+import Patients from './pages/patients/Patients';
 import LoginPage from './pages/Login';
 import Reports from './pages/Reports';
 import DoctorsPage from './pages/DoctorsPage';
@@ -29,6 +29,8 @@ import {
   Prescriptions,
 } from './components/patient-details/tabs';
 import NotFound from './pages/NotFound';
+import ActivePatients from './pages/patients/ActivePatients';
+import InactivePatients from './pages/patients/InactivePatients';
 
 const router = createBrowserRouter([
   {
@@ -131,11 +133,21 @@ const router = createBrowserRouter([
       },
       {
         path: 'patients',
-        element: (
-          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
-            <Patients />
-          </ProtectedRoute>
-        ),
+        element: <Patients />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="active-patients" replace />,
+          },
+          {
+            path: 'active-patients',
+            element: <ActivePatients />,
+          },
+          {
+            path: 'inactive-patients',
+            element: <InactivePatients />,
+          },
+        ],
       },
       {
         path: 'patient/:id',

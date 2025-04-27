@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
-    'djoser',
+    "djoser",
     "rest_framework.authtoken",
     "django_filters",
     "drf_yasg",
@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     "medications",
     "billing",
     "chatbot",
-    'reports',
+    "reports",
 ]
 
 MIDDLEWARE = [
@@ -154,27 +154,29 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
 DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE': False,
-    'USERNAME_CHANGED_EMAIL_CONFIRMATION': False,
-    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
-    'SEND_CONFIRMATION_EMAIL': False,
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/email/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'SERIALIZERS': {
-        'user_create': 'users.serializers.UserCreateSerializer',
-        'user': 'users.serializers.UserProfileSerializer',
-        'current_user': 'users.serializers.UserProfileSerializer',
-        'user_delete': 'djoser.serializers.UserDeleteSerializer',
-        'set_password': 'users.serializers.CustomSetPasswordSerializer',
+    "LOGIN_FIELD": "email",
+    "USER_CREATE_PASSWORD_RETYPE": False,
+    "USERNAME_CHANGED_EMAIL_CONFIRMATION": False,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": False,
+    "SEND_CONFIRMATION_EMAIL": False,
+    "PASSWORD_RESET_CONFIRM_URL": "#/password/reset/confirm/{uid}/{token}",
+    "USERNAME_RESET_CONFIRM_URL": "#/email/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": "#/activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": False,
+    "SERIALIZERS": {
+        "user_create": "users.serializers.UserCreateSerializer",
+        "user": "users.serializers.UserProfileSerializer",
+        "current_user": "users.serializers.UserProfileSerializer",
+        "user_delete": "djoser.serializers.UserDeleteSerializer",
+        "set_password": "users.serializers.CustomSetPasswordSerializer",
     },
-    'PERMISSIONS': {
-        'user_create': ['rest_framework.permissions.IsAuthenticated','core.permissions.IsManager'],
-    }
+    "PERMISSIONS": {
+        "user_create": [
+            "rest_framework.permissions.IsAuthenticated",
+            "core.permissions.IsManager",
+        ],
+    },
 }
 
 AUTH_USER_MODEL = "users.User"
@@ -219,29 +221,24 @@ LOGGING = {
 }
 
 
-
 REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    
-    'PAGE_SIZE':  6,  
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 6,
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'authorization',
+    "authorization",
 ]
 SIMPLE_JWT = {
-    'AUTH_HEADER_TYPES': ('JWT',),
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
-

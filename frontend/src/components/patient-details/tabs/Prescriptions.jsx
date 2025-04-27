@@ -7,7 +7,7 @@ import CustomPagination from '@/components/CustomPagination';
 import PrescriptionHeader from '../PrescriptionHeader';
 import PrescriptionMedications from '../PrescriptionMedications';
 
-const Prescriptions = ({ patientId }) => {
+const Prescriptions = () => {
   const { prescriptionsData, isLoadingPrescriptions, prescriptionsError, pagination } =
     usePrescriptions();
 
@@ -44,7 +44,7 @@ const Prescriptions = ({ patientId }) => {
           </div>
           {/* Custom Pagination */}
           <div className="mt-4">
-            <CustomPagination pagination={pagination} />
+            <CustomPagination pagination={pagination} pageSize={2} />
           </div>
         </CardContent>
       </Card>

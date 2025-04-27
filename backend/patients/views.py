@@ -3,8 +3,15 @@ from rest_framework import viewsets, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
 from .models import Patient
 from .serializers import PatientSerializer
+
+
+class PatientPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class ActivationSerializer(serializers.Serializer):
@@ -26,6 +33,7 @@ class PatientViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ["is_active"]
     search_fields = ["first_name", "last_name"]
+    pagination_class = PatientPagination
 
     def get_queryset(self):
         """
