@@ -9,10 +9,11 @@ from django.db.models import Count
 from patients.models import Patient
 from doctors.models import Doctor
 from rest_framework.pagination import PageNumberPagination
-from core.permissions import IsManager
+from core.permissions import IsManagerOrSecretary
+from users.models import User
 
 class AppointmentMetricsView(APIView):
-    permission_classes = [IsAuthenticated,IsManager]
+    permission_classes = [IsAuthenticated,IsManagerOrSecretary]
 
     def get(self, request):
         # Appointment Status Data
@@ -46,7 +47,7 @@ class AppointmentMetricsView(APIView):
 
 
 class PatientAnalysisView(APIView):
-    permission_classes = [IsAuthenticated,IsManager]
+    permission_classes = [IsAuthenticated,IsManagerOrSecretary]
 
     def get(self, request):
         # Age Distribution
@@ -122,7 +123,7 @@ class DoctorPerformancePagination(PageNumberPagination):
 
 
 class DoctorPerformanceView(APIView):
-    permission_classes = [IsAuthenticated,IsManager]
+    permission_classes = [IsAuthenticated,IsManagerOrSecretary]
     def get(self, request):
         # Aggregate doctor performance data
         doctors = Doctor.objects.all().order_by('id')
@@ -148,3 +149,19 @@ class DoctorPerformanceView(APIView):
             })
 
         return paginator.get_paginated_response(performance_data)
+
+
+class AvailableDoctorsView(APIView):
+    permission_classes = [IsAuthenticated, IsManagerOrSecretary]
+
+    def get(self, request):
+        # Get count of doctors with status 'available'
+        available_doctors_count = Doctor.objects.filter(
+            user__status='available',
+            user__role='doctor',
+            user__is_active=True
+        ).count()
+
+        return Response({
+            'count': available_doctors_count
+        })
