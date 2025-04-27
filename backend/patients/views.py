@@ -82,6 +82,16 @@ class PatientViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response({"message": "Patient and all related data deactivated successfully."}, status=status.HTTP_200_OK)
 
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Handles PATCH requests to update specific fields of a patient.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
     @action(detail=True, methods=['get'])
     def emergency_contacts(self, request, pk=None):
         """
@@ -100,6 +110,27 @@ class PatientViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(is_active=False)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='activate')
+    def activate_patient(self, request, pk=None):
+        """
+        API endpoint to activate a deactivated patient.
+        """
+        patient = self.get_object()
+        if not patient.is_active:
+            patient.is_active = True
+            patient.save()
+            # Reactivate related data if needed
+            patient.appointments.update(is_active=True)
+            patient.medical_records.update(is_active=True)
+            for record in patient.medical_records.all():
+                record.lab_results.update(is_active=True)
+                if record.prescriptions:
+                    record.prescriptions.is_active = True
+                    record.prescriptions.save()
+            patient.payments.update(is_active=True)
+            return Response({"message": "Patient activated successfully."}, status=status.HTTP_200_OK)
+        return Response({"message": "Patient is already active."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EmergencyContactViewSet(viewsets.ModelViewSet):
