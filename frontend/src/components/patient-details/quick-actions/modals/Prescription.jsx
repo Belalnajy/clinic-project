@@ -63,7 +63,6 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
   const { data: latestMedicalRecord, isLoading: isLoadingLatestRecord } =
     useLatestMedicalRecord(patientId);
   const { medications, isLoading: isLoadingMedications, pagination } = useMedications();
-  console.log(prescriptionId);
   const form = useForm({
     resolver: zodResolver(prescriptionSchema),
     defaultValues: {
