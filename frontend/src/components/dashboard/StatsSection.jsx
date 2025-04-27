@@ -8,7 +8,7 @@ import CustomAlert from '../CustomAlert';
 const StatsSection = () => {
   const { user } = useAuth();
   const { stats, isLoading, error } = useStats();
-  console.log(stats);
+  
 
   if (isLoading) {
     return (
@@ -35,28 +35,24 @@ const StatsSection = () => {
         <StatCard
           title="Today's Check-ins"
           value={stats.todayCheckIns}
-          change="58% of scheduled from last month"
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="primary"
         />
         <StatCard
           title="Waiting Patients"
           value={stats.waitingPatients}
-          change="63% of today's schedule from last month"
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="success"
         />
         <StatCard
           title="Available Doctors"
           value={stats.availableDoctors}
-          change="2 on leave today"
           icon={<Clock className="text-blue-700" size={20} />}
           color="info"
         />
         <StatCard
           title="New Registrations"
           value={stats.newRegistrations}
-          change="Today from last month"
           icon={<Clock className="text-amber-700" size={20} />}
           color="warning"
         />

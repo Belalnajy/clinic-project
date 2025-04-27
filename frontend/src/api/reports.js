@@ -33,6 +33,15 @@ export const getDoctorPerformance = async (page = 1) => {
 };
 
 /**
+ * Fetch count of available doctors
+ * @returns {Promise<Object>} - Object containing count of available doctors
+ */
+export const getAvailableDoctorsCount = async () => {
+  const response = await axiosInstance.get('/reports/available-doctors/');
+  return response.data;
+};
+
+/**
  * Fetch all doctors
  * @returns {Promise<Array>} - List of doctors with id and name
  */
@@ -49,8 +58,6 @@ export const getSpecializations = async () => {
   const response = await axiosInstance.get('/doctors/specializations-list/');
   return response.data;
 };
-
-
 
 /**
  * Fetch appointments with pagination and filters

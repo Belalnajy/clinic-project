@@ -10,6 +10,7 @@ import { getTodayAppointments } from '../data/data';
 import CheckInTab from '@/components/dashboard/CheckInTab';
 
 export default function SecretaryDashboard() {
+  const { user } = useAuth();
   const todayAppointments = getTodayAppointments();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +29,7 @@ export default function SecretaryDashboard() {
   };
   const completedAppointments = todayAppointments.filter((a) => a.status === 'completed').length;
   const completionRate = Math.round((completedAppointments / todayAppointments.length) * 100) || 0;
+  
 
   const statusStyles = {
     completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -41,7 +43,7 @@ export default function SecretaryDashboard() {
         <h1 className="text-3xl font-light tracking-tight text-slate-800 bg-mint-500">
           Secretary's dashboard
         </h1>
-        <p className="text-slate-500 mt-1 text-sm">Welcome back, Mr. John Smith</p>
+        <p className="text-slate-500 mt-1 text-sm">Welcome back, Mr. {user.first_name} {user.last_name}</p>
       </div>
       {/* Stats Section */}
       <StatsSection />
