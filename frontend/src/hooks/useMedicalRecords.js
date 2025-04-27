@@ -34,10 +34,11 @@ export const useMedicalRecords = (patientId) => {
   };
 
   // Get latest medical record
-  const useLatestMedicalRecord = () => {
+  const useLatestMedicalRecord = (patientId) => {
     return useQuery({
-      queryKey: ['medicalRecord', 'latest'],
-      queryFn: getLatestMedicalRecord,
+      queryKey: ['medicalRecord', 'latest', patientId],
+      queryFn: () => getLatestMedicalRecord(patientId),
+      enabled: !!patientId,
     });
   };
 

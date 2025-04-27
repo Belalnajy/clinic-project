@@ -31,10 +31,13 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { usePrescriptions } from '@/hooks/usePrescriptions';
 import { useMedicalRecords } from '@/hooks/useMedicalRecords';
+import { useMedications } from '@/hooks/useMedications';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import LoadingState from '@/components/LoadingState';
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import CustomPagination from '@/components/CustomPagination';
 
 const prescriptionSchema = z.object({
   medications: z
@@ -57,8 +60,10 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
   const { createPrescription, addMedications, isCreatingPrescription, isAddingMedications } =
     usePrescriptions();
   const { useLatestMedicalRecord } = useMedicalRecords();
-  const { data: latestMedicalRecord, isLoading: isLoadingLatestRecord } = useLatestMedicalRecord();
-
+  const { data: latestMedicalRecord, isLoading: isLoadingLatestRecord } =
+    useLatestMedicalRecord(patientId);
+  const { medications, isLoading: isLoadingMedications, pagination } = useMedications();
+  console.log(prescriptionId);
   const form = useForm({
     resolver: zodResolver(prescriptionSchema),
     defaultValues: {
@@ -79,6 +84,10 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
     control: form.control,
   });
 
+  const handlePageChange = (newPage) => {
+    setMedicationPage(newPage);
+  };
+
   const handleCreatePrescription = async () => {
     if (!latestMedicalRecord) {
       toast.error('No medical record found', {
@@ -89,26 +98,51 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
 
     try {
       const response = await createPrescription(latestMedicalRecord.id);
-      setPrescriptionId(response.id);
-      setStep(2);
+      if (response && response.id) {
+        setPrescriptionId(response.id);
+        setStep(2);
+        toast.success('Prescription created successfully');
+      } else {
+        throw new Error('Failed to create prescription: Invalid response');
+      }
     } catch (error) {
+      console.error('Error creating prescription:', error);
       toast.error('Failed to create prescription', {
-        description: error.message,
+        description: error.message || 'Please try again',
       });
     }
   };
 
   const onSubmit = async (data) => {
     try {
-      await addMedications({
-        prescriptionId,
-        medications: data.medications,
-      });
+      if (!prescriptionId) {
+        throw new Error('No prescription ID found');
+      }
+
+      // Format the medications data correctly
+      const formattedMedications = data.medications.map((med) => ({
+        medication_id: parseInt(med.medicationId),
+        dosage: med.dosage,
+        frequency: med.frequency,
+        duration: med.duration,
+        instructions: med.instructions || '',
+      }));
+
+      const requestData = {
+        prescription_id: parseInt(prescriptionId),
+        medications: formattedMedications,
+      };
+
+      console.log('Component Request Data:', JSON.stringify(requestData, null, 2));
+
+      await addMedications(requestData);
+
       setIsPrescriptionOpen(false);
       form.reset();
       setStep(1);
       setPrescriptionId(null);
     } catch (error) {
+      console.error('Error adding medications:', error);
       toast.error('Failed to add medications', {
         description: error.message,
       });
@@ -149,7 +183,14 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
                   disabled={isCreatingPrescription}
                   className="w-full"
                 >
-                  {isCreatingPrescription ? 'Creating...' : 'Create Prescription'}
+                  {isCreatingPrescription ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Creating...
+                    </div>
+                  ) : (
+                    'Create Prescription'
+                  )}
                 </Button>
               </>
             ) : (
@@ -186,7 +227,26 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
                             <SelectTrigger>
                               <SelectValue placeholder="Select medication" />
                             </SelectTrigger>
-                            <SelectContent>{/* Add your medications list here */}</SelectContent>
+                            <SelectContent>
+                              {isLoadingMedications ? (
+                                <div className="p-2 text-center text-sm text-muted-foreground">
+                                  Loading medications...
+                                </div>
+                              ) : medications.length === 0 ? (
+                                <div className="p-2 text-center text-sm text-muted-foreground">
+                                  No medications available
+                                </div>
+                              ) : (
+                                <>
+                                  {medications.map((medication) => (
+                                    <SelectItem key={medication.id} value={medication.id}>
+                                      {medication.name}
+                                    </SelectItem>
+                                  ))}
+                                  <CustomPagination pagination={pagination} />
+                                </>
+                              )}
+                            </SelectContent>
                           </Select>
                         </FormControl>
                         <FormMessage />

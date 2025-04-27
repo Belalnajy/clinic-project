@@ -28,28 +28,25 @@ export const usePrescriptions = () => {
     mutationFn: createPrescription,
     onSuccess: (data) => {
       queryClient.invalidateQueries(['prescriptions', patientId]);
-      toast.success('Prescription created successfully');
       return data; // Return the created prescription data
     },
     onError: (error) => {
-      toast.error('Failed to create prescription', {
-        description: error.message,
-      });
+      throw error; // Just re-throw the error to be caught by the component
     },
   });
 
   // Mutation for adding medications
   const addMedicationsMutation = useMutation({
-    mutationFn: ({ prescriptionId, medications }) =>
-      addMedicationsToPrescription(prescriptionId, medications),
+    mutationFn: ({ prescription_id, medications }) => {
+      console.log('Mutation Data:', JSON.stringify({ prescription_id, medications }, null, 2));
+      return addMedicationsToPrescription(prescription_id, medications);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['prescriptions', patientId]);
       toast.success('Medications added successfully');
     },
     onError: (error) => {
-      toast.error('Failed to add medications', {
-        description: error.message,
-      });
+      throw error;
     },
   });
 
@@ -63,8 +60,8 @@ export const usePrescriptions = () => {
       previous: prescriptionsData?.previous,
       currentPage,
     },
-    createPrescription: createPrescriptionMutation.mutate,
-    addMedications: addMedicationsMutation.mutate,
+    createPrescription: createPrescriptionMutation.mutateAsync,
+    addMedications: addMedicationsMutation.mutateAsync,
     isCreatingPrescription: createPrescriptionMutation.isPending,
     isAddingMedications: addMedicationsMutation.isPending,
   };

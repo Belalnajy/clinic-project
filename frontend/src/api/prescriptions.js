@@ -15,9 +15,19 @@ export const createPrescription = async (medicalRecordId) => {
 };
 
 export const addMedicationsToPrescription = async (prescriptionId, medications) => {
-  const response = await axiosInstance.post('/prescription-medications/', {
+  const requestData = {
     prescription_id: prescriptionId,
-    medications: medications,
-  });
+    medications: medications.map((med) => ({
+      medication_id: med.medication_id,
+      dosage: med.dosage,
+      frequency: med.frequency,
+      duration: med.duration,
+      instructions: med.instructions || '',
+    })),
+  };
+
+  console.log('API Request Data:', JSON.stringify(requestData, null, 2));
+
+  const response = await axiosInstance.post('/prescription-medications/', requestData);
   return response.data;
 };

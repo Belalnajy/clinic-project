@@ -12,8 +12,8 @@ export const getMedicalRecord = async (id) => {
   return response.data;
 };
 
-export const getLatestMedicalRecord = async () => {
-  const response = await axiosInstance.get('/medical-records/latest/');
+export const getLatestMedicalRecord = async (patientId) => {
+  const response = await axiosInstance.get(`/medical-records/${patientId}/latest/`);
   return response.data;
 };
 
