@@ -11,7 +11,7 @@ django.setup()
 # Import models
 from users.models import User
 from doctors.models import Doctor, Specialization
-from patients.models import Patient, EmergencyContact
+from patients.models import Patient
 from appointments.models import Appointment
 from billing.models import Payment
 from medical_records.models import (
@@ -32,7 +32,6 @@ def clean_database():
     MedicalRecord.objects.all().delete()
     Payment.objects.all().delete()
     Appointment.objects.all().delete()
-    EmergencyContact.objects.all().delete()
     Patient.objects.all().delete()
     Doctor.objects.all().delete()
     Specialization.objects.all().delete()
@@ -224,17 +223,6 @@ def seed_database():
             )
         )
 
-    # Create emergency contacts
-    print("Creating emergency contacts...")
-    for patient in patients:
-        EmergencyContact.objects.create(
-            patient=patient,
-            first_name=random.choice(first_names),
-            last_name=random.choice(last_names),
-            relationship=random.choice(["Parent", "Spouse", "Friend"]),
-            phone_number=f"+201{random.randint(100000000, 999999999)}",
-        )
-
     # Create appointments
     print("Creating appointments...")
     appointments = []
@@ -326,7 +314,6 @@ def seed_database():
     print(f"Specializations: {Specialization.objects.count()}")
     print(f"Doctors: {Doctor.objects.count()}")
     print(f"Patients: {Patient.objects.count()}")
-    print(f"Emergency Contacts: {EmergencyContact.objects.count()}")
     print(f"Appointments: {Appointment.objects.count()}")
     print(f"Payments: {Payment.objects.count()}")
     print(f"Medical Records: {MedicalRecord.objects.count()}")
