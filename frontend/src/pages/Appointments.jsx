@@ -90,7 +90,7 @@ const Appointments = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
-  
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -323,10 +323,8 @@ const Appointments = () => {
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onSave={isEditing ? handleEditAppointment : handleNewAppointment} // Use update or create handler
-        patients={patients}
-        doctors={doctors}
-        initialData={editingAppointment} // Pass the appointment data to pre-fill the form
+        isEditing={isEditing}
+        appointmentId={editingAppointment?.appointment_id}
       />
       <div className="mt-6">
         <CustomPagination

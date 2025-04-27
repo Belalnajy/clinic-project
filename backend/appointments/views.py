@@ -184,6 +184,35 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=request.user)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        # Extract the patient's UUID from the request data
+        patient_uuid = request.data.get("patient_uuid")
+        if patient_uuid:
+            try:
+                # Fetch the patient using the UUID
+                patient = get_object_or_404(Patient, patient_id=patient_uuid)
+                # Add the patient ID to the request data
+                request.data["patient_id"] = patient.id
+            except ValidationError:
+                return Response(
+                    {"error": "Invalid UUID format."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Patient.DoesNotExist:
+                return Response(
+                    {"error": "Patient not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        # Use the serializer to validate and update the appointment
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         instance.is_active = False

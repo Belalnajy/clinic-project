@@ -21,247 +21,228 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { addAppointment } from '../../data/data';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useDoctors } from '@/hooks/useDoctors';
+import useAppointments from '@/hooks/useAppointments';
 
-const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors, initialData }) => {
+const formSchema = z.object({
+  patient_uuid: z.string().min(1, { message: 'Patient UUID is required' }),
+  doctor_id: z.union([z.string(), z.number()]).refine((val) => val !== '', { message: 'Doctor is required' }),
+  appointment_date: z.string().min(1, { message: 'Date is required' }),
+  appointment_time: z.string().min(1, { message: 'Time is required' }),
+  duration: z.union([z.string(), z.number()]).refine((val) => val !== '', { message: 'Duration is required' }),
+  notes: z.string().optional(),
+  status: z.enum(['scheduled', 'completed', 'canceled', 'in_queue']),
+});
+
+const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
   const { user } = useAuth();
+  const { doctors } = useDoctors();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {createAppointment, updateAppointment, useAppointment} = useAppointments();
+  const { data: appointmentData } = useAppointment(appointmentId);
 
-  // Initialize formData with initialData if provided
-  const [formData, setFormData] = useState({
-    patient_uuid: '',
-    doctorId: '',
-    date: '',
-    time: '',
-    duration: '30',
-    notes: '',
-    status: 'scheduled',
-  });
-
-  // Update formData when initialData changes (e.g., when switching between edit and create modes)
-  useEffect(() => {
-    if (initialData) {
-      const updatedFormData = {
-        patient_uuid: initialData.patient.patient_id || '', // Correctly map patient_uuid
-        doctorId: initialData.doctor.id || '', // Correctly map doctor_id
-        date: initialData.appointment_date || '', // Correctly map appointment_date
-        time: initialData.appointment_time || '', // Correctly map appointment_time
-        duration: initialData.duration?.toString() || '30', // Correctly map duration
-        notes: initialData.notes || '', // Correctly map notes
-        status: initialData.status || 'scheduled', // Correctly map status
-      };
-      console.log('Updated Form Data:', updatedFormData);
-      setFormData(updatedFormData);
-    }
-  }, [initialData]);
-
-  useEffect(() => {
-    console.log('Form Data Updated:', formData);
-  }, [formData]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSelectChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validate form
-    if (
-      !formData.patient_uuid ||
-      !formData.doctorId ||
-      !formData.date ||
-      !formData.time ||
-      !formData.duration
-    ) {
-      toast.error('Cannot submit an empty form', {
-        description: 'Please fill in all required fields.',
-      });
-      return;
-    }
-
-    const appointmentData = {
-      patient_uuid: formData.patient_uuid,
-      doctor_id: formData.doctorId,
-      appointment_date: formData.date,
-      appointment_time: formData.time,
-      duration: parseInt(formData.duration),
-      notes: formData.notes,
-      status: formData.status,
-    };
-
-    try {
-      await onSave(appointmentData); // Call the onSave function (create or update)
-      setFormData({
-        patient_uuid: '',
-        doctorId: '',
-        date: '',
-        time: '',
-        duration: '30',
-        notes: '',
-        status: 'scheduled',
-      });
-    } catch (error) {
-      const errorMessage =
-        error.response?.data?.appointment_time?.[0] ||
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        'An error occurred while saving the appointment.';
-
-      toast.error('Failed to save appointment', {
-        description: errorMessage,
-      });
-    }
-  };
-
-  const handleClose = () => {
-    setFormData({
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       patient_uuid: '',
-      doctorId: '',
-      date: '',
-      time: '',
+      doctor_id: '',
+      appointment_date: '',
+      appointment_time: '',
       duration: '30',
       notes: '',
       status: 'scheduled',
-    });
-    onClose();
+    },
+  });
+  const {reset} = form;
+
+  useEffect(() => {
+    if(isOpen) {
+      if (isEditing && appointmentData) {
+        reset({
+          patient_uuid: appointmentData.patient.patient_id,
+          doctor_id: appointmentData.doctor.id,
+          appointment_date: appointmentData.appointment_date,
+          appointment_time: appointmentData.appointment_time,
+          duration: appointmentData.duration,
+          notes: appointmentData.notes,
+          status: appointmentData.status,
+        });
+      }
+      else {
+        reset({
+          patient_uuid: '',
+          doctor_id: '',
+          appointment_date: '',
+          appointment_time: '',
+          duration: '30',
+          notes: '',
+          status: 'scheduled',
+        });
+      }
+    }
+  }, [isOpen, appointmentData, reset, isEditing]);
+
+  const onSubmit = async (appointmentData) => {
+    console.log('Form submitted:', appointmentData);
+    try {
+      setIsSubmitting(true);
+      if (isEditing) {
+        console.log('Editing appointment:', appointmentId);
+        console.log('Appointment data:', appointmentData);
+        // Update appointment logic here
+        await updateAppointment({ id: appointmentId, data: appointmentData });
+        toast.success('Appointment updated successfully');
+      } else {
+        await createAppointment(appointmentData);
+        toast.success('Appointment saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      toast.error('Failed to save appointment');
+    } finally {
+      setIsSubmitting(false)
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{initialData ? 'Edit Appointment' : 'New Appointment'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Appointment' : 'New Appointment'}</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="patient_uuid">Patient UUID</Label>
-              <Input
-                id="patient_uuid"
+        {/* Form */}
+        <Form {...form}>
+          <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              {/* Patient UUID Field */}
+              <FormField
+                control={form.control}
                 name="patient_uuid"
-                placeholder="Enter patient's uuid"
-                value={formData.patient_uuid}
-                onChange={handleChange}
-                disabled={!!initialData} // Disable if editing
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Patient UUID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter Patient UUID" {...field} disabled={ isEditing }/>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="doctor">Doctor</Label>
-              <Select
-                name="doctorId"
-                onValueChange={(value) => handleSelectChange('doctorId', value)}
-                value={formData.doctorId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select doctor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                      {doctor.first_name} {doctor.last_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="time">Time</Label>
-                <Input
-                  type="time"
-                  id="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="duration">Duration</Label>
-              <Select
+              {/* Doctor Select Field */}
+              <FormField
+                control={form.control}
+                name="doctor_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Doctor</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a doctor" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {doctors.map((doctor) => (
+                          <SelectItem key={doctor.id} value={doctor.id}>
+                            {doctor.first_name} {doctor.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Date Field */}
+              <FormField
+                control={form.control}
+                name="appointment_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}/>
+              {/* Time Field */}
+              <FormField
+                control={form.control}
+                name="appointment_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              /></div>
+              {/* Duration Field */}
+              <FormField
+                control={form.control}
                 name="duration"
-                onValueChange={(value) => handleSelectChange('duration', value)}
-                value={formData.duration}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="doctor">Status</Label>
-              <Select
-                name="status"
-                onValueChange={(value) => handleSelectChange('status', value)}
-                value={formData.status}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem key="scheduled" value="scheduled">
-                    Scheduled
-                  </SelectItem>
-                  <SelectItem key="completed" value="completed">
-                    Completed
-                  </SelectItem>
-                  <SelectItem key="canceled" value="canceled">
-                    Canceled
-                  </SelectItem>
-                  <SelectItem key="in_queue" value="in_queue">
-                    In queue
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                name="notes"
-                placeholder="Add appointment notes..."
-                className="min-h-[100px]"
-                value={formData.notes}
-                onChange={handleChange}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration (minutes)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-          </div>
+              {/* Notes Field */}
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Enter notes" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Status Select Field */}
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="scheduled">Scheduled</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="canceled">Canceled</SelectItem>
+                        <SelectItem value="in_queue">In Queue</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}  />
 
-          <DialogFooter>
-            <Button variant="outline" type="button" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              {initialData ? 'Update Appointment' : 'Create Appointment'}
-            </Button>
-          </DialogFooter>
-        </form>
+              <Button type="submit" className="w-full bg-primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting' : 'Submit'}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
