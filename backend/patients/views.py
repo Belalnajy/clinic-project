@@ -14,30 +14,33 @@ class ActivationSerializer(serializers.Serializer):
     class Meta:
         ref_name = "PatientsActivationSerializer"
 
+
 class PatientViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing patient records.
-    Provides CRUD operations and additional actions for patient management.
+    Provides endpoints for listing, creating, updating, and managing patient status.
     """
+
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['gender', 'blood_type', 'is_active']
-    search_fields = ['first_name', 'last_name', 'email', 'phone_number']
-    ordering_fields = ['first_name', 'last_name', 'created_at']
-    ordering = ['-created_at']
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["is_active"]
 
     def get_queryset(self):
         """
-        Returns the queryset of patients with optional filtering.
+        Returns the queryset of patients, filtering by active status.
+        Default is to show only active patients.
         """
         queryset = self.queryset
-        
-        # Filter by active status if provided
-        is_active = self.request.query_params.get('is_active')
+
+        # Get is_active filter from query params
+        is_active = self.request.query_params.get("is_active")
         if is_active is not None:
-            queryset = queryset.filter(is_active=is_active.lower() == 'true')
-            
+            queryset = queryset.filter(is_active=is_active.lower() == "true")
+        else:
+            # Default to active patients if no filter specified
+            queryset = queryset.filter(is_active=True)
+
         return queryset
 
     def perform_create(self, serializer):
@@ -46,63 +49,57 @@ class PatientViewSet(viewsets.ModelViewSet):
         """
         serializer.save()
 
-    @action(detail=True, methods=['post'], serializer_class=ActivationSerializer)
-    def deactivate(self, request, pk=None):
+    def perform_destroy(self, instance):
         """
-        Deactivates a patient record.
+        Override destroy to soft delete (set is_active to False)
         """
-        try:
-            patient = self.get_object()
-            if not patient.is_active:
-                return Response(
-                    {'message': 'Patient is already deactivated'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            patient.is_active = False
-            patient.save()
-            
-            serializer = self.get_serializer(patient)
-            return Response({
-                'message': 'Patient deactivated successfully',
-                'patient': serializer.data
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
+        instance.is_active = False
+        instance.save()
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update patient data (PATCH method)
+        Only allowed for active patients
+        """
+        instance = self.get_object()
+
+        # Check if patient is active
+        if not instance.is_active:
             return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Cannot update inactive patient"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @action(detail=True, methods=['post'], serializer_class=ActivationSerializer)
-    def activate(self, request, pk=None):
+        # Partial update (PATCH)
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def reactivate(self, request, pk=None):
         """
-        Activates a patient record.
+        Reactivate a patient
         """
+        # Get the patient from inactive patients
         try:
-            patient = self.get_object()
-            if patient.is_active:
-                return Response(
-                    {'message': 'Patient is already active'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            patient.is_active = True
-            patient.save()
-            
-            serializer = self.get_serializer(patient)
-            return Response({
-                'message': 'Patient activated successfully',
-                'patient': serializer.data
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
+            patient = Patient.objects.get(id=pk, is_active=False)
+        except Patient.DoesNotExist:
             return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Patient not found or already active"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-    @action(detail=True, methods=['get'])
+        patient.is_active = True
+        patient.save()
+
+        serializer = self.get_serializer(patient)
+        return Response(
+            {"message": "Patient reactivated successfully", "patient": serializer.data}
+        )
+
+    @action(detail=True, methods=["get"])
     def emergency_contacts(self, request, pk=None):
         """
         Retrieves all emergency contacts for a patient.
@@ -118,9 +115,9 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
     ViewSet for managing emergency contacts.
     Provides CRUD operations for emergency contact records.
     """
+
     queryset = EmergencyContact.objects.all()
     serializer_class = EmergencyContactSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['is_active', 'relationship']
-    search_fields = ['first_name', 'last_name', 'phone_number']
-    
+    filterset_fields = ["is_active", "relationship"]
+    search_fields = ["first_name", "last_name", "phone_number"]
