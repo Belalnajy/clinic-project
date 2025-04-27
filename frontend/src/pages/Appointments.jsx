@@ -20,25 +20,31 @@ import { getAllAppointments, getAllDoctors, getAllPatients } from '../data/data'
 
 import { Plus, Search, Eye, Edit, Trash, User } from 'lucide-react';
 import AppointmentModal from '@/components/modals/AppointmentModal';
+import { useNavigate } from 'react-router-dom';
+import useAppointments from '@/hooks/useAppointments';
+import { usePatients } from '@/hooks/usePatients';
+import { useDoctors } from '@/hooks/useDoctors';
+import LoadingState from '@/components/LoadingState';
+import CustomPagination from '@/components/CustomPagination';
 
 const Appointments = () => {
-  const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
+  const { appointments, pagination, isLoadingAppointments, appointmentsError } = useAppointments();
+  
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [appointmentStatusFilter, setAppointmentStatusFilter] = useState('all');
-  const [patients, setPatients] = useState([]);
-  const [doctors, setDoctors] = useState([]);
+  // const [patients, setPatients] = useState([]);
+  // const [doctors, setDoctors] = useState([]);
   let today = new Date().toLocaleDateString();
   const [date, setDate] = useState(today);
 
   useEffect(() => {
-    const allAppointments = getAllAppointments();
-    setAppointments(allAppointments);
-    setFilteredAppointments(allAppointments);
-    setPatients(getAllPatients());
-    setDoctors(getAllDoctors());
-  }, []);
+    setFilteredAppointments(appointments);
+    // console.log(filteredAppointments)
+    // console.log(appointments)
+  }, [appointments]);
 
   useEffect(() => {
     if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
@@ -48,9 +54,9 @@ const Appointments = () => {
       const filtered = appointments
         .filter(
           (appointment) =>
-            appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase())
+            // appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            appointment.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
         )
         .filter((appointment) => {
           if (appointmentStatusFilter === 'all') {
@@ -79,9 +85,13 @@ const Appointments = () => {
   };
 
   const handleNewAppointment = (appointmentData) => {
-    setAppointments(getAllAppointments());
+    // setAppointments(getAllAppointments());
     closeModal();
   };
+
+  if(isLoadingAppointments) {
+    return <LoadingState fullPage={true} message="Loading appointments..." />;
+  }
 
   return (
     <div className="space-y-6">
@@ -152,6 +162,9 @@ const Appointments = () => {
                     Patient
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                    Date
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
                     Time
                   </th>
                   <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
@@ -176,13 +189,14 @@ const Appointments = () => {
                         <div className="flex items-center gap-3">
                           <div>
                             <div className="font-medium text-slate-900">
-                              {appointment.patientName}
+                              {appointment.patient_name}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 align-middle">{appointment.time}</td>
-                      <td className="p-4 align-middle">{appointment.doctorName}</td>
+                      <td className="p-4 align-middle">{appointment.appointment_date}</td>
+                      <td className="p-4 align-middle">{appointment.appointment_time}</td>
+                      <td className="p-4 align-middle">{appointment.doctor_name}</td>
                       <td className="p-4 align-middle">{appointment.status}</td>
                       <td className="p-4 align-middle font-medium">{appointment.notes}</td>
                       <td className="p-4 align-middle">
@@ -239,14 +253,26 @@ const Appointments = () => {
         </CardContent>
       </Card>
 
-      <AppointmentModal 
+      {/* <AppointmentModal 
         isOpen={isModalOpen} 
         onClose={closeModal} 
         onSave={handleNewAppointment}
         patients={patients}
         doctors={doctors}
-      />
+      /> */}
+      <div className="mt-6">
+        <CustomPagination
+          totalItems={pagination.count}
+          currentPage={pagination.currentPage}
+          onPageChange={(page) => {
+            navigate(`/appointments?page=${page}`);
+          }}
+          hasNextPage={!!pagination.next}
+          hasPreviousPage={!!pagination.previous}
+        />
+      </div>
     </div>
+    
   );
 };
 

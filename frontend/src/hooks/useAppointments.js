@@ -11,6 +11,7 @@ import { getAppointment,
  } from '@/api/appointments';
 import { Pagination } from '@/components/ui/pagination';
 
+
 const useAppointments = () => {
     const queryClient = useQueryClient();
     const [searchParams] = useSearchParams();

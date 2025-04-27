@@ -1,9 +1,11 @@
 import axiosInstance from '../lib/axios';
 
 export const getAppointments = async (page = 1) => {
-  const response = await axiosInstance.get('/appointments/', {
+  const response = await axiosInstance.get('/appointments', {
     params: { page },
   });
+
+  console.log('api res: ', response.data);
   
   return response.data;
 };

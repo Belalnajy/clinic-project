@@ -33,10 +33,12 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = AppointmentFilter
     pagination_class = AppointmentPagination
+    ordering_fields = ["appointment_date"]
+    ordering = ["-appointment_date"]
 
     def get_queryset(self):
         # Get all active appointments
-        queryset = Appointment.objects.filter(is_active=True)
+        queryset = Appointment.objects.filter(is_active=True).order_by("-appointment_date")
         logger.info(f"Total active appointments: {queryset.count()}")
 
         if not self.request.user.is_authenticated:
@@ -57,7 +59,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 logger.warning("User has doctor role but no doctor_profile")
                 return queryset.none()
             doctor = self.request.user.doctor_profile
-            queryset = queryset.filter(doctor=doctor)
+            queryset = queryset.filter(doctor=doctor).order_by("-appointment_date")
             logger.info(
                 f"Filtered appointments for doctor {doctor}: {queryset.count()}"
             )
