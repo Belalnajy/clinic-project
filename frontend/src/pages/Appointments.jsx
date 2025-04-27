@@ -30,10 +30,16 @@ import { toast } from 'sonner';
 
 const Appointments = () => {
   const navigate = useNavigate();
-  const { appointments, pagination, isLoadingAppointments, appointmentsError, deleteAppointment, createAppointment } = useAppointments();
   const {
-    usePatientsList,
-  } = usePatients();
+    appointments,
+    pagination,
+    isLoadingAppointments,
+    appointmentsError,
+    deleteAppointment,
+    createAppointment,
+    updateAppointment,
+  } = useAppointments();
+  const { usePatientsList } = usePatients();
   const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList();
   const { doctors } = useDoctors();
   const patients = patientsData?.results || [];
@@ -41,6 +47,8 @@ const Appointments = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [appointmentStatusFilter, setAppointmentStatusFilter] = useState('all');
+  const [isEditing, setIsEditing] = useState(false); // Tracks if the modal is in edit mode
+  const [editingAppointment, setEditingAppointment] = useState(null); // Stores the appointment being edited
   // const [patients, setPatients] = useState([]);
   // const [doctors, setDoctors] = useState([]);
   let today = new Date().toLocaleDateString();
@@ -56,7 +64,6 @@ const Appointments = () => {
     if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
       setFilteredAppointments(appointments);
     } else {
-
       const filtered = appointments
         .filter(
           (appointment) =>
@@ -74,7 +81,7 @@ const Appointments = () => {
           if (date === today) {
             return true;
           }
-          return appointment.date === format(date, 'yyyy-MM-dd')
+          return appointment.date === format(date, 'yyyy-MM-dd');
         });
       setFilteredAppointments(filtered);
     }
@@ -83,20 +90,24 @@ const Appointments = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
+  
   const openModal = () => {
     setIsModalOpen(true);
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setIsEditing(false); // Reset edit mode
+    setEditingAppointment(null); // Clear editing data
   };
 
   const handleNewAppointment = async (appointmentData) => {
     try {
-      await createAppointment(appointmentData); 
-      toast.success("Appointment created successfully", {
-        description: "Your appointment has been created.",
+      await createAppointment(appointmentData);
+      toast.success('Appointment created successfully', {
+        description: 'Your appointment has been created.',
       });
-      closeModal(); 
+      closeModal();
     } catch (error) {
       console.error('Error in createAppointment:', error.response.data);
       const errorMessage =
@@ -113,7 +124,37 @@ const Appointments = () => {
     }
   };
 
-  if(isLoadingAppointments) {
+  const handleEditAppointment = async (appointmentData) => {
+    try {
+      await updateAppointment(appointmentData);
+      toast.success('Appointment updated successfully', {
+        description: 'Your appointment has been updated.',
+      });
+      setEditingAppointment(null); // Clear the editing appointment
+      setIsEditing(false); // Reset the editing state
+      closeModal();
+    } catch (error) {
+      console.error('Error in updateAppointment:', error.response.data);
+      const errorMessage =
+        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
+        error.response?.data?.appointment_date?.[0] ||
+        error.response?.data?.error || // General error message
+        error.response?.data?.message || // Fallback error message
+        'An error occurred while updating the appointment.'; // Default message
+
+      // Display the error message in the toast
+      toast.error('Failed to update appointment', {
+        description: errorMessage,
+      });
+    }
+  };
+  const handleEditClick = (appointment) => {
+    setIsEditing(true);
+    setEditingAppointment(appointment); // Pass the appointment data to the modal
+    openModal();
+  };
+
+  if (isLoadingAppointments) {
     return <LoadingState fullPage={true} message="Loading appointments..." />;
   }
 
@@ -140,7 +181,7 @@ const Appointments = () => {
               />
             </div>
             <Popover modal={true} onValueChange={setDate}>
-              <PopoverTrigger >
+              <PopoverTrigger>
                 <Button
                   variant={'outline'}
                   className={cn(
@@ -152,7 +193,7 @@ const Appointments = () => {
                   {date ? format(date, 'P') : <span>Pick a date</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" style={{ pointerEvents: "auto" }}>
+              <PopoverContent className="w-auto p-0" style={{ pointerEvents: 'auto' }}>
                 <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
               </PopoverContent>
             </Popover>
@@ -169,7 +210,7 @@ const Appointments = () => {
               </SelectContent>
             </Select>
             <Button
-                onClick={openModal}
+              onClick={openModal}
               className="bg-primary hover:bg-primary/90 transition-colors"
             >
               <Plus size={18} className="mr-2" />
@@ -238,6 +279,7 @@ const Appointments = () => {
                             size="sm"
                             className="h-8 w-8 p-0 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
                             aria-label="Edit Patient"
+                            onClick={() => handleEditClick(appointment)}
                           >
                             <Edit size={18} />
                           </Button>
@@ -246,7 +288,7 @@ const Appointments = () => {
                             size="sm"
                             className="h-8 w-8 p-0 text-slate-600 hover:text-red-600 hover:bg-red-50"
                             aria-label="Delete Patient"
-                            onClick = {deleteAppointment.bind(this, appointment.appointment_id)}
+                            onClick={deleteAppointment.bind(this, appointment.appointment_id)}
                           >
                             <Trash size={18} />
                           </Button>
@@ -278,12 +320,13 @@ const Appointments = () => {
         </CardContent>
       </Card>
 
-      <AppointmentModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        onSave={handleNewAppointment}
+      <AppointmentModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={isEditing ? handleEditAppointment : handleNewAppointment} // Use update or create handler
         patients={patients}
         doctors={doctors}
+        initialData={editingAppointment} // Pass the appointment data to pre-fill the form
       />
       <div className="mt-6">
         <CustomPagination
@@ -297,7 +340,6 @@ const Appointments = () => {
         />
       </div>
     </div>
-    
   );
 };
 

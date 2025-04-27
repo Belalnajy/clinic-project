@@ -176,7 +176,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             )
 
         # Add the patient to the request data
-        request.data["patient"] = patient.id
+        request.data["patient_id"] = patient.id
 
         # Use the serializer to validate and save the appointment
         serializer = self.get_serializer(data=request.data)

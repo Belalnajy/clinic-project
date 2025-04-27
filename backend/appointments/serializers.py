@@ -104,7 +104,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "appointment_id",
-            "status",
             "is_active",
             "created_by",
             "created_at",

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -23,10 +23,10 @@ import { addAppointment } from '../../data/data';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 
-const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
+const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors, initialData }) => {
   const { user } = useAuth();
-  // const { toast } = useToast();
 
+  // Initialize formData with initialData if provided
   const [formData, setFormData] = useState({
     patient_uuid: '',
     doctorId: '',
@@ -34,8 +34,29 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
     time: '',
     duration: '30',
     notes: '',
-    status: 'pending',
+    status: 'scheduled',
   });
+
+  // Update formData when initialData changes (e.g., when switching between edit and create modes)
+  useEffect(() => {
+    if (initialData) {
+      const updatedFormData = {
+        patient_uuid: initialData.patient.patient_id || '', // Correctly map patient_uuid
+        doctorId: initialData.doctor.id || '', // Correctly map doctor_id
+        date: initialData.appointment_date || '', // Correctly map appointment_date
+        time: initialData.appointment_time || '', // Correctly map appointment_time
+        duration: initialData.duration?.toString() || '30', // Correctly map duration
+        notes: initialData.notes || '', // Correctly map notes
+        status: initialData.status || 'scheduled', // Correctly map status
+      };
+      console.log('Updated Form Data:', updatedFormData);
+      setFormData(updatedFormData);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    console.log('Form Data Updated:', formData);
+  }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,25 +84,18 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
       return;
     }
 
-    console.log(patients);
-
-    // Convert string IDs to numbers
     const appointmentData = {
-      patient_uuid: formData.patient_uuid, // Use the correct field names expected by the backend
+      patient_uuid: formData.patient_uuid,
       doctor_id: formData.doctorId,
       appointment_date: formData.date,
       appointment_time: formData.time,
       duration: parseInt(formData.duration),
       notes: formData.notes,
+      status: formData.status,
     };
 
-    console.log('Submitting appointment data:', appointmentData);
-
     try {
-      // Call the onSave function passed as a prop
-      await onSave(appointmentData);
-
-      // Reset the form
+      await onSave(appointmentData); // Call the onSave function (create or update)
       setFormData({
         patient_uuid: '',
         doctorId: '',
@@ -89,28 +103,39 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
         time: '',
         duration: '30',
         notes: '',
-        status: 'pending',
+        status: 'scheduled',
       });
     } catch (error) {
-      console.error('Error in createAppointment:', error);
       const errorMessage =
-        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
-        error.response?.data?.error || // General error message
-        error.response?.data?.message || // Fallback error message
-        'An error occurred while creating the appointment.'; // Default message
+        error.response?.data?.appointment_time?.[0] ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'An error occurred while saving the appointment.';
 
-      // Display the error message in the toast
-      toast.error('Failed to create appointment', {
+      toast.error('Failed to save appointment', {
         description: errorMessage,
       });
     }
   };
 
+  const handleClose = () => {
+    setFormData({
+      patient_uuid: '',
+      doctorId: '',
+      date: '',
+      time: '',
+      duration: '30',
+      notes: '',
+      status: 'scheduled',
+    });
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>New Appointment</DialogTitle>
+          <DialogTitle>{initialData ? 'Edit Appointment' : 'New Appointment'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -123,6 +148,7 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
                 placeholder="Enter patient's uuid"
                 value={formData.patient_uuid}
                 onChange={handleChange}
+                disabled={!!initialData} // Disable if editing
               />
             </div>
 
@@ -187,6 +213,32 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="doctor">Status</Label>
+              <Select
+                name="status"
+                onValueChange={(value) => handleSelectChange('status', value)}
+                value={formData.status}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem key="scheduled" value="scheduled">
+                    Scheduled
+                  </SelectItem>
+                  <SelectItem key="completed" value="completed">
+                    Completed
+                  </SelectItem>
+                  <SelectItem key="canceled" value="canceled">
+                    Canceled
+                  </SelectItem>
+                  <SelectItem key="in_queue" value="in_queue">
+                    In queue
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -202,10 +254,12 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={onClose}>
+            <Button variant="outline" type="button" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit">Create Appointment</Button>
+            <Button type="submit">
+              {initialData ? 'Update Appointment' : 'Create Appointment'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
