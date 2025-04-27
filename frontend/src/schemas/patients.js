@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const phoneRegex = /^\+20\d{10}$/;
 
-const patients = z.object({
+export const patients = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   dateOfBirth: z
@@ -22,11 +22,29 @@ const patients = z.object({
     .object({
       provider: z.string().optional(),
       policyNumber: z.string().optional(),
-      expiryDate: z
-        .string()
-        .optional(),
+      expiryDate: z.string().optional(),
     })
     .optional(),
 });
 
-export default patients;
+export const defaultPatientValues = {
+  first_name: '',
+  last_name: '',
+  birth_date: '',
+  gender: '',
+  email: '',
+  phone_number: '',
+  address: '',
+  city: '',
+  blood_type: '',
+  height: '',
+  weight: '',
+  payment_type: '',
+  credit_card_number: '',
+  insurance_provider: '',
+  insurance_number: '',
+  insurance_expiration_date: '',
+  is_active: true,
+};
+
+

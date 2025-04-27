@@ -5,6 +5,8 @@ import {
   savePatient,
   deletePatient,
   getDeactivatedPatients,
+  togglePatientStatus,
+  activatePatient,
 } from '@/api/patients';
 
 export const usePatients = () => {
@@ -27,7 +29,6 @@ export const usePatients = () => {
     });
   };
 
-
   // Save patient (create or update)
   const savePatientMutation = useMutation({
     mutationFn: ({ data, id }) => savePatient(data, id),
@@ -44,6 +45,22 @@ export const usePatients = () => {
     },
   });
 
+  // Toggle patient active status
+  const togglePatientStatusMutation = useMutation({
+    mutationFn: ({ id, isActive }) => togglePatientStatus(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+
+  // Activate a deactivated patient
+  const activatePatientMutation = useMutation({
+    mutationFn: (id) => activatePatient(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+  });
+
   return {
     usePatientsList,
     useDeactivatedPatients, // Expose the new query
@@ -51,5 +68,9 @@ export const usePatients = () => {
     isSavingPatient: savePatientMutation.isLoading,
     deletePatient: deletePatientMutation.mutateAsync,
     isDeletingPatient: deletePatientMutation.isLoading,
+    togglePatientStatus: togglePatientStatusMutation.mutateAsync,
+    isTogglingPatientStatus: togglePatientStatusMutation.isLoading,
+    activatePatient: activatePatientMutation.mutateAsync,
+    isActivatingPatient: activatePatientMutation.isLoading,
   };
 };

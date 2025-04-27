@@ -58,3 +58,26 @@ export const getDeactivatedPatients = async () => {
   const response = await axiosInstance.get('/patients/patients/deactivated/');
   return response.data;
 };
+
+/**
+ * Toggle patient's active status
+ * @param {number} id - Patient ID
+ * @param {boolean} isActive - New active status
+ * @returns {Promise<Object>} - Updated patient
+ */
+export const togglePatientStatus = async (id, isActive) => {
+  const response = await axiosInstance.patch(`/patients/patients/${id}/`, {
+    is_active: isActive,
+  });
+  return response.data;
+};
+
+/**
+ * Activate a deactivated patient
+ * @param {number} id - Patient ID
+ * @returns {Promise<Object>} - Activated patient
+ */
+export const activatePatient = async (id) => {
+  const response = await axiosInstance.post(`/patients/patients/${id}/activate/`);
+  return response.data;
+};

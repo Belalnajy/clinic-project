@@ -40,8 +40,6 @@ const Patients = () => {
 
   const patients = patientsData?.results || [];
   const deactivatedPatients = deactivatedPatientsData || [];
-
-  // Filter deactivated patients based on search term (name, ID, or phone number)
   const filteredDeactivatedPatients = deactivatedPatients.filter((patient) => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -51,17 +49,14 @@ const Patients = () => {
     );
   });
 
-  // Pagination logic
   const itemsPerPage = 10;
   const totalActivatedItems = patientsData?.count || 0;
   const totalDeactivatedItems = filteredDeactivatedPatients.length || 0;
 
-  // Paginate filtered deactivated patients
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedDeactivatedPatients = filteredDeactivatedPatients.slice(startIndex, endIndex);
 
-  // Determine total items and displayed patients based on the active tab
   const totalItems = activeTab === 'activated' ? totalActivatedItems : totalDeactivatedItems;
   const displayedPatients = activeTab === 'activated' ? patients : paginatedDeactivatedPatients;
 
@@ -76,7 +71,6 @@ const Patients = () => {
   };
 
   const handleSavePatient = async (patientData) => {
-    try {
       if (selectedPatient) {
         await updatePatient({ id: selectedPatient.id, data: patientData });
         toast.success('Patient updated successfully');
@@ -85,10 +79,6 @@ const Patients = () => {
         toast.success('Patient created successfully');
       }
       closeModal();
-    } catch (error) {
-      toast.error(`Failed to ${selectedPatient ? 'update' : 'create'} patient`);
-      console.error(error);
-    }
   };
 
   const handlePatientAction = async (action, patientId) => {
@@ -98,7 +88,6 @@ const Patients = () => {
           navigate(`/patients/patients/${patientId}`);
           break;
         case 'edit':
-          // Find the patient from the correct list based on the active tab
           const patientToEdit = (activeTab === 'activated' ? patients : deactivatedPatients).find(
             (p) => p.id === patientId
           );
@@ -127,7 +116,7 @@ const Patients = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1); 
   };
 
   const handlePageChange = (page) => {
@@ -136,7 +125,7 @@ const Patients = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1); // Reset to first page when switching tabs
+    setCurrentPage(1); 
   };
 
   const tabsData = [
