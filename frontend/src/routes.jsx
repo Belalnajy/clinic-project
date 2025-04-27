@@ -145,12 +145,12 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="medical-records" replace />,
+            element: <Navigate to="overview" replace />,
           },
-          // {
-          //   path: 'overview',
-          //   element: <Overview />,
-          // },
+          {
+            path: 'overview',
+            element: <Overview />,
+          },
           {
             path: 'medical-records',
             element: <MedicalRecords />,
