@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,6 +12,7 @@ from .filters import AppointmentFilter
 import logging
 from uuid import UUID
 from django.core.exceptions import ValidationError
+from patients.models import Patient
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,34 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         serializer.save(
             created_by=self.request.user, status="scheduled", is_active=True
         )
+
+    def create(self, request, *args, **kwargs):
+        # Extract the patient's UUID from the request data
+        patient_uuid = request.data.get("patient_uuid")
+        if not patient_uuid:
+            return Response(
+                {"error": "Patient UUID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Fetch the patient using the UUID
+        try:
+            patient = get_object_or_404(Patient, patient_id=patient_uuid)
+        except ValidationError:
+            return Response(
+                {"error": "Invalid UUID format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Add the patient to the request data
+        request.data["patient"] = patient.id
+
+        # Use the serializer to validate and save the appointment
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         instance.is_active = False

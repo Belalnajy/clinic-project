@@ -1,41 +1,43 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-// import { Textarea } from "@/components/ui/textarea";
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 // import { useToast } from "@/hooks/use-toast";
-import { addAppointment } from "../../data/data";
+import { toast } from 'sonner';
+import { addAppointment } from '../../data/data';
 import { useAuth } from '@/contexts/Auth/useAuth';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 
 const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
   const { user } = useAuth();
   // const { toast } = useToast();
 
   const [formData, setFormData] = useState({
-    patientId: "",
-    doctorId: "",
-    date: "",
-    time: "",
-    duration: "30",
-    notes: "",
-    status: "pending"
+    patient_uuid: '',
+    doctorId: '',
+    date: '',
+    time: '',
+    duration: '30',
+    notes: '',
+    status: 'pending',
   });
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -44,62 +46,68 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate form
     if (
-      !formData.patientId ||
+      !formData.patient_uuid ||
       !formData.doctorId ||
       !formData.date ||
       !formData.time ||
       !formData.duration
     ) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please fill in all required fields"
+      toast.error('Cannot submit an empty form', {
+        description: 'Please fill in all required fields.',
       });
       return;
     }
 
+    console.log(patients);
+
     // Convert string IDs to numbers
     const appointmentData = {
-      ...formData,
-      patientId: parseInt(formData.patientId),
-      doctorId: parseInt(formData.doctorId),
+      patient_uuid: formData.patient_uuid, // Use the correct field names expected by the backend
+      doctor_id: formData.doctorId,
+      appointment_date: formData.date,
+      appointment_time: formData.time,
       duration: parseInt(formData.duration),
-      createdBy: user.id
+      notes: formData.notes,
     };
 
-    // Save appointment to local storage
-    const newAppointment = addAppointment(appointmentData);
+    console.log('Submitting appointment data:', appointmentData);
 
-    // Show success message
-    toast({
-      title: "Success",
-      description: "Appointment created successfully"
-    });
+    try {
+      // Call the onSave function passed as a prop
+      await onSave(appointmentData);
 
-    // Call onSave callback
-    if (onSave) {
-      onSave(newAppointment);
+      // Reset the form
+      setFormData({
+        patient_uuid: '',
+        doctorId: '',
+        date: '',
+        time: '',
+        duration: '30',
+        notes: '',
+        status: 'pending',
+      });
+    } catch (error) {
+      console.error('Error in createAppointment:', error);
+      const errorMessage =
+        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
+        error.response?.data?.error || // General error message
+        error.response?.data?.message || // Fallback error message
+        'An error occurred while creating the appointment.'; // Default message
+
+      // Display the error message in the toast
+      toast.error('Failed to create appointment', {
+        description: errorMessage,
+      });
     }
-
-    // Reset form
-    setFormData({
-      patientId: "",
-      doctorId: "",
-      date: "",
-      time: "",
-      duration: "30",
-      notes: "",
-      status: "pending"
-    });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>New Appointment</DialogTitle>
@@ -108,39 +116,32 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="patient">Patient</Label>
-              <Select
-                name="patientId"
-                onValueChange={value => handleSelectChange("patientId", value)}
-                value={formData.patientId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select patient" />
-                </SelectTrigger>
-                <SelectContent>
-                  {patients.map(patient =>
-                    <SelectItem key={patient.id} value={patient.id.toString()}>
-                      {patient.firstName} {patient.lastName}
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="patient_uuid">Patient UUID</Label>
+              <Input
+                id="patient_uuid"
+                name="patient_uuid"
+                placeholder="Enter patient's uuid"
+                value={formData.patient_uuid}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="doctor">Doctor</Label>
               <Select
                 name="doctorId"
-                onValueChange={value => handleSelectChange("doctorId", value)}
-                value={formData.doctorId}>
+                onValueChange={(value) => handleSelectChange('doctorId', value)}
+                value={formData.doctorId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select doctor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {doctors.map(doctor =>
+                  {doctors.map((doctor) => (
                     <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                      {doctor.name}
+                      {doctor.first_name} {doctor.last_name}
                     </SelectItem>
-                  )}
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -172,8 +173,9 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
               <Label htmlFor="duration">Duration</Label>
               <Select
                 name="duration"
-                onValueChange={value => handleSelectChange("duration", value)}
-                value={formData.duration}>
+                onValueChange={(value) => handleSelectChange('duration', value)}
+                value={formData.duration}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
@@ -188,14 +190,14 @@ const AppointmentModal = ({ isOpen, onClose, onSave, patients, doctors }) => {
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              {/* <Textarea
+              <Textarea
                 id="notes"
                 name="notes"
                 placeholder="Add appointment notes..."
                 className="min-h-[100px]"
                 value={formData.notes}
                 onChange={handleChange}
-              /> */}
+              />
             </div>
           </div>
 

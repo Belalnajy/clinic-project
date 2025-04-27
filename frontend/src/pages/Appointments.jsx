@@ -26,11 +26,17 @@ import { usePatients } from '@/hooks/usePatients';
 import { useDoctors } from '@/hooks/useDoctors';
 import LoadingState from '@/components/LoadingState';
 import CustomPagination from '@/components/CustomPagination';
+import { toast } from 'sonner';
 
 const Appointments = () => {
   const navigate = useNavigate();
-  const { appointments, pagination, isLoadingAppointments, appointmentsError, deleteAppointment } = useAppointments();
-  
+  const { appointments, pagination, isLoadingAppointments, appointmentsError, deleteAppointment, createAppointment } = useAppointments();
+  const {
+    usePatientsList,
+  } = usePatients();
+  const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList();
+  const { doctors } = useDoctors();
+  const patients = patientsData?.results || [];
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,9 +90,27 @@ const Appointments = () => {
     setIsModalOpen(false);
   };
 
-  const handleNewAppointment = (appointmentData) => {
-    // setAppointments(getAllAppointments());
-    closeModal();
+  const handleNewAppointment = async (appointmentData) => {
+    try {
+      await createAppointment(appointmentData); 
+      toast.success("Appointment created successfully", {
+        description: "Your appointment has been created.",
+      });
+      closeModal(); 
+    } catch (error) {
+      console.error('Error in createAppointment:', error.response.data);
+      const errorMessage =
+        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
+        error.response?.data?.appointment_date?.[0] ||
+        error.response?.data?.error || // General error message
+        error.response?.data?.message || // Fallback error message
+        'An error occurred while creating the appointment.'; // Default message
+
+      // Display the error message in the toast
+      toast.error('Failed to create appointment', {
+        description: errorMessage,
+      });
+    }
   };
 
   if(isLoadingAppointments) {
@@ -254,13 +278,13 @@ const Appointments = () => {
         </CardContent>
       </Card>
 
-      {/* <AppointmentModal 
+      <AppointmentModal 
         isOpen={isModalOpen} 
         onClose={closeModal} 
         onSave={handleNewAppointment}
         patients={patients}
         doctors={doctors}
-      /> */}
+      />
       <div className="mt-6">
         <CustomPagination
           totalItems={pagination.count}
