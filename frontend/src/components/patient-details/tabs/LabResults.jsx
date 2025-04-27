@@ -10,7 +10,6 @@ const LabResults = () => {
   const { id: patientId } = useParams();
   const { labResults, labResultsLoading, labResultsError, pagination } =
     usePatientLabResults(patientId);
-  console.log(labResults);
   if (labResultsLoading) {
     return <LoadingState fullPage="true" message="Loading Lab Results..." />;
   }

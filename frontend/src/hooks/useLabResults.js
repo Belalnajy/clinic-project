@@ -43,10 +43,9 @@ export const useAddLabResult = () => {
 
   return useMutation({
     mutationFn: addLabResult,
-    onSuccess: (data, variables) => {
-      // Invalidate and refetch the lab results query for the specific patient
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['labResults', variables.patient_id],
+        queryKey: ['labResults'],
       });
     },
   });

@@ -15,94 +15,81 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
 import { Input } from '@/components/ui/input';
 // ** React Hook Forms **//
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getPatientDiagnoses } from '@/utils/patient';
+import { useAddLabResult } from '@/hooks/useLabResults';
+import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const labTestSchema = z.object({
-  testName: z.string().min(1, 'Test name is required'),
-  result: z.string().optional(),
-  date: z
+  test_name: z.string().min(1, 'Test name is required'),
+  results: z.string().min(1, 'Test result is required'),
+  test_date: z
     .string()
     .min(1, 'Test date is required')
     .refine((val) => !isNaN(Date.parse(val)), {
       message: 'Invalid date format',
     }),
   notes: z.string().optional(),
-  medicalRecordId: z.string().min(1, 'Medical record ID is required'),
 });
 
 const LabTest = ({ isOpen, setIsLabTestOpen }) => {
+  const { id: patientId } = useParams();
+  const { mutate: addLabResult, isPending } = useAddLabResult();
+
   const form = useForm({
     resolver: zodResolver(labTestSchema),
     defaultValues: {
-      testName: '',
-      result: '',
-      date: '',
+      test_name: '',
+      results: '',
+      test_date: '',
       notes: '',
     },
   });
-  const onSubmit = (data) => {
-    // Handle form submission
-    console.log('Form submitted:', data);
-    setIsLabTestOpen(false);
-    form.reset();
-  };
 
-  const medicalRecords = getPatientDiagnoses(1);
+  const onSubmit = (data) => {
+    const requestData = {
+      ...data,
+      patient_id: Number(patientId),
+    };
+
+    addLabResult(requestData, {
+      onSuccess: () => {
+        toast.success('Lab test result added successfully');
+        setIsLabTestOpen(false);
+        form.reset();
+      },
+      onError: (error) => {
+        console.error('Lab test error:', error);
+        const errorMessage =
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          (typeof error.response?.data === 'object'
+            ? error.response?.data['test_date']
+            : 'Failed to add lab test result');
+        toast.error(errorMessage);
+      },
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsLabTestOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Lab Test Result</DialogTitle>
-          <DialogDescription>Add Lab Test Result for "Test Name"</DialogDescription>
+          <DialogDescription>Add a new lab test result for the patient</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Medical Record */}
-            <FormField
-              control={form.control}
-              name="medicalRecordId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Medical Record</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select medical record" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {medicalRecords.map((record) => (
-                          <SelectItem key={record.id} value={record.diagnosis}>
-                            {record.diagnosis}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/* Test Name */}
             <FormField
               control={form.control}
-              name="testName"
+              name="test_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Test Name</FormLabel>
@@ -117,7 +104,7 @@ const LabTest = ({ isOpen, setIsLabTestOpen }) => {
             {/* Test Result */}
             <FormField
               control={form.control}
-              name="result"
+              name="results"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Test Result</FormLabel>
@@ -132,7 +119,7 @@ const LabTest = ({ isOpen, setIsLabTestOpen }) => {
             {/* Test Date */}
             <FormField
               control={form.control}
-              name="date"
+              name="test_date"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Test Date</FormLabel>
@@ -160,7 +147,9 @@ const LabTest = ({ isOpen, setIsLabTestOpen }) => {
             />
 
             <div className="flex gap-4">
-              <Button type="submit">Submit Lab Test</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Adding...' : 'Add Lab Test'}
+              </Button>
               <Button type="button" variant="destructive" onClick={() => setIsLabTestOpen(false)}>
                 Close
               </Button>
