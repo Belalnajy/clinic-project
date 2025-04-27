@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateProfile, uploadAvatar, getUserProfile } from '@/api/settings';
+import {  uploadAvatar, getUserProfile, updateDoctorProfilePicture, getDoctorProfileByUserId } from '@/api/settings';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import axiosInstance from '@/lib/axios';
 
@@ -41,6 +41,7 @@ const formSchema = z.object({
 
 function ProfileSettings() {
   const { user, updateUser } = useAuth();
+  const [doctorId, setDoctorId] = useState(null);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,6 +59,25 @@ function ProfileSettings() {
   const isDoctor = user?.role === 'doctor';
 
   useEffect(() => {
+    let didCancel = false;
+    async function fetchDoctorAvatar() {
+      if (user?.role === 'doctor' && user?.id) {
+        try {
+          const doctor = await getDoctorProfileByUserId(user.id);
+          if (!didCancel) {
+            setDoctorId(doctor.id);
+            if (doctor.profile_picture) {
+              setAvatarUrl(doctor.profile_picture);
+              return;
+            }
+          }
+        } catch {
+          if (!didCancel) setDoctorId(null);
+        }
+      }
+      // fallback to user avatar if not doctor or no doctor profile picture
+      if (!didCancel) setAvatarUrl(user?.avatar || '');
+    }
     if (user) {
       form.reset({
         first_name: user.first_name || '',
@@ -65,8 +85,9 @@ function ProfileSettings() {
         email: user.email || '',
         status: isDoctor ? (user.status || 'available') : undefined,
       });
-      setAvatarUrl(user.avatar || '');
+      fetchDoctorAvatar();
     }
+    return () => { didCancel = true; };
   }, [user, form, isDoctor]);
 
   const onSubmit = async (data) => {
@@ -98,29 +119,35 @@ function ProfileSettings() {
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error('File too large', {
-          description: 'Please select an image smaller than 2MB'
-        });
-        return;
-      }
-      if (!file.type.match('image.*')) {
-        toast.error('Invalid file type', {
-          description: 'Please select an image file (JPG, PNG, GIF)'
-        });
-        return;
-      }
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File too large', {
+        description: 'Please select an image smaller than 2MB'
+      });
+      return;
+    }
+    if (!file.type.match('image.*')) {
+      toast.error('Invalid file type', {
+        description: 'Please select an image file (JPG, PNG, GIF)'
+      });
+      return;
+    }
 
-      try {
+    try {
+      if (user?.role === 'doctor' && doctorId) {
+        const updatedDoctor = await updateDoctorProfilePicture(doctorId, file);
+        setAvatarUrl(updatedDoctor.profile_picture);
+        toast.success('Profile picture updated successfully');
+      } else {
+        // Use user endpoint for other roles (if needed)
         const response = await uploadAvatar(file);
         setAvatarUrl(response.avatar_url);
         toast.success('Avatar updated successfully');
-      } catch (error) {
-        toast.error('Failed to update avatar', {
-          description: error.message || 'Please try again'
-        });
       }
+    } catch (error) {
+      toast.error('Failed to update avatar', {
+        description: error.message || 'Please try again'
+      });
     }
   };
 
@@ -132,6 +159,13 @@ function ProfileSettings() {
         email: user.email || '',
         status: isDoctor ? (user.status || 'available') : undefined,
       });
+      // Also reset avatar to latest from user/doctor
+      if (isDoctor && user?.id) {
+        getDoctorProfileByUserId(user.id)
+          .then(doctor => setAvatarUrl(doctor.profile_picture || user.avatar || ''));
+      } else {
+        setAvatarUrl(user.avatar || '');
+      }
     }
     toast.info('Changes discarded');
   };
@@ -153,23 +187,25 @@ function ProfileSettings() {
                   {fullName?.split(' ').map((n) => n[0]).join('') || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <i className="fas fa-upload mr-2"></i> Change Avatar
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleAvatarChange}
-                />
-                <p className="text-xs text-slate-500 mt-2">JPG, GIF or PNG. Max size of 2MB.</p>
-              </div>
+              {user?.role === 'doctor' && (
+                <div>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <i className="fas fa-upload mr-2"></i> Change Avatar
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">JPG, GIF or PNG. Max size of 2MB.</p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
