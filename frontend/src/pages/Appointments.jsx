@@ -29,7 +29,7 @@ import CustomPagination from '@/components/CustomPagination';
 
 const Appointments = () => {
   const navigate = useNavigate();
-  const { appointments, pagination, isLoadingAppointments, appointmentsError } = useAppointments();
+  const { appointments, pagination, isLoadingAppointments, appointmentsError, deleteAppointment } = useAppointments();
   
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -222,6 +222,7 @@ const Appointments = () => {
                             size="sm"
                             className="h-8 w-8 p-0 text-slate-600 hover:text-red-600 hover:bg-red-50"
                             aria-label="Delete Patient"
+                            onClick = {deleteAppointment.bind(this, appointment.appointment_id)}
                           >
                             <Trash size={18} />
                           </Button>
