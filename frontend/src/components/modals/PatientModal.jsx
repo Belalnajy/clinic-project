@@ -61,27 +61,23 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
       if (patientData) {
         // Normalize patientData to ensure no undefined or null values
         reset({
-          firstName: patientData.first_name ?? '',
-          lastName: patientData.last_name ?? '',
-          dateOfBirth: patientData.birth_date
-            ? format(new Date(patientData.birth_date), 'yyyy-MM-dd')
-            : '',
-          gender: patientData.gender ?? '',
-          email: patientData.email ?? '',
-          phone: patientData.phone_number ?? '',
-          address: patientData.address ?? '',
-          city: patientData.city ?? '',
-          bloodType: patientData.blood_type ?? '',
-          height: patientData.height ?? '',
-          weight: patientData.weight ?? '',
-          paymentType: patientData.payment_type ?? '',
-          creditCardNumber: patientData.credit_card_number ?? '',
+          firstName: patientData.first_name || '',
+          lastName: patientData.last_name || '',
+          dateOfBirth: patientData.birth_date || '',
+          gender: patientData.gender || '',
+          email: patientData.email || '',
+          phone: patientData.phone_number || '',
+          address: patientData.address || '',
+          city: patientData.city || '',
+          bloodType: patientData.blood_type || '',
+          height: patientData.height || '',
+          weight: patientData.weight || '',
+          paymentType: patientData.payment_type || '',
+          creditCardNumber: patientData.credit_card_number || '',
           insuranceInfo: {
-            provider: patientData.insurance_provider ?? '',
-            policyNumber: patientData.insurance_number ?? '',
-            expiryDate: patientData.insurance_expiration_date
-              ? format(new Date(patientData.insurance_expiration_date), 'yyyy-MM-dd')
-              : '',
+            provider: patientData.insurance_provider || '',
+            policyNumber: patientData.insurance_number || '',
+            expiryDate: patientData.insurance_expiration_date || '',
           },
         });
         setPaymentType(patientData.payment_type ?? '');
