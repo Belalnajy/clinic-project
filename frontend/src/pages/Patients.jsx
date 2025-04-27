@@ -30,13 +30,15 @@ const Patients = () => {
     deletePatient,
     activatePatient,
     deactivatePatient,
+    togglePatientStatus,
   } = usePatients();
 
   const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList(
     currentPage,
     searchTerm
   );
-  const { data: deactivatedPatientsData, isLoading: isLoadingDeactivatedPatients } =useDeactivatedPatients();
+  const { data: deactivatedPatientsData, isLoading: isLoadingDeactivatedPatients } =
+    useDeactivatedPatients();
 
   const patients = patientsData?.results || [];
   const deactivatedPatients = deactivatedPatientsData || [];
@@ -71,14 +73,14 @@ const Patients = () => {
   };
 
   const handleSavePatient = async (patientData) => {
-      if (selectedPatient) {
-        await updatePatient({ id: selectedPatient.id, data: patientData });
-        toast.success('Patient updated successfully');
-      } else {
-        await createPatient(patientData);
-        toast.success('Patient created successfully');
-      }
-      closeModal();
+    if (selectedPatient) {
+      await updatePatient({ id: selectedPatient.id, data: patientData });
+      toast.success('Patient updated successfully');
+    } else {
+      await createPatient(patientData);
+      toast.success('Patient created successfully');
+    }
+    closeModal();
   };
 
   const handlePatientAction = async (action, patientId) => {
@@ -98,12 +100,9 @@ const Patients = () => {
           toast.success('Patient deleted successfully');
           break;
         case 'activate':
-          await activatePatient(patientId);
-          toast.success('Patient activated successfully');
-          break;
         case 'deactivate':
-          await deactivatePatient(patientId);
-          toast.success('Patient deactivated successfully');
+          await togglePatientStatus({ id: patientId, isActive: action === 'activate' });
+          toast.success(`Patient ${action}d successfully`);
           break;
         default:
           break;
@@ -116,7 +115,7 @@ const Patients = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -125,7 +124,7 @@ const Patients = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const tabsData = [

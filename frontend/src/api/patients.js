@@ -39,7 +39,6 @@ export const savePatient = async (data, id = null) => {
   }
 };
 
-
 /**
  * Delete a patient by ID
  * @param {string} id - Patient ID

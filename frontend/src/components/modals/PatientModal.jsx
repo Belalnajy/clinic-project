@@ -29,7 +29,8 @@ import {
 import { toast } from 'sonner';
 import { usePatients } from '@/hooks/usePatients';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import patientsSchema from '@/schemas/patients';
+import { patients, defaultPatientValues } from '@/schemas/patients';
+import { map } from 'zod';
 
 // Define blood types as a constant
 const BLOOD_TYPES = [
@@ -49,27 +50,8 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
   const { user } = useAuth();
 
   const form = useForm({
-    resolver: zodResolver(patientsSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      dateOfBirth: '',
-      gender: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      bloodType: '',
-      height: '',
-      weight: '',
-      paymentType: '',
-      creditCardNumber: '',
-      insuranceInfo: {
-        provider: '',
-        policyNumber: '',
-        expiryDate: '',
-      },
-    },
+    resolver: zodResolver(patients),
+    defaultValues: defaultPatientValues,
   });
 
   const { reset } = form;
@@ -77,54 +59,41 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
   useEffect(() => {
     if (isOpen) {
       if (patientData) {
+        // Normalize patientData to ensure no undefined or null values
         reset({
-          firstName: patientData.first_name || '',
-          lastName: patientData.last_name || '',
-          dateOfBirth: patientData.birth_date || '',
-          gender: patientData.gender || '',
-          email: patientData.email || '',
-          phone: patientData.phone_number || '',
-          address: patientData.address || '',
-          city: patientData.city || '',
-          bloodType: patientData.blood_type || '',
-          height: patientData.height || '',
-          weight: patientData.weight || '',
-          paymentType: patientData.payment_type || '',
-          creditCardNumber: patientData.credit_card_number || '',
+          firstName: patientData.first_name ?? '',
+          lastName: patientData.last_name ?? '',
+          dateOfBirth: patientData.birth_date
+            ? format(new Date(patientData.birth_date), 'yyyy-MM-dd')
+            : '',
+          gender: patientData.gender ?? '',
+          email: patientData.email ?? '',
+          phone: patientData.phone_number ?? '',
+          address: patientData.address ?? '',
+          city: patientData.city ?? '',
+          bloodType: patientData.blood_type ?? '',
+          height: patientData.height ?? '',
+          weight: patientData.weight ?? '',
+          paymentType: patientData.payment_type ?? '',
+          creditCardNumber: patientData.credit_card_number ?? '',
           insuranceInfo: {
-            provider: patientData.insurance_provider || '',
-            policyNumber: patientData.insurance_number || '',
-            expiryDate: patientData.insurance_expiration_date || '',
+            provider: patientData.insurance_provider ?? '',
+            policyNumber: patientData.insurance_number ?? '',
+            expiryDate: patientData.insurance_expiration_date
+              ? format(new Date(patientData.insurance_expiration_date), 'yyyy-MM-dd')
+              : '',
           },
         });
-        setPaymentType(patientData.payment_type || '');
+        setPaymentType(patientData.payment_type ?? '');
       } else {
-        reset({
-          firstName: '',
-          lastName: '',
-          dateOfBirth: '',
-          gender: '',
-          email: '',
-          phone: '',
-          address: '',
-          city: '',
-          bloodType: '',
-          height: '',
-          weight: '',
-          paymentType: '',
-          creditCardNumber: '',
-          insuranceInfo: {
-            provider: '',
-            policyNumber: '',
-            expiryDate: '',
-          },
-        });
+        reset(defaultPatientValues);
         setPaymentType('');
       }
     }
-  }, [isOpen, patientData, reset, user]);
+  }, [isOpen, patientData, reset]);
 
   const onSubmit = async (data) => {
+    try {
       const payload = {
         first_name: data.firstName,
         last_name: data.lastName,
@@ -145,11 +114,28 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
         created_by: user?.id,
       };
 
-      console.log('Transformed payload:',payload);
-      await savePatient({ data:payload, id: patientData?.id });
+      console.log('Transformed payload:', payload);
+      await savePatient({ data: payload, id: patientData?.id });
       toast.success(patientData ? 'Patient updated successfully' : 'Patient created successfully');
       reset();
       onClose();
+    } catch (error) {
+      console.error('Error saving patient:', error);
+      if (error.response?.status === 400 && error.response?.data) {
+        const errorData = error.response.data;
+        if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+          Object.entries(errorData).forEach(([field, messages]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((message) => toast.error(`${field}: ${message}`));
+            } else {
+              toast.error(`${field}: ${messages}`);
+            }
+          });
+        } else {
+          toast.error(error.response.data?.message || 'Validation failed');
+        }
+      }
+    }
   };
 
   const handleCancel = () => {
@@ -159,7 +145,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full mx-auto px-6 py-4 bg-white rounded-lg shadow-lg">
+      <DialogContent className="w-full max-w-2xl mx-auto px-6 py-4 bg-white rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-800">
             {patientData ? 'Edit Patient' : 'Add New Patient'}
@@ -175,7 +161,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>First Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="First name" {...field} />
+                      <Input placeholder="First name" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,7 +174,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Last Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Last name" {...field} />
+                      <Input placeholder="Last name" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,7 +189,12 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Date of Birth *</FormLabel>
                     <FormControl>
-                      <Input type="date" max={format(new Date(), 'yyyy-MM-dd')} {...field} />
+                      <Input
+                        type="date"
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -215,7 +206,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Gender *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select gender" />
@@ -240,7 +231,12 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Email address" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="Email address"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,7 +249,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Phone *</FormLabel>
                     <FormControl>
-                      <Input placeholder="+20XXXXXXXXXX" {...field} />
+                      <Input placeholder="+20XXXXXXXXXX" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -268,7 +264,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Street address" {...field} />
+                      <Input placeholder="Street address" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -281,7 +277,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input placeholder="City" {...field} />
+                      <Input placeholder="City" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -295,7 +291,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Blood Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select blood type" />
@@ -320,7 +316,11 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Height</FormLabel>
                     <FormControl>
-                      <Input placeholder="Height (e.g., 170 cm)" {...field} />
+                      <Input
+                        placeholder="Height (e.g., 170 cm)"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -333,7 +333,11 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Weight</FormLabel>
                     <FormControl>
-                      <Input placeholder="Weight (e.g., 70 kg)" {...field} />
+                      <Input
+                        placeholder="Weight (e.g., 70 kg)"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -351,7 +355,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                       field.onChange(value);
                       setPaymentType(value);
                     }}
-                    value={field.value}
+                    value={field.value ?? ''}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -375,7 +379,11 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                   <FormItem>
                     <FormLabel>Credit Card Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Credit card number" {...field} />
+                      <Input
+                        placeholder="Credit card number"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -391,7 +399,11 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                     <FormItem>
                       <FormLabel>Insurance Provider</FormLabel>
                       <FormControl>
-                        <Input placeholder="Insurance provider" {...field} />
+                        <Input
+                          placeholder="Insurance provider"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -404,7 +416,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                     <FormItem>
                       <FormLabel>Policy Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="Policy number" {...field} />
+                        <Input placeholder="Policy number" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -417,7 +429,7 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
                     <FormItem>
                       <FormLabel>Insurance Expiry Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
