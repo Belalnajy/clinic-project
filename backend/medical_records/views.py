@@ -63,13 +63,27 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
 
             raise
 
-    @action(detail=False, methods=["get"], url_path="latest")
-    def latest_medical_record(self, request):
-        latest_record = self.queryset.order_by("-created_at").first()
-        if latest_record:
-            serializer = self.get_serializer(latest_record)
-            return Response(serializer.data)
-        return Response({"detail": "No medical records found."}, status=404)
+    @action(detail=True, methods=["get"], url_path="latest")
+    def latest_medical_record(self, request, pk=None):
+        try:
+            latest_record = (
+                self.queryset.filter(patient_id=pk, is_active=True)
+                .order_by("-created_at")
+                .first()
+            )
+
+            if latest_record:
+                serializer = self.get_serializer(latest_record)
+                return Response(serializer.data)
+            return Response(
+                {"detail": f"No medical records found for patient {pk}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except ValueError:
+            return Response(
+                {"error": "Invalid patient_id format"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class LabResultViewSet(viewsets.ModelViewSet):
