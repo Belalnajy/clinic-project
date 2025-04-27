@@ -1,80 +1,154 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { getAllPatients } from "../data/data";
-import PatientModal from "../components/modals/PatientModal";
-
-import { Plus, Search, Eye, Edit, Trash, User } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Plus, Search } from 'lucide-react';
+import { toast } from 'sonner';
+import { usePatients } from '@/hooks/usePatients';
+import PatientModal from '../components/modals/PatientModal';
+import PatientList from '@/components/PatientList';
+import CustomPagination from '@/components/CustomPagination';
+import CustomTabsList from '@/components/CustomTabsList';
+import { Tabs } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const Patients = () => {
-  const [patients, setPatients] = useState([]);
-  const [filteredPatients, setFilteredPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('activated');
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const allPatients = getAllPatients();
-    setPatients(allPatients);
-    setFilteredPatients(allPatients);
-  }, []);
+  const {
+    usePatientsList,
+    useDeactivatedPatients,
+    createPatient,
+    updatePatient,
+    deletePatient,
+    activatePatient,
+    deactivatePatient,
+  } = usePatients();
 
-  useEffect(
-    () => {
-      if (searchTerm.trim() === "") {
-        setFilteredPatients(patients);
-      } else {
-        const filtered = patients.filter(
-          patient =>
-            `${patient.fullName}`
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            patient.phone.includes(searchTerm)
-        );
-        setFilteredPatients(filtered);
-      }
-    },
-    [searchTerm, patients]
+  const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList(
+    currentPage,
+    searchTerm
   );
+  const { data: deactivatedPatientsData, isLoading: isLoadingDeactivatedPatients } =useDeactivatedPatients();
 
-  const handleSearch = e => {
-    setSearchTerm(e.target.value);
-  };
+  const patients = patientsData?.results || [];
+  const deactivatedPatients = deactivatedPatientsData || [];
 
-  const openModal = () => {
+  // Filter deactivated patients based on search term (name, ID, or phone number)
+  const filteredDeactivatedPatients = deactivatedPatients.filter((patient) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchLower) ||
+      patient.id.toString().includes(searchLower) ||
+      (patient.phone_number || '').toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Pagination logic
+  const itemsPerPage = 10;
+  const totalActivatedItems = patientsData?.count || 0;
+  const totalDeactivatedItems = filteredDeactivatedPatients.length || 0;
+
+  // Paginate filtered deactivated patients
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedDeactivatedPatients = filteredDeactivatedPatients.slice(startIndex, endIndex);
+
+  // Determine total items and displayed patients based on the active tab
+  const totalItems = activeTab === 'activated' ? totalActivatedItems : totalDeactivatedItems;
+  const displayedPatients = activeTab === 'activated' ? patients : paginatedDeactivatedPatients;
+
+  const openModal = (patient = null) => {
+    setSelectedPatient(patient);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
+    setSelectedPatient(null);
     setIsModalOpen(false);
   };
 
-  const handleNewPatient = patientData => {
-    toast({
-      title: "Success",
-      description: `Patient ${patientData.fullName} has been added.`
-    });
-
-    setPatients(getAllPatients());
-    closeModal();
+  const handleSavePatient = async (patientData) => {
+    try {
+      if (selectedPatient) {
+        await updatePatient({ id: selectedPatient.id, data: patientData });
+        toast.success('Patient updated successfully');
+      } else {
+        await createPatient(patientData);
+        toast.success('Patient created successfully');
+      }
+      closeModal();
+    } catch (error) {
+      toast.error(`Failed to ${selectedPatient ? 'update' : 'create'} patient`);
+      console.error(error);
+    }
   };
 
-  const getAge = dateOfBirth => {
-    return new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
+  const handlePatientAction = async (action, patientId) => {
+    try {
+      switch (action) {
+        case 'view':
+          navigate(`/patients/patients/${patientId}`);
+          break;
+        case 'edit':
+          // Find the patient from the correct list based on the active tab
+          const patientToEdit = (activeTab === 'activated' ? patients : deactivatedPatients).find(
+            (p) => p.id === patientId
+          );
+          openModal(patientToEdit);
+          break;
+        case 'delete':
+          await deletePatient(patientId);
+          toast.success('Patient deleted successfully');
+          break;
+        case 'activate':
+          await activatePatient(patientId);
+          toast.success('Patient activated successfully');
+          break;
+        case 'deactivate':
+          await deactivatePatient(patientId);
+          toast.success('Patient deactivated successfully');
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      toast.error(`Failed to ${action} patient`);
+      console.error(error);
+    }
   };
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when switching tabs
+  };
+
+  const tabsData = [
+    { value: 'activated', label: 'Activated Patients' },
+    { value: 'deactivated', label: 'Deactivated Patients' },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-          Patients
-        </h1>
-        <p className="text-slate-500 mt-1">
-          Manage patient records and information
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Patients</h1>
+        <p className="text-slate-500 mt-1">Manage patient records and information</p>
       </div>
 
       <Card className="shadow-sm">
@@ -92,136 +166,70 @@ const Patients = () => {
                 className="pl-10"
               />
             </div>
-            <Button
-              onClick={openModal}
-              className="bg-primary hover:bg-primary/90 transition-colors">
-              <Plus size={18} className="mr-2" />
-              Add Patient
-            </Button>
+            {user?.role === 'secretary' || user?.role === 'manager' ? (
+              <Button
+                onClick={() => openModal()}
+                className="bg-primary hover:bg-primary/90 transition-colors"
+              >
+                <Plus size={18} className="mr-2" />
+                Add Patient
+              </Button>
+            ) : null}
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead>
-                <tr className="border-b bg-slate-50">
-                  <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
-                    Patient
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    ID
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Gender
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Age
-                  </th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Contact
-                  </th>
-                  <th className="h-12 px-4 text-center align-middle font-medium text-slate-500">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredPatients.length > 0
-                  ? filteredPatients.map(patient =>
-                      <tr
-                        key={patient.id}
-                        className="transition-colors hover:bg-slate-50">
-                        <td className="p-4 pl-6 align-middle">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border border-slate-200">
-                              <AvatarFallback className="bg-primary/10 text-primary">
-                                {patient.fullName.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium text-slate-900">
-                                {patient.fullName}
-                              </div>
-                              <div className="text-xs text-slate-500">
-                                {patient.email || "No email"}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 align-middle">
-                          <Badge variant="outline" className="font-mono">
-                            {patient.id}
-                          </Badge>
-                        </td>
-                        <td className="p-4 align-middle">
-                          {patient.gender}
-                        </td>
-                        <td className="p-4 align-middle">
-                          {getAge(patient.dateOfBirth)}
-                        </td>
-                        <td className="p-4 align-middle font-medium">
-                          {patient.phone}
-                        </td>
-                        <td className="p-4 align-middle">
-                          <div className="flex justify-center space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-600 hover:text-primary hover:bg-primary/10"
-                              aria-label="View Patient">
-                              <Eye size={18} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                              aria-label="Edit Patient">
-                              <Edit size={18} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-600 hover:text-red-600 hover:bg-red-50"
-                              aria-label="Delete Patient">
-                              <Trash size={18} />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  : <tr>
-                      <td
-                        colSpan="6"
-                        className="p-6 text-center text-slate-500">
-                        <div className="flex flex-col items-center justify-center py-6">
-                          <User size={36} className="text-slate-300 mb-2" />
-                          <p className="text-slate-500 mb-1">
-                            {searchTerm
-                              ? "No patients match your search"
-                              : "No patients found"}
-                          </p>
-                          {!searchTerm &&
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={openModal}
-                              className="mt-2">
-                              <Plus size={16} className="mr-2" />
-                              Add your first patient
-                            </Button>}
-                        </div>
-                      </td>
-                    </tr>}
-              </tbody>
-            </table>
-          </div>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <CustomTabsList tabsData={tabsData} />
+            <div className="overflow-x-auto">
+              <table className="w-full caption-bottom text-sm">
+                <thead>
+                  <tr className="border-b bg-slate-50">
+                    <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
+                      Patient
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      ID
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Gender
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Age
+                    </th>
+                    <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
+                      Contact
+                    </th>
+                    <th className="h-12 px-4 text-center align-middle font-medium text-slate-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <PatientList
+                  patients={displayedPatients}
+                  loading={
+                    activeTab === 'activated' ? isLoadingPatients : isLoadingDeactivatedPatients
+                  }
+                  searchTerm={searchTerm}
+                  handlePatientAction={handlePatientAction}
+                  openModal={openModal}
+                />
+              </table>
+            </div>
+          </Tabs>
         </CardContent>
       </Card>
+      <CustomPagination
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+      />
 
       <PatientModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onSave={handleNewPatient}
+        onSave={handleSavePatient}
+        patientData={selectedPatient}
       />
     </div>
   );

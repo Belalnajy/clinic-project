@@ -32,14 +32,15 @@ class PatientViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Returns the queryset of patients with optional filtering.
+        Only returns patients where is_active=True by default.
         """
-        queryset = self.queryset
-        
-        # Filter by active status if provided
+        queryset = self.queryset.filter(is_active=True)
+
+        # Filter by active status if provided explicitly
         is_active = self.request.query_params.get('is_active')
         if is_active is not None:
-            queryset = queryset.filter(is_active=is_active.lower() == 'true')
-            
+            queryset = self.queryset.filter(is_active=is_active.lower() == 'true')
+
         return queryset
 
     def perform_create(self, serializer):
@@ -48,62 +49,33 @@ class PatientViewSet(viewsets.ModelViewSet):
         """
         serializer.save()
 
-    @action(detail=True, methods=['post'], serializer_class=ActivationSerializer)
-    def deactivate(self, request, pk=None):
+    def perform_destroy(self, instance):
         """
-        Deactivates a patient record.
+        Overrides the delete behavior to set is_active to False instead of deleting the record.
+        Also deactivates all related data for the patient.
         """
-        try:
-            patient = self.get_object()
-            if not patient.is_active:
-                return Response(
-                    {'message': 'Patient is already deactivated'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            patient.is_active = False
-            patient.save()
-            
-            serializer = self.get_serializer(patient)
-            return Response({
-                'message': 'Patient deactivated successfully',
-                'patient': serializer.data
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        instance.is_active = False
+        instance.save()
 
-    @action(detail=True, methods=['post'], serializer_class=ActivationSerializer)
-    def activate(self, request, pk=None):
-        """
-        Activates a patient record.
-        """
-        try:
-            patient = self.get_object()
-            if patient.is_active:
-                return Response(
-                    {'message': 'Patient is already active'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            patient.is_active = True
-            patient.save()
-            
-            serializer = self.get_serializer(patient)
-            return Response({
-                'message': 'Patient activated successfully',
-                'patient': serializer.data
-            }, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Deactivate related data
+        instance.appointments.update(is_active=False)
+        instance.medical_records.update(is_active=False)
+        instance.emergency_contacts.update(is_active=False)
 
+        # Add any other related data deactivation logic here
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Handles the DELETE request to deactivate a patient and its related data.
+        """
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response({"message": "Patient and related data deactivated successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
     @action(detail=True, methods=['get'])
     def emergency_contacts(self, request, pk=None):
         """
@@ -136,4 +108,3 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['is_active', 'relationship']
     search_fields = ['first_name', 'last_name', 'phone_number']
-    
