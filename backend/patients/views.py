@@ -23,8 +23,9 @@ class PatientViewSet(viewsets.ModelViewSet):
 
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ["is_active"]
+    search_fields = ["first_name", "last_name"]
 
     def get_queryset(self):
         """
