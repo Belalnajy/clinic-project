@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 const CustomPageTabs = ({ tabs }) => {
   return (
-    <div className="flex gap-4 p-2 my-4 bg-muted rounded-md w-fit">
+    <div className="flex flex-wrap gap-4 p-2 my-4 bg-muted rounded-md w-fit">
       {tabs.map((tab) => (
         <NavLink
           key={tab}

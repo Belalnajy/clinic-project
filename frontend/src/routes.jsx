@@ -37,7 +37,6 @@ const router = createBrowserRouter([
         <LoginPage />
       </ProtectedRoute>
     ),
-    errorElement: <div>404 Not Found</div>,
   },
   {
     path: '/unauthorized',
@@ -160,10 +159,10 @@ const router = createBrowserRouter([
             path: 'prescriptions',
             element: <Prescriptions />,
           },
-          // {
-          //   path: 'lab-results',
-          //   element: <LabResults />,
-          // },
+          {
+            path: 'lab-results',
+            element: <LabResults />,
+          },
         ],
       },
       {
