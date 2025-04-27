@@ -66,3 +66,12 @@ class DoctorViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], url_path='all-doctors', url_name='all-doctors')
+    def all_doctors(self, request):
+        """
+        Custom endpoint to return all doctors without pagination.
+        """
+        doctors = self.get_queryset()  # Fetch all doctors
+        serializer = self.get_serializer(doctors, many=True)  # Serialize the data
+        return Response(serializer.data)  # Return the serialized data

@@ -40,7 +40,7 @@ const formSchema = z.object({
 
 const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
   const { user } = useAuth();
-  const { doctors } = useDoctors();
+  const { allDoctors : doctors } = useDoctors();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {createAppointment, updateAppointment, useAppointment} = useAppointments();
   const { data: appointmentData } = useAppointment(appointmentId);
