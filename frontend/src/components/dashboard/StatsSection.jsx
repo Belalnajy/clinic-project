@@ -1,37 +1,61 @@
 import StatCard from './StatCard';
 import { ClipboardCheck, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/Auth/useAuth';
+import useStats from '@/hooks/useStats';
+import LoadingSpinner from '../LoadingSpinner';
+import CustomAlert from '../CustomAlert';
 
-const StatsSection = ({ stats }) => {
+const StatsSection = () => {
   const { user } = useAuth();
+  const { stats, isLoading, error } = useStats();
+  console.log(stats);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-48">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mb-8">
+        <CustomAlert
+          message="Failed to load statistics. Please try again later."
+          severity="error"
+        />
+      </div>
+    );
+  }
 
   if (user.role === 'secretary') {
     return (
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4 mb-8">
         <StatCard
           title="Today's Check-ins"
-          value="14"
+          value={stats.todayCheckIns}
           change="58% of scheduled from last month"
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="primary"
         />
         <StatCard
           title="Waiting Patients"
-          value="5"
+          value={stats.waitingPatients}
           change="63% of today's schedule from last month"
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="success"
         />
         <StatCard
           title="Available Doctors"
-          value="6"
+          value={stats.availableDoctors}
           change="2 on leave today"
           icon={<Clock className="text-blue-700" size={20} />}
           color="info"
         />
         <StatCard
           title="New Registrations"
-          value="4"
+          value={stats.newRegistrations}
           change="Today from last month"
           icon={<Clock className="text-amber-700" size={20} />}
           color="warning"
