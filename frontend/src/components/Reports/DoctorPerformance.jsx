@@ -12,16 +12,24 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FileArchive } from 'lucide-react';
 
-const DoctorPerformance = (props) => {
-  const { stats } = props.stats;
+const DoctorPerformance = ({ data, isLoading, currentPage, totalPages, onPageChange }) => {
+  if (isLoading) {
+    return (
+      <Card className="flex justify-center items-center h-[300px]">
+        <span>Loading doctor performance...</span>
+      </Card>
+    );
+  }
+
+  const performance = data?.results || data?.doctorStats?.performance || [];
+
   const handleExport = () => {
-    const csvData = stats.doctorStats.performance.map((doctor) => ({
+    const csvData = performance.map((doctor) => ({
       Doctor: doctor.name,
       Specialization: doctor.specialization,
       Appointments: doctor.appointments,
       'Completion Rate': `${doctor.completionRate}%`,
     }));
-
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -59,7 +67,7 @@ const DoctorPerformance = (props) => {
                 </tr>
               </thead>
               <tbody>
-                {stats.doctorStats.performance.map((doctor) => (
+                {performance.map((doctor) => (
                   <tr key={doctor.id} className="border-b transition-colors hover:bg-slate-50">
                     <td className="p-4 align-middle font-medium">{doctor.name}</td>
                     <td className="p-4 align-middle">{doctor.specialization}</td>
@@ -75,6 +83,28 @@ const DoctorPerformance = (props) => {
               </tbody>
             </table>
           </div>
+        </div>
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <Button
+            variant="outline"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="w-24"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-slate-500">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="w-24"
+          >
+            Next
+          </Button>
         </div>
       </CardContent>
       <CardFooter className="flex mt-5 flex-col md:flex-row justify-end gap-4">

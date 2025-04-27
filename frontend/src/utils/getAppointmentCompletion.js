@@ -1,10 +1,6 @@
-export function getAppointmentCompletionData(stats) {
+export function getAppointmentCompletionData(metrics) {
   return [
-    { name: 'Completed', value: stats.appointmentStats.completed, fill: 'var(--color-completed)' },
-    {
-      name: 'Remaining',
-      value: stats.appointmentStats.total - stats.appointmentStats.completed,
-      fill: 'var(--color-remaining)',
-    },
+    { name: 'Completed', value: metrics.completion.completed, fill: 'var(--color-completed)' },
+    { name: 'Remaining', value: metrics.completion.remaining, fill: 'var(--color-remaining)' },
   ];
 }
