@@ -45,15 +45,23 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
 
 class LabResultSerializer(serializers.ModelSerializer):
-    medical_record_id = serializers.PrimaryKeyRelatedField(
-        queryset=MedicalRecord.objects.all(), source="medical_record", write_only=True
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=Patient.objects.all(), source="patient", write_only=True
     )
+    medical_record_id = serializers.PrimaryKeyRelatedField(
+        queryset=MedicalRecord.objects.all(),
+        source="medical_record",
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+    patient = PatientSerializer(read_only=True)
     medical_record = MedicalRecordSerializer(read_only=True)
 
     class Meta:
         model = LabResult
         fields = "__all__"
-        read_only_fields = ["medical_record"]
+        read_only_fields = ["patient", "medical_record"]
 
     def validate_test_date(self, value):
         # Check if the test_date is in the future
