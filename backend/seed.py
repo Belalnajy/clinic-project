@@ -14,8 +14,14 @@ from doctors.models import Doctor, Specialization
 from patients.models import Patient, EmergencyContact
 from appointments.models import Appointment
 from billing.models import Payment
-from medical_records.models import MedicalRecord, LabResult, Prescription, PrescriptionMedication
+from medical_records.models import (
+    MedicalRecord,
+    LabResult,
+    Prescription,
+    PrescriptionMedication,
+)
 from medications.models import Medication
+
 
 def clean_database():
     """Remove all data from tables"""
@@ -34,6 +40,7 @@ def clean_database():
     Medication.objects.all().delete()
     print("Database cleaned.")
 
+
 def seed_database():
     """Seed database with sample data"""
     print("Seeding database...")
@@ -50,8 +57,8 @@ def seed_database():
             "is_active": True,
             "is_superuser": True,
             "date_joined": timezone.now(),
-            "status": "available"
-        }
+            "status": "available",
+        },
     )
     if created:
         admin.set_password("password123")
@@ -62,46 +69,96 @@ def seed_database():
 
     # Predefined data
     cities = [
-        "Cairo", "Alexandria", "Giza", "Luxor", "Aswan", "Mansoura", "Tanta",
-        "Asyut", "Ismailia", "Faiyum", "Zagazig", "Damietta", "Minya", "Beni Suef",
-        "Sohag", "Hurghada", "6th of October", "Shibin El Kom"
+        "Cairo",
+        "Alexandria",
+        "Giza",
+        "Luxor",
+        "Aswan",
+        "Mansoura",
+        "Tanta",
+        "Asyut",
+        "Ismailia",
+        "Faiyum",
+        "Zagazig",
+        "Damietta",
+        "Minya",
+        "Beni Suef",
+        "Sohag",
+        "Hurghada",
+        "6th of October",
+        "Shibin El Kom",
     ]
     first_names = [
-        "Ahmed", "Mohamed", "Fatma", "Aisha", "Khaled", "Sara", "Hassan", "Nour",
-        "Youssef", "Amira", "Omar", "Laila", "Mahmoud", "Rania", "Ali", "Hoda"
+        "Ahmed",
+        "Mohamed",
+        "Fatma",
+        "Aisha",
+        "Khaled",
+        "Sara",
+        "Hassan",
+        "Nour",
+        "Youssef",
+        "Amira",
+        "Omar",
+        "Laila",
+        "Mahmoud",
+        "Rania",
+        "Ali",
+        "Hoda",
     ]
     last_names = [
-        "Mostafa", "Ibrahim", "Hassan", "Khalil", "Sayed", "Farouk", "Nasser",
-        "Mahmoud", "Youssef", "Abdel", "Salem", "Ezz", "Omar", "Fathy"
+        "Mostafa",
+        "Ibrahim",
+        "Hassan",
+        "Khalil",
+        "Sayed",
+        "Farouk",
+        "Nasser",
+        "Mahmoud",
+        "Youssef",
+        "Abdel",
+        "Salem",
+        "Ezz",
+        "Omar",
+        "Fathy",
     ]
     specializations_list = [
-        "Cardiology", "Neurology", "Pediatrics", "Orthopedics", "Dermatology",
-        "Ophthalmology", "General Surgery", "Internal Medicine", "Psychiatry",
-        "Radiology"
+        "Cardiology",
+        "Neurology",
+        "Pediatrics",
+        "Orthopedics",
+        "Dermatology",
+        "Ophthalmology",
+        "General Surgery",
+        "Internal Medicine",
+        "Psychiatry",
+        "Radiology",
     ]
     blood_types = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]
     medications_list = [
-        "Paracetamol", "Ibuprofen", "Amoxicillin", "Metformin", "Atorvastatin",
-        "Omeprazole", "Losartan", "Amlodipine", "Levothyroxine", "Salbutamol"
+        "Paracetamol",
+        "Ibuprofen",
+        "Amoxicillin",
+        "Metformin",
+        "Atorvastatin",
+        "Omeprazole",
+        "Losartan",
+        "Amlodipine",
+        "Levothyroxine",
+        "Salbutamol",
     ]
     diagnosis_list = [
-        "Hypertension", "Diabetes", "Common Cold", "Asthma", "Arthritis",
-        "Migraine", "Infection", "Allergy", "Gastritis", "Anemia"
+        "Hypertension",
+        "Diabetes",
+        "Common Cold",
+        "Asthma",
+        "Arthritis",
+        "Migraine",
+        "Infection",
+        "Allergy",
+        "Gastritis",
+        "Anemia",
     ]
-
-    # Create admin user with superuser privileges
-    admin = User.objects.create_user(
-        email="admin@example.com",
-        password="password123",
-        role="admin",
-        first_name="Admin",
-        last_name="One",
-        is_staff=True,
-        is_active=True,
-        is_superuser=True,  # Added to grant full admin access
-        date_joined=timezone.now(),
-        status="available"
-    )
 
     # Create specializations
     print("Creating specializations...")
@@ -109,9 +166,7 @@ def seed_database():
     for name in specializations_list:
         specializations.append(
             Specialization.objects.create(
-                name=name,
-                description=f"Specialization in {name}",
-                is_active=True
+                name=name, description=f"Specialization in {name}", is_active=True
             )
         )
 
@@ -127,7 +182,7 @@ def seed_database():
             last_name=random.choice(last_names),
             is_active=True,
             date_joined=timezone.now(),
-            status="available"
+            status="available",
         )
         doctors.append(
             Doctor.objects.create(
@@ -136,7 +191,7 @@ def seed_database():
                 license_number=f"LC{random.randint(10000, 99999)}",
                 years_of_experience=random.randint(1, 20),
                 qualifications=f"MD in {random.choice(specializations_list)}",
-                bio=f"Experienced {random.choice(specializations_list)} specialist"
+                bio=f"Experienced {random.choice(specializations_list)} specialist",
             )
         )
 
@@ -150,8 +205,9 @@ def seed_database():
             Patient.objects.create(
                 first_name=first_name,
                 last_name=last_name,
-                birth_date=timezone.now().date() - timedelta(days=random.randint(365*18, 365*80)),
-                gender=random.choice(['male', 'female', 'other']),
+                birth_date=timezone.now().date()
+                - timedelta(days=random.randint(365 * 18, 365 * 80)),
+                gender=random.choice(["male", "female", "other"]),
                 email=f"patient{i+1}@example.com",
                 phone_number=f"+201{random.randint(100000000, 999999999)}",
                 address=f"{random.randint(1, 100)} {random.choice(['St', 'Ave'])}, {random.choice(cities)}",
@@ -162,8 +218,9 @@ def seed_database():
                 weight=random.uniform(40, 120),
                 insurance_provider=f"Insurance Co. {random.randint(1, 10)}",
                 insurance_number=f"INS{random.randint(1000, 9999)}",
-                insurance_expiration_date=timezone.now().date() + timedelta(days=random.randint(30, 365*5)),
-                created_by=admin  # Use admin as the creator
+                insurance_expiration_date=timezone.now().date()
+                + timedelta(days=random.randint(30, 365 * 5)),
+                created_by=admin,  # Use admin as the creator
             )
         )
 
@@ -175,7 +232,7 @@ def seed_database():
             first_name=random.choice(first_names),
             last_name=random.choice(last_names),
             relationship=random.choice(["Parent", "Spouse", "Friend"]),
-            phone_number=f"+201{random.randint(100000000, 999999999)}"
+            phone_number=f"+201{random.randint(100000000, 999999999)}",
         )
 
     # Create appointments
@@ -192,7 +249,7 @@ def seed_database():
                 duration=30,
                 status="scheduled",
                 notes=f"Appointment for {random.choice(diagnosis_list)} consultation",
-                created_by=admin
+                created_by=admin,
             )
         )
 
@@ -205,8 +262,10 @@ def seed_database():
                 patient=appointment.patient,
                 appointment=appointment,
                 amount=random.uniform(50, 500),
-                method=random.choice(['Credit Card', 'Debit Card', 'Cash', 'Insurance']),
-                status=random.choice(['Paid', 'Pending', 'Failed'])
+                method=random.choice(
+                    ["Credit Card", "Debit Card", "Cash", "Insurance"]
+                ),
+                status=random.choice(["Paid", "Pending", "Failed"]),
             )
         )
 
@@ -216,32 +275,39 @@ def seed_database():
     for appointment in appointments:
         medical_record = MedicalRecord.objects.create(
             patient=appointment.patient,
-            doctor=appointment.doctor,  # Fixed typo
+            doctor=appointment.doctor,
             appointment=appointment,
             diagnosis=random.choice(diagnosis_list),
             description=f"Diagnosis of {random.choice(diagnosis_list)}",
-            notes=f"Treatment plan for {random.choice(diagnosis_list)}"
+            notes=f"Treatment plan for {random.choice(diagnosis_list)}",
         )
         medical_records.append(medical_record)
 
-        # Create lab result
+        # Create lab result with medical record
         LabResult.objects.create(
+            patient=appointment.patient,  # Direct patient relationship
             medical_record=medical_record,
             test_name=f"{random.choice(['Blood', 'Urine', 'X-Ray', 'MRI'])} Test",
             test_date=today - timedelta(days=random.randint(1, 30)),
-            results=f"Results for {random.choice(diagnosis_list)} test"
+            results=f"Results for {random.choice(diagnosis_list)} test",
+        )
+
+        # Create lab result without medical record (direct patient relationship)
+        LabResult.objects.create(
+            patient=appointment.patient,  # Direct patient relationship
+            test_name=f"{random.choice(['Blood', 'Urine', 'X-Ray', 'MRI'])} Test",
+            test_date=today - timedelta(days=random.randint(1, 30)),
+            results=f"Results for {random.choice(diagnosis_list)} test",
         )
 
         # Create prescription
-        prescription = Prescription.objects.create(
-            medical_record=medical_record
-        )
+        prescription = Prescription.objects.create(medical_record=medical_record)
 
         # Create medication
         medication = Medication.objects.create(
             name=random.choice(medications_list),
             default_dosage=f"{random.randint(1, 500)}mg",
-            description=f"Medication for {random.choice(diagnosis_list)}"
+            description=f"Medication for {random.choice(diagnosis_list)}",
         )
 
         # Create prescription medication
@@ -251,7 +317,7 @@ def seed_database():
             dosage=f"{random.randint(1, 2)} {random.choice(['tablet', 'capsule'])}",
             frequency=f"{random.choice(['Once', 'Twice'])} daily",
             duration=f"{random.randint(5, 30)} days",
-            instructions=f"Take with {random.choice(['food', 'water'])}"
+            instructions=f"Take with {random.choice(['food', 'water'])}",
         )
 
     print("\nDatabase seeded successfully!")
@@ -268,6 +334,7 @@ def seed_database():
     print(f"Prescriptions: {Prescription.objects.count()}")
     print(f"Medications: {Medication.objects.count()}")
     print(f"Prescription Medications: {PrescriptionMedication.objects.count()}")
+
 
 if __name__ == "__main__":
     clean_database()

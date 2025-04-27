@@ -106,6 +106,29 @@ class LabResultViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"detail": "No lab results found."}, status=404)
 
+    @action(detail=True, methods=["get"], url_path="patient-results")
+    def patient_results(self, request, pk=None):
+        try:
+            # Get all lab results for the patient directly
+            lab_results = self.queryset.filter(patient_id=pk, is_active=True).order_by(
+                "-created_at"
+            )
+
+            # Apply pagination
+            page = self.paginate_queryset(lab_results)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(lab_results, many=True)
+            return Response(serializer.data)
+
+        except ValueError:
+            return Response(
+                {"error": "Invalid patient_id format"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
     """
