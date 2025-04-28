@@ -9,152 +9,208 @@ import {
   Bed,
   Pill,
   User,
-  Edit,
-  FileText,
+  Clock,
+  File,
 } from 'lucide-react';
 
+// Helper function to calculate age from birth date
+const calculateAge = (birthDate) => {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return `${age} years`;
+};
+
+// Format date for better readability
+const formatDate = (dateString) => {
+  if (!dateString) return 'Not available';
+  
+  const date = new Date(dateString);
+  if (isNaN(date)) return dateString;
+  
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(date);
+};
+
 const MedicalRecordItem = ({ record, handleOpenPatientView }) => {
+  // Extract patient data from the record
+  const patient = record.appointment?.patient || {};
+  const doctor = record.appointment?.doctor || {};
+  const appointment = record.appointment || {};
+  
+  // Format patient name
+  const patientName = patient.first_name
+    ? `${patient.first_name} ${patient.last_name || ''}`
+    : 'Unknown Patient';
+    
+  // Format doctor name
+  const doctorName = doctor.first_name
+    ? `Dr. ${doctor.first_name} ${doctor.last_name || ''}`
+    : 'Unassigned';
+    
+  // Format date
+  const recordDate = formatDate(appointment.appointment_date || record.created_at);
+  
+  // Get patient age if birth date is available
+  const patientAge = patient.birth_date ? calculateAge(patient.birth_date) : 'Unknown';
+
+  // Create patient initials for avatar fallback
+  const patientInitials = `${patient.first_name ? patient.first_name[0] : ''}${patient.last_name ? patient.last_name[0] : ''}`;
+
   return (
-    <div className="group p-4 sm:p-5 border shadow-sm sm:shadow-xl border-slate-100 rounded-lg bg-white hover:border-slate-200 hover:shadow-md transition-all duration-300">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between mb-4 gap-3">
-        <div className="flex items-center">
-          <Avatar className="h-11 w-11 mr-3 ring-2 ring-slate-50 shadow-sm">
-            
-            <AvatarImage src={record.patientAvatar} alt={record.patientName} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-50 to-indigo-50 text-slate-700 font-medium">
-              {record.patientName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-medium text-sm sm:text-base text-slate-800 tracking-tight">
-              {record.patientName}
-            </div>
-            <div className="text-xs text-slate-400 flex items-center mt-0.5">
-              <Fingerprint size={12} className="mr-1 text-slate-300 sm:mr-1.5 sm:size-[14px]" />
-              {record.patientId}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-row sm:flex-col items-start sm:items-end justify-between sm:justify-normal gap-2 sm:gap-0">
-          <div className="text-xs sm:text-sm text-slate-500 flex items-center">
-            <Calendar size={14} className="mr-1 text-slate-300 sm:mr-1.5 sm:size-4" />
-            {record.date}
-          </div>
-          <Badge className="bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 transition-colors text-xs sm:text-sm">
-            {record.type || 'Consultation'}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Vital Signs Section */}
-      <div className="mb-4 p-2 sm:p-3 bg-gradient-to-r from-slate-50 to-white rounded-md border border-slate-100">
-        <div className="flex items-center mb-2">
-          <Heart size={14} className="text-red-500 mr-1 sm:mr-1.5 sm:size-4" />
-          <div className="text-xs font-medium text-slate-700">Vital Signs</div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-          {[
-            {
-              label: 'Blood Pressure',
-              key: 'bp',
-              normal: (value) => parseInt(value?.split('/')[0]) <= 140,
-            },
-            { label: 'Heart Rate', key: 'hr', normal: (value) => parseInt(value) <= 100 },
-            { label: 'Temperature', key: 'temp', normal: (value) => parseFloat(value) <= 38 },
-            { label: 'Respiration', key: 'resp', normal: (value) => parseInt(value) <= 20 },
-            { label: 'O2 Saturation', key: 'o2sat', normal: (value) => parseInt(value) >= 95 },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className="text-center p-1.5 sm:p-2 bg-white rounded border border-slate-100"
-            >
-              <div className="text-[10px] xs:text-xs text-slate-500 mb-1">{item.label}</div>
-              <div
-                className={`font-medium text-xs sm:text-sm ${
-                  record.vitals?.[item.key] && !item.normal(record.vitals[item.key])
-                    ? 'text-red-600'
-                    : 'text-slate-800'
-                }`}
-              >
-                {record.vitals?.[item.key] ||
-                  (item.key === 'bp'
-                    ? '120/80 mmHg'
-                    : item.key === 'hr'
-                    ? '72 bpm'
-                    : item.key === 'temp'
-                    ? '36.7 °C'
-                    : item.key === 'resp'
-                    ? '16 rpm'
-                    : '98%')}
+    <div className="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+      <div className="flex flex-col sm:flex-row">
+        {/* Patient Info Section */}
+        <div className="p-6 flex-1 border-b sm:border-b-0 sm:border-r border-slate-200 bg-slate-50/50">
+          <div className="flex items-start gap-4">
+            <Avatar className="h-14 w-14 border border-slate-200 shadow-sm">
+              <AvatarImage src={patient.avatar || ''} alt={patientName} />
+              <AvatarFallback className="bg-primary-50 text-primary-700 font-medium">
+                {patientInitials || 'P'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-slate-800 truncate text-lg">
+                {patientName}
+              </h3>
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-xs text-slate-600">
+                <div className="flex items-center">
+                  <Fingerprint size={14} className="mr-1.5 text-slate-500" />
+                  <span className="font-medium">ID:</span> {patient.id || 'N/A'}
+                </div>
+                <div className="flex items-center">
+                  <User size={14} className="mr-1.5 text-slate-500" />
+                  <span className="font-medium">Age:</span> {patientAge}
+                </div>
+                {patient.gender && (
+                  <div className="flex items-center">
+                    <span className="font-medium ml-1">Gender:</span> {patient.gender}
+                  </div>
+                )}
               </div>
+              {patient.contact && (
+                <div className="mt-4 text-xs text-slate-500">
+                  <div className="font-medium mb-1">Contact Information</div>
+                  <p>{patient.contact}</p>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Diagnosis & Treatment Section */}
-      <div className="border-t border-slate-50 pt-3 sm:pt-4 mt-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div className="text-xs sm:text-sm text-slate-600 bg-slate-50/50 p-2 sm:p-3 rounded-md border border-slate-100">
-            <span className="font-medium text-slate-700 flex items-center mb-1">
-              <Stethoscope size={14} className="mr-1 text-slate-400 sm:mr-1.5 sm:size-4" />
-              Diagnosis
-            </span>
-            <p className="leading-relaxed line-clamp-3">{record.diagnosis}</p>
-          </div>
-          <div className="text-xs sm:text-sm text-slate-600 bg-slate-50/50 p-2 sm:p-3 rounded-md border border-slate-100">
-            <span className="font-medium text-slate-700 flex items-center mb-1">
-              <Bed size={14} className="mr-1 text-slate-400 sm:mr-1.5 sm:size-4" />
-              Treatment
-            </span>
-            <p className="leading-relaxed line-clamp-3">{record.treatment}</p>
           </div>
         </div>
 
-        {/* Prescription Section */}
-        {record.prescription && (
-          <div className="mt-3 sm:mt-4">
-            <div className="flex items-center mb-1 sm:mb-2">
-              <Pill size={14} className="text-primary-400 mr-1 sm:mr-1.5 sm:size-4" />
-              <div className="text-xs font-medium text-slate-600">Prescription</div>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-2 sm:p-3.5 rounded-md text-xs sm:text-sm border border-blue-100 text-slate-700 line-clamp-3">
-              {record.prescription}
-            </div>
-          </div>
-        )}
+        {/* Medical Record Info Section */}
+        <div className="p-6 flex-1">
+          <h4 className="font-semibold text-slate-800 flex items-center mb-4">
+            <Heart size={16} className="mr-2 text-primary-600" />
+            Medical Record
+            <span className="ml-auto text-xs flex items-center text-slate-500">
+              <Calendar size={14} className="mr-1.5" />
+              {recordDate}
+            </span>
+          </h4>
 
-        {/* Notes Section */}
-        {record.notes && (
-          <div className="mt-3 sm:mt-4 text-xs sm:text-sm italic text-slate-500 pl-2 border-l-2 border-slate-200 line-clamp-2">
-            {record.notes}
+          <div className="space-y-4">
+            {record.diagnosis && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Diagnosis</div>
+                <p className="text-sm text-slate-800 font-medium">{record.diagnosis}</p>
+              </div>
+            )}
+
+            {record.notes && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Clinical Notes</div>
+                <p className="text-sm text-slate-700 leading-relaxed">{record.notes}</p>
+              </div>
+            )}
+
+            {record.description && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Description</div>
+                <p className="text-sm text-slate-700 leading-relaxed">{record.description}</p>
+              </div>
+            )}
+
+            {/* Medications */}
+            {record.medications && record.medications.length > 0 && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Medications</div>
+                <div className="flex flex-wrap gap-2">
+                  {record.medications.map((med, idx) => {
+                    const medName = typeof med === 'object' ? med.name : med;
+                    return (
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100 py-1"
+                      >
+                        <Pill size={12} className="mr-1.5" />
+                        {medName}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Treatments */}
+            {record.treatments && record.treatments.length > 0 && (
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Treatments</div>
+                <div className="flex flex-wrap gap-2">
+                  {record.treatments.map((treatment, idx) => {
+                    const treatmentName = typeof treatment === 'object' ? treatment.name : treatment;
+                    return (
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="bg-green-50 text-green-700 border-green-100 hover:bg-green-100 py-1"
+                      >
+                        <Bed size={12} className="mr-1.5" />
+                        {treatmentName}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          
+        </div>
       </div>
 
       {/* Footer Section */}
-      <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mt-4 sm:mt-5 pt-2 sm:pt-3 border-t border-slate-50 gap-2">
-        <div className="text-xs text-slate-400 flex items-center">
-          <User size={12} className="mr-1 sm:mr-1.5 sm:size-[14px]" />
-          Dr. {record.physician || 'Richardson'}
+      <div className="flex flex-col sm:flex-row justify-between bg-slate-50 border-t border-slate-200 px-6 py-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 sm:items-center">
+          <div className="flex items-center text-sm text-slate-700">
+            <Stethoscope size={16} className="mr-2 text-primary-600" />
+            <span className="font-medium">{doctorName}</span>
+            {doctor.specialization && <span className="ml-1 text-slate-500">({doctor.specialization})</span>}
+          </div>
+          <div className="flex items-center text-xs text-slate-500">
+            <Clock size={14} className="mr-1.5" />
+            Last updated: {formatDate(record.updated_at || record.created_at)}
+          </div>
         </div>
-        <div className="flex space-x-1.5 sm:space-x-2 w-full xs:w-auto">
+        <div className="flex space-x-2 mt-3 sm:mt-0">
+
           <Button
-            variant="ghost"
-            size="xs"
-            className="text-xs sm:text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-50 h-8 px-2 sm:px-3"
-          >
-            <Edit size={14} className="mr-1 sm:mr-1.5 sm:size-4" />
-            <span className="hidden xs:inline">Edit</span>
-          </Button>
-          <Button
-            size="xs"
-            className="text-xs sm:text-sm bg-primary-300 hover:bg-secondary-foreground text-white group-hover:shadow-sm transition-all h-8 px-2 sm:px-3"
+            size="sm"
+            className="bg-primary-300 hover:bg-sky-700 text-white"
             onClick={() => handleOpenPatientView(record)}
           >
-            <FileText size={14} className="mr-1 sm:mr-1.5 sm:size-4" />
-            <span className="hidden xs:inline">Full Record</span>
+            <File size={14} className="mr-1.5" />
+            Full Record
           </Button>
         </div>
       </div>
