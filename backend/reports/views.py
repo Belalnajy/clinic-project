@@ -152,7 +152,7 @@ class DoctorPerformanceView(APIView):
 
 
 class FinancialMetricsView(APIView):
-    # permission_classes = [IsAuthenticated, IsManager]
+    permission_classes = [IsAuthenticated, IsManager]
 
     def get(self, request):
         # Total Revenue
