@@ -1,15 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-const DepartmentRevenueChart = () => {
+const DepartmentRevenueChart = ({ departmentData }) => {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
-  const departmentData = [
-    { name: 'Cardiology', value: 32 },
-    { name: 'Neurology', value: 24 },
-    { name: 'Pediatrics', value: 18 },
-    { name: 'Orthopedics', value: 22 },
-    { name: 'General', value: 14 }
-  ];
 
   return (
     <Card>

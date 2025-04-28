@@ -29,8 +29,6 @@ const StatisticsCards = () => {
     isLoadingPatientAnalysis,
     patientAnalysisError,
   } = useReports();
-  const appointmentCompletionData = getAppointmentCompletionData(appointmentMetrics);
-  const appointmentStatus = getAppointmentStatusData(appointmentMetrics);
 
   if (isLoadingAppointmentMetrics || isLoadingPatientAnalysis) {
     return <LoadingState fullPage={true} message="Loading Data..." />;
@@ -39,6 +37,8 @@ const StatisticsCards = () => {
   if (appointmentMetricsError || patientAnalysisError) {
     return <CustomAlert message="Error Loading Data..." />;
   }
+  const appointmentCompletionData = getAppointmentCompletionData(appointmentMetrics);
+  const appointmentStatus = getAppointmentStatusData(appointmentMetrics);
 
   return (
     <div>
@@ -46,7 +46,6 @@ const StatisticsCards = () => {
         <StatCard
           title="Total Patients"
           value={stats.patients}
-          change={stats.patientGrowth}
           icon={<Users />}
           bgColor="bg-blue-50"
           textColor="text-blue-600"
@@ -54,7 +53,6 @@ const StatisticsCards = () => {
         <StatCard
           title="Today's Appointments"
           value={stats.appointments}
-          change={stats.appointmentGrowth}
           icon={<Calendar />}
           bgColor="bg-indigo-50"
           textColor="text-indigo-600"
@@ -62,7 +60,6 @@ const StatisticsCards = () => {
         <StatCard
           title="Available Doctors"
           value={stats.availableDoctors}
-          change={stats.doctorChangePercent}
           icon={<User2Icon />}
           bgColor="bg-green-50"
           textColor="text-green-600"
@@ -70,7 +67,6 @@ const StatisticsCards = () => {
         <StatCard
           title="Total Revenue"
           value={stats.revenue}
-          change={stats.revenueGrowth}
           icon={<TrendingUp />}
           bgColor="bg-purple-50"
           textColor="text-purple-600"
