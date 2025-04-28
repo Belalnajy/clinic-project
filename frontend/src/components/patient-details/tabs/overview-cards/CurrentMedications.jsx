@@ -1,6 +1,20 @@
+import CustomAlert from '@/components/CustomAlert';
+import LoadingState from '@/components/LoadingState';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePrescriptions } from '@/hooks/usePrescriptions';
 
-const CurrentMedications = ({ currentMedications }) => {
+const CurrentMedications = () => {
+  const { prescriptionsData, isLoadingPrescriptions, prescriptionsError } = usePrescriptions();
+  const currentMedications = prescriptionsData[0]?.medications;
+
+  if (isLoadingPrescriptions) {
+    return <LoadingState fullPage={true} message="Loading Patient Personal Info" />;
+  }
+
+  if (prescriptionsError) {
+    return <CustomAlert message="Couldn't get patient details" />;
+  }
+
   if (!currentMedications.length) {
     return (
       <Card>

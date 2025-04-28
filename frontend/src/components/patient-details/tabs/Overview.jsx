@@ -9,27 +9,33 @@ import ContactInfo from './overview-cards/ContactInfo';
 import CurrentCondition from './overview-cards/CurrentCondition';
 import CurrentMedications from './overview-cards/CurrentMedications';
 import InsuranceInfo from './overview-cards/InsuranceInfo';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const Overview = () => {
-  const { id: patientId } = useParams();
   const { data: patientData, isLoading: patientLoading, isError: patientError } = usePatient();
-  const { useLatestMedicalRecord } = useMedicalRecords();
-  const {
-    data: medicalRecord,
-    isLoading: medRecLoading,
-    isError: medRecError,
-  } = useLatestMedicalRecord(patientId);
-  const { prescriptionsData, isLoadingPrescriptions, prescriptionsError } = usePrescriptions();
-  const medications = prescriptionsData[0]?.medications;
+  const { user } = useAuth();
 
-  const currentMedications = [];
-
-  if (patientLoading || medRecLoading || isLoadingPrescriptions) {
+  if (patientLoading) {
     return <LoadingState fullPage={true} message="Loading Patient Personal Info" />;
   }
 
-  if (patientError || medRecError || prescriptionsError) {
+  if (patientError) {
     return <CustomAlert message="Couldn't get patient details" />;
+  }
+
+  if (user.role === 'secretary') {
+    return (
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <PersonalInfo patient={patientData} />
+          <ContactInfo patient={patientData} />
+        </div>
+
+        <div className="space-y-4">
+          <InsuranceInfo patient={patientData} />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -40,8 +46,8 @@ const Overview = () => {
       </div>
 
       <div className="space-y-4">
-        <CurrentCondition medicalRecord={medicalRecord} />
-        <CurrentMedications currentMedications={medications} />
+        <CurrentCondition />
+        <CurrentMedications />
         <InsuranceInfo patient={patientData} />
       </div>
     </div>

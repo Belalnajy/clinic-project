@@ -1,8 +1,28 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { useParams } from 'react-router-dom';
+import { useMedicalRecords } from '@/hooks/useMedicalRecords';
+import LoadingState from '@/components/LoadingState';
+import CustomAlert from '@/components/CustomAlert';
 
-const CurrentCondition = ({ medicalRecord }) => {
+const CurrentCondition = () => {
+  const { id: patientId } = useParams();
+  const { useLatestMedicalRecord } = useMedicalRecords();
+  const {
+    data: medicalRecord,
+    isLoading: medRecLoading,
+    isError: medRecError,
+  } = useLatestMedicalRecord(patientId);
+
+  if (medRecLoading) {
+    return <LoadingState fullPage={true} message="Loading Patient Personal Info" />;
+  }
+
+  if (medRecError) {
+    return <CustomAlert message="Couldn't get patient details" />;
+  }
+
   return (
     <Card>
       <CardHeader>

@@ -18,7 +18,10 @@ const PatientDetails = () => {
   const patientName = patientData
     ? `${patientData.first_name} ${patientData.last_name}`
     : 'Unknown Patient';
-  const tabsData = ['overview', 'medical-records', 'prescriptions', 'lab-results'];
+  const tabsData =
+    user.role === 'secretary'
+      ? ['overview']
+      : ['overview', 'medical-records', 'prescriptions', 'lab-results'];
 
   if (isLoading) {
     return <LoadingState fullPage={true} message="Loading Patient Details" />;
