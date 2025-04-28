@@ -12,9 +12,24 @@ class MedicalRecord(models.Model):
     Model representing a medical record.
     """
 
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="medical_records", verbose_name="patient")
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="medical_records", verbose_name="doctor")
-    appointment = models.OneToOneField(Appointment, on_delete=models.CASCADE, related_name="medical_records", verbose_name="appointment")
+    patient = models.ForeignKey(
+        Patient,
+        on_delete=models.CASCADE,
+        related_name="medical_records",
+        verbose_name="patient",
+    )
+    doctor = models.ForeignKey(
+        Doctor,
+        on_delete=models.CASCADE,
+        related_name="medical_records",
+        verbose_name="doctor",
+    )
+    appointment = models.OneToOneField(
+        Appointment,
+        on_delete=models.CASCADE,
+        related_name="medical_records",
+        verbose_name="appointment",
+    )
     diagnosis = models.TextField(verbose_name="diagnosis")
     description = models.TextField(verbose_name="description")
     notes = models.TextField(verbose_name="notes", null=True, blank=True)
@@ -26,12 +41,28 @@ class MedicalRecord(models.Model):
         self.is_active = False
         self.save()
 
+
 class LabResult(models.Model):
     """
     Model representing lab results for an appointment.
     """
 
-    medical_record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name="lab_results", verbose_name=_("medical record"))
+    patient = models.ForeignKey(
+        "patients.Patient",
+        on_delete=models.CASCADE,
+        related_name="lab_results",
+        verbose_name=_("patient"),
+        null=True,
+        blank=True,
+    )
+    medical_record = models.ForeignKey(
+        MedicalRecord,
+        on_delete=models.CASCADE,
+        related_name="lab_results",
+        verbose_name=_("medical record"),
+        null=True,
+        blank=True,
+    )
     test_name = models.CharField(max_length=255, verbose_name=_("test name"))
     test_date = models.DateField(verbose_name=_("test date"))
     notes = models.TextField(verbose_name=_("notes"), null=True, blank=True)
@@ -44,12 +75,18 @@ class LabResult(models.Model):
         self.is_active = False
         self.save()
 
+
 class Prescription(models.Model):
     """
     Model representing a prescription for a patient.
     """
 
-    medical_record = models.OneToOneField(MedicalRecord, on_delete=models.CASCADE, related_name="prescriptions", verbose_name=_("medical record"))
+    medical_record = models.OneToOneField(
+        MedicalRecord,
+        on_delete=models.CASCADE,
+        related_name="prescriptions",
+        verbose_name=_("medical record"),
+    )
     is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
@@ -58,17 +95,30 @@ class Prescription(models.Model):
         self.is_active = False
         self.save()
 
+
 class PrescriptionMedication(models.Model):
     """
     Model representing a medication in a prescription.
     """
 
-    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="medications", verbose_name=_("prescription"))
-    medication = models.ForeignKey(Medication, on_delete=models.RESTRICT, related_name="prescriptions", verbose_name=_("medication"))
+    prescription = models.ForeignKey(
+        Prescription,
+        on_delete=models.CASCADE,
+        related_name="medications",
+        verbose_name=_("prescription"),
+    )
+    medication = models.ForeignKey(
+        Medication,
+        on_delete=models.RESTRICT,
+        related_name="prescriptions",
+        verbose_name=_("medication"),
+    )
     dosage = models.CharField(max_length=255, verbose_name=_("dosage"))
     frequency = models.CharField(max_length=255, verbose_name=_("frequency"))
     duration = models.CharField(max_length=255, verbose_name=_("duration"))
-    instructions = models.TextField(verbose_name=_("instructions"), null=True, blank=True)
+    instructions = models.TextField(
+        verbose_name=_("instructions"), null=True, blank=True
+    )
     is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))

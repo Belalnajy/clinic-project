@@ -11,8 +11,20 @@ const AuthProvider = ({ children }) => {
   const fetchUserData = async () => {
     try {
       const response = await axiosInstance.get('/auth/users/me/');
-      setUser(response.data);
-      setIsAuthenticated(true);
+      const user = response.data;
+
+      if (user.role === 'doctor' || user.role === 'manager') {
+        const response = await axiosInstance.get(
+          `/doctors/doctorsList/by_user_id?user_id=${user.id}`
+        );
+        const doctorData = response.data;
+        setUser({ ...user, doctor: doctorData });
+        setIsAuthenticated(true);
+      } else {
+        // Secretary role
+        setUser(response.data);
+        setIsAuthenticated(true);
+      }
     } catch (error) {
       console.error('Failed to fetch user data:', error);
       setUser(null);

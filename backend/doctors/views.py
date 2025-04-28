@@ -115,10 +115,13 @@ class SimpleDoctorsListView(APIView):
 
     def get(self, request):
         doctors = Doctor.objects.all()
-        data = [{
-            'id': doctor.id,
-            'name': f"{doctor.user.first_name} {doctor.user.last_name}"
-        } for doctor in doctors]
+        data = [
+            {
+                "id": doctor.id,
+                "name": f"{doctor.user.first_name} {doctor.user.last_name}",
+            }
+            for doctor in doctors
+        ]
         return Response(data)
 
 
@@ -126,9 +129,6 @@ class SimpleSpecializationsListView(APIView):
     permission_classes = [IsManager]
 
     def get(self, request):
-        specializations = Specialization.objects.filter(is_active=True).order_by('name')
-        data = [{
-            'id': spec.id,
-            'name': spec.name
-        } for spec in specializations]
+        specializations = Specialization.objects.filter(is_active=True).order_by("name")
+        data = [{"id": spec.id, "name": spec.name} for spec in specializations]
         return Response(data)
