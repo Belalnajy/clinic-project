@@ -10,29 +10,29 @@ const StatsSection = ({ stats }) => {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4 mb-8">
         <StatCard
           title="Today's Check-ins"
-          value="14"
-          change="58% of scheduled from last month"
+          value={stats.patients_today ?? '0'}
+          change={stats.checkinsChange ?? ''}
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="primary"
         />
         <StatCard
           title="Waiting Patients"
-          value="5"
-          change="63% of today's schedule from last month"
+          value={stats.waiting_patients ?? '0'}
+          change={stats.waitingChange ?? ''}
           icon={<ClipboardCheck className="text-emerald-700" size={20} />}
           color="success"
         />
         <StatCard
           title="Available Doctors"
-          value="6"
-          change="2 on leave today"
+          value={stats.available_doctors ?? '0'}
+          change={stats.doctorChange ?? ''}
           icon={<Clock className="text-blue-700" size={20} />}
           color="info"
         />
         <StatCard
           title="New Registrations"
-          value="4"
-          change="Today from last month"
+          value={stats.new_registrations ?? '0'}
+          change={stats.registrationChange ?? ''}
           icon={<Clock className="text-amber-700" size={20} />}
           color="warning"
         />
@@ -40,32 +40,26 @@ const StatsSection = ({ stats }) => {
     );
   }
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-4 mb-8">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-1 xl:grid-cols-3 mb-8">
       <StatCard
         title="My Patients Today"
-        value={stats.patientsToday || '8'}
-        change="2 more than yesterday"
+        value={stats.patients_today ?? '0'}
+        change={stats.patientsTodayChange ?? ''}
         icon={<ClipboardCheck className="text-emerald-700" size={20} />}
         color="primary"
       />
       <StatCard
-        title="Appointments Completed"
-        value={stats.completedAppointments || '0/0'}
-        change={`${stats.completionRate || 0}% completion rate`}
+        title="Appointments Today"
+        value={stats.appointments_today ?? '0'}
+        change={stats.appointmentsTodayChange ?? ''}
         icon={<ClipboardCheck className="text-emerald-700" size={20} />}
         color="success"
       />
+
       <StatCard
-        title="Next Appointment"
-        value={stats.nextAppointment || '10:30 AM'}
-        change="In 25 minutes"
-        icon={<Clock className="text-blue-700" size={20} />}
-        color="info"
-      />
-      <StatCard
-        title="Pending Lab Results"
-        value={stats.pendingLabs || '3'}
-        change="2 urgent"
+        title="New Registrations"
+        value={stats.new_registrations ?? '0'}
+        change={stats.registrationChange ?? ''}
         icon={<Clock className="text-amber-700" size={20} />}
         color="warning"
       />
