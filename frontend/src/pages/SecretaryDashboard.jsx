@@ -82,7 +82,9 @@ export default function SecretaryDashboard() {
     <div className="p-6 md:p-8">
       <div className="mb-8 border-b border-slate-200 pb-4">
         <h1 className="text-3xl font-light tracking-tight text-slate-800">Secretary's dashboard</h1>
-        <p className="text-slate-500 mt-1 text-sm">Welcome back, {user?.name || 'Secretary'}</p>
+        <p className="text-slate-500 mt-1 text-sm">
+          Welcome back, {user?.first_name} {user?.last_name}
+        </p>
       </div>
 
       {/* Stats Section */}

@@ -14,7 +14,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import axios from 'axios';
 
 // File validation constants
@@ -27,12 +27,11 @@ const doctorFormSchema = z.object({
   first_name: z.string().min(2),
   last_name: z.string().min(2),
   role: z.string(),
-  specialization_id: z.string().min(1, "Please select a specialization"),
-  license_number: z.string().min(5, "License number must be at least 5 characters"),
-  years_of_experience: z.string().min(1, "Years of experience is required"),
-  qualifications: z.string().min(5, "Qualifications must be at least 5 characters"),
-  bio: z.string().min(10, "Bio must be at least 10 characters"),
-  profile_picture: z.any().optional()
+  specialization_id: z.string().min(1, 'Please select a specialization'),
+  license_number: z.string().min(5, 'License number must be at least 5 characters'),
+  years_of_experience: z.string().min(1, 'Years of experience is required'),
+  qualifications: z.string().min(5, 'Qualifications must be at least 5 characters'),
+  bio: z.string().min(10, 'Bio must be at least 10 characters'),
 });
 
 function DoctorFields() {
@@ -101,53 +100,6 @@ function DoctorFields() {
   return (
     <>
       <FormField
-        name="profile_picture"
-        render={({ field: { value, onChange, ...field } }) => (
-          <FormItem>
-            <FormLabel>Profile Picture</FormLabel>
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-center">
-                {isImageLoading ? (
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                ) : previewUrl ? (
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={previewUrl} alt="Profile preview" />
-                      <AvatarFallback>{getInitials()}</AvatarFallback>
-                    </Avatar>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-                    <span className="text-sm text-muted-foreground">No image</span>
-                  </div>
-                )}
-              </div>
-              <FormControl>
-                <Input
-                  type="file"
-                  accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                  onChange={(e) => handleFileChange(e, onChange)}
-                  {...field}
-                />
-              </FormControl>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
         name="specialization_id"
         render={({ field }) => (
           <FormItem>
@@ -155,14 +107,22 @@ function DoctorFields() {
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingSpecializations ? "Loading..." : "Select a specialization"} />
+                  <SelectValue
+                    placeholder={
+                      isLoadingSpecializations ? 'Loading...' : 'Select a specialization'
+                    }
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {isLoadingSpecializations ? (
-                  <SelectItem value="loading" disabled>Loading specializations...</SelectItem>
+                  <SelectItem value="loading" disabled>
+                    Loading specializations...
+                  </SelectItem>
                 ) : specializations.length === 0 ? (
-                  <SelectItem value="no_specializations" disabled>No specializations available</SelectItem>
+                  <SelectItem value="no_specializations" disabled>
+                    No specializations available
+                  </SelectItem>
                 ) : (
                   specializations.map((specialization) => (
                     <SelectItem key={specialization.id} value={specialization.id.toString()}>
@@ -196,12 +156,12 @@ function DoctorFields() {
           <FormItem>
             <FormLabel>Years of Experience</FormLabel>
             <FormControl>
-              <Input 
-                type="number" 
-                min="0" 
-                max="60" 
-                placeholder="Enter years of experience" 
-                {...field} 
+              <Input
+                type="number"
+                min="0"
+                max="60"
+                placeholder="Enter years of experience"
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -215,10 +175,7 @@ function DoctorFields() {
           <FormItem>
             <FormLabel>Qualifications</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Enter your qualifications" 
-                {...field} 
-              />
+              <Textarea placeholder="Enter your qualifications" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -231,10 +188,7 @@ function DoctorFields() {
           <FormItem>
             <FormLabel>Bio</FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="Tell us about yourself" 
-                {...field} 
-              />
+              <Textarea placeholder="Tell us about yourself" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -246,13 +200,8 @@ function DoctorFields() {
 
 export function DoctorRegisterForm({ className, ...props }) {
   return (
-    <BaseRegisterForm
-      className={className}
-      role="doctor"
-      formSchema={doctorFormSchema}
-      {...props}
-    >
+    <BaseRegisterForm className={className} role="doctor" formSchema={doctorFormSchema} {...props}>
       <DoctorFields />
     </BaseRegisterForm>
   );
-} 
+}

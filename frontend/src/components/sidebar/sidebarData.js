@@ -68,7 +68,7 @@ const navItems = [
   {
     path: '/register',
     icon: UserRoundPlus,
-    label: 'Add User',
+    label: 'Add Staff',
     allowedRoles: ['manager'],
   },
   {
