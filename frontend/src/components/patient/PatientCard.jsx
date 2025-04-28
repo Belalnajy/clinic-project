@@ -56,24 +56,25 @@ const PatientCard = ({ patient, isActive = true }) => {
           </h3>
           <p className="text-sm text-gray-500">ID: {patient.id}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleViewPatient(patient.id)}
-            title="View Patient"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEditPatient(patient.id)}
-            title="Edit Patient"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          {isActive ? (
+        {isActive ? (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleViewPatient(patient.id)}
+              title="View Patient"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleEditPatient(patient.id)}
+              title="Edit Patient"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" title="Delete Patient">
@@ -98,18 +99,17 @@ const PatientCard = ({ patient, isActive = true }) => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleReactivatePatient(patient.id)}
-              disabled={isReactivating}
-              title="Reactivate Patient"
-            >
-              <UserPlus className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => handleReactivatePatient(patient.id)}
+            disabled={isReactivating}
+            title="Reactivate Patient"
+          >
+            <UserPlus className="h-4 w-4" /> ReActivate
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
