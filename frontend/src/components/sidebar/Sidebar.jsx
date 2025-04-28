@@ -30,8 +30,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Desktop Sidebar */}
       <div className={`hidden md:flex flex-col w-64 bg-white border-r border-slate-200 z-20`}>
         {/* Sidebar Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-200">
-          <h2 className="text-xl font-bold text-primary-600">Clinic Manager</h2>
+        <div className="h-16 flex flex-col justify-center px-6 border-b border-slate-200">
+          <h2 className="text-xl font-bold text-primary-600">MediCore</h2>
+          <span className="text-muted-foreground italic text-xs">Clinic Management System</span>
         </div>
 
         {/* User Profile */}

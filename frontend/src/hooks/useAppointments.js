@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '@/lib/axios'; // Adjust the path to your axios instance
 import { useSearchParams } from 'react-router-dom';
 import {
   getAppointment,
@@ -10,22 +9,25 @@ import {
   cancelAppointment,
   completeAppointment,
 } from '@/api/appointments';
-import { Pagination } from '@/components/ui/pagination';
 
 const useAppointments = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
-  const search = searchParams.get('search') || '';
 
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const startDate = searchParams.get('date') || searchParams.get('startDate') || '';
+  const endDate = searchParams.get('endDate') || '';
+  const search = searchParams.get('search') || '';
+  console.log(startDate);
+  console.log(endDate);
   // Fetch appointments using useQuery
   const {
     data: appointmentsData,
     isLoading: isLoadingAppointments,
     error: appointmentsError,
   } = useQuery({
-    queryKey: ['appointments', currentPage, search],
-    queryFn: () => getAppointments({ page: currentPage, search }),
+    queryKey: ['appointments', currentPage, search, startDate, endDate],
+    queryFn: () => getAppointments({ page: currentPage, search, startDate, endDate }),
   });
 
   // Fetch a single appointment using useQuery

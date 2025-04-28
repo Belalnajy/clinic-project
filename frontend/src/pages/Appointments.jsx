@@ -1,93 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Badge } from '@/components/ui/badge';
-import { getAllAppointments, getAllDoctors, getAllPatients } from '../data/data';
 
-import { Plus, Search, Eye, Edit, Trash, User } from 'lucide-react';
+import { Plus, Eye, Edit, Trash, User } from 'lucide-react';
 import AppointmentModal from '@/components/modals/AppointmentModal';
-import { useNavigate } from 'react-router-dom';
 import useAppointments from '@/hooks/useAppointments';
-import { useDoctors } from '@/hooks/useDoctors';
 import LoadingState from '@/components/LoadingState';
 import CustomPagination from '@/components/CustomPagination';
-import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { useSearchParams, Outlet } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import CustomAlert from '@/components/CustomAlert';
+import { useAuth } from '@/contexts/Auth/useAuth';
+import DatePickerFilter from '@/components/DatePickerFilter';
 
 const Appointments = () => {
-  const navigate = useNavigate();
-  const {
-    appointments,
-    pagination,
-    isLoadingAppointments,
-    appointmentsError,
-    deleteAppointment,
-    createAppointment,
-    updateAppointment,
-  } = useAppointments();
+  const { appointments, pagination, isLoadingAppointments, appointmentsError, deleteAppointment } =
+    useAppointments();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
-  const [filteredAppointments, setFilteredAppointments] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [appointmentStatusFilter, setAppointmentStatusFilter] = useState('all');
+
   const [isEditing, setIsEditing] = useState(false); // Tracks if the modal is in edit mode
   const [editingAppointment, setEditingAppointment] = useState(null); // Stores the appointment being edited
-  // const [patients, setPatients] = useState([]);
-  // const [doctors, setDoctors] = useState([]);
+
   let today = new Date().toLocaleDateString();
   const [date, setDate] = useState(today);
+  const { user } = useAuth();
 
-
-  // useEffect(() => {
-  //   setFilteredAppointments(appointments);
-  //   // console.log(filteredAppointments)
-  //   // console.log(appointments)
-  // }, [appointments]);
-
-  // useEffect(() => {
-  //   if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
-  //     setFilteredAppointments(appointments);
-  //   } else {
-  //     const filtered = appointments
-  //       .filter(
-  //         (appointment) =>
-  //           // appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //           appointment.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //           appointment.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
-  //       )
-  //       .filter((appointment) => {
-  //         if (appointmentStatusFilter === 'all') {
-  //           return true;
-  //         }
-  //         return appointment.status.toLowerCase() === appointmentStatusFilter.toLowerCase();
-  //       })
-  //       .filter((appointment) => {
-  //         if (date === today) {
-  //           return true;
-  //         }
-  //         return appointment.date === format(date, 'yyyy-MM-dd');
-  //       });
-  //     setFilteredAppointments(filtered);
-  //   }
-  // }, [searchTerm, appointments, appointmentStatusFilter, date]);
+  const handleDateChange = (e) => {};
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -105,29 +55,6 @@ const Appointments = () => {
     setEditingAppointment(null); // Clear editing data
   };
 
-  const handleNewAppointment = async (appointmentData) => {
-    try {
-      await createAppointment(appointmentData);
-      toast.success('Appointment created successfully', {
-        description: 'Your appointment has been created.',
-      });
-      closeModal();
-    } catch (error) {
-      console.error('Error in createAppointment:', error.response.data);
-      const errorMessage =
-        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
-        error.response?.data?.appointment_date?.[0] ||
-        error.response?.data?.error || // General error message
-        error.response?.data?.message || // Fallback error message
-        'An error occurred while creating the appointment.'; // Default message
-
-      // Display the error message in the toast
-      toast.error('Failed to create appointment', {
-        description: errorMessage,
-      });
-    }
-  };
-
   const handleEditClick = (appointment) => {
     setIsEditing(true);
     setEditingAppointment(appointment); // Pass the appointment data to the modal
@@ -137,62 +64,55 @@ const Appointments = () => {
   if (isLoadingAppointments) {
     return <LoadingState fullPage={true} message="Loading appointments..." />;
   }
+  if (appointmentsError) {
+    return <CustomAlert message="Error Loading Appointments..." />;
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">Appointments</h1>
         <p>Manage appointments information</p>
       </div>
 
+      {/* Appointments */}
       <Card className="shadow-sm">
         <CardHeader className="pb-3 border-b">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                
-              </div>
-              <form onSubmit={handleSearch} className="flex items-center gap-4">
-                <Input
-                  type="text"
-                  placeholder="Search appointments using status, patient or doctor's name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-100"
-                />
-                <Button type="submit">Search</Button>
-              </form>
-            </div>
-            <Popover modal={true} onValueChange={setDate}>
-              <PopoverTrigger>
-                <Button
-                  variant={'outline'}
-                  className={cn(
-                    'w-[280px] justify-start text-left font-normal',
-                    !date && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'P') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" style={{ pointerEvents: 'auto' }}>
-                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
-              </PopoverContent>
-            </Popover>
-            
-            <Button
-              onClick={openModal}
-              className="bg-primary hover:bg-primary/90 transition-colors"
-            >
-              <Plus size={18} className="mr-2" />
-              Add Appointment
-            </Button>
+          <div className="flex flex-wrap flex-col sm:flex-row sm:items-center  gap-4">
+            {/* Search Form */}
+
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
+              <Input
+                type="text"
+                placeholder="Search appointments using status, patient or doctor's name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className=""
+              />
+              <Button type="submit">Search</Button>
+            </form>
+
+            {/* Date Picker */}
+            <DatePickerFilter />
+
+            {/* Add Appointment */}
+            {user.role !== 'doctor' && (
+              <Button
+                onClick={openModal}
+                className="bg-primary hover:bg-primary/90 transition-colors ml-auto"
+              >
+                <Plus size={18} className="mr-2" />
+                Add Appointment
+              </Button>
+            )}
           </div>
         </CardHeader>
+
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full caption-bottom text-sm">
+              {/* Table Head */}
               <thead>
                 <tr className="border-b bg-slate-50">
                   <th className="h-12 px-6 text-left align-middle font-medium text-slate-500">
@@ -218,6 +138,8 @@ const Appointments = () => {
                   </th>
                 </tr>
               </thead>
+
+              {/* Table Body */}
               <tbody className="divide-y">
                 {appointments.length > 0 ? (
                   appointments.map((appointment) => (
@@ -275,10 +197,8 @@ const Appointments = () => {
                     <td colSpan="6" className="p-6 text-center text-slate-500">
                       <div className="flex flex-col items-center justify-center py-6">
                         <User size={36} className="text-slate-300 mb-2" />
-                        <p className="text-slate-500 mb-1">
-                          {searchTerm ? 'No patients match your search' : 'No patients found'}
-                        </p>
-                        {!searchTerm && (
+                        <p className="text-slate-500 mb-1">No Appointments found</p>
+                        {user.role !== 'doctor' && (
                           <Button variant="outline" size="sm" onClick={openModal} className="mt-2">
                             <Plus size={16} className="mr-2" />
                             Add your first appointment
@@ -294,16 +214,18 @@ const Appointments = () => {
         </CardContent>
       </Card>
 
+      {/* Create / Edit Modal */}
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={closeModal}
         isEditing={isEditing}
         appointmentId={editingAppointment?.appointment_id}
       />
+
+      {/* Pagination */}
       <div className="mt-6">
         <CustomPagination pagination={pagination} />
       </div>
-      <Outlet context={{ searchQuery: searchParams.get('search') || '' }} />
     </div>
   );
 };
