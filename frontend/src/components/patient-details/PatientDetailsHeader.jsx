@@ -1,3 +1,4 @@
+import { User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const PatientDetailsHeader = ({ patientName, patientId, city }) => {
@@ -9,10 +10,13 @@ const PatientDetailsHeader = ({ patientName, patientId, city }) => {
       <h1 className="text-2xl font-bold tracking-tight">Patient Information</h1>
       <p className="text-slate-500">Viewing medical record for {patientName}</p>
 
-      <div className=" my-6 p-6 bg-white rounded-lg border">
-        <h2 className="text-2xl mb-2 font-bold">{patientName}</h2>
-        <p className="text-slate-500 text-sm">Patient ID: {patientId}</p>
-        <p className="text-slate-500 text-sm">city: {city}</p>
+      <div className=" flex gap-6 align-items-center my-6 p-6 bg-white rounded-lg border">
+        <User size={50} className="hidden lg:flex" />
+        <div>
+          <h2 className="text-2xl mb-2 font-bold">{patientName}</h2>
+          <p className="text-slate-500 text-sm">Patient ID: {patientId}</p>
+          <p className="text-slate-500 text-sm">city: {city}</p>
+        </div>
       </div>
     </div>
   );
