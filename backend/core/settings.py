@@ -15,6 +15,8 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
+from django.utils.translation import gettext_lazy as _
+from django.urls import reverse_lazy
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -242,4 +244,14 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("JWT",),
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
+
+UNFOLD = {
+    "SITE_TITLE": "MediCore",
+    "SITE_HEADER": "MediCore",
+    "SITE_SUBHEADER": "Clinic Management System",
+    "SIDEBAR": {
+        "show_search": True,  # Search in applications and models names
+        "show_all_applications": True,  # Dropdown with all applications and models
+    },
 }

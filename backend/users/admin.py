@@ -2,6 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User
 from django import forms
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+from unfold.admin import ModelAdmin
+
+
+# admin.site.unregister(User)
 
 class UserAdminForm(forms.ModelForm):
     class Meta:
@@ -60,4 +65,10 @@ class UserAdmin(BaseUserAdmin):
             form.base_fields['status'].choices = status_choices
         return form
 
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)
+@admin.register(User)
+class UserAdmin(UserAdmin, ModelAdmin):
+    # Forms loaded from `unfold.forms`
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm

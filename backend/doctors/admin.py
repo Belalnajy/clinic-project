@@ -1,5 +1,13 @@
 from django.contrib import admin
 from .models import Doctor, Specialization
 
-admin.site.register(Doctor)
-admin.site.register(Specialization)
+from unfold.admin import ModelAdmin
+
+
+@admin.register(Doctor)
+class CustomAdminClass(ModelAdmin):
+    pass
+
+@admin.register(Specialization)
+class CustomAdminClass(ModelAdmin):
+    pass
