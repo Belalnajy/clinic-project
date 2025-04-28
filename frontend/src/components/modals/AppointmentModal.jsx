@@ -21,7 +21,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { addAppointment } from '../../data/data';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,19 +37,23 @@ import useAppointments from '@/hooks/useAppointments';
 
 const formSchema = z.object({
   patient_uuid: z.string().min(1, { message: 'Patient UUID is required' }),
-  doctor_id: z.union([z.string(), z.number()]).refine((val) => val !== '', { message: 'Doctor is required' }),
+  doctor_id: z
+    .union([z.string(), z.number()])
+    .refine((val) => val !== '', { message: 'Doctor is required' }),
   appointment_date: z.string().min(1, { message: 'Date is required' }),
   appointment_time: z.string().min(1, { message: 'Time is required' }),
-  duration: z.union([z.string(), z.number()]).refine((val) => val !== '', { message: 'Duration is required' }),
+  duration: z
+    .union([z.string(), z.number()])
+    .refine((val) => val !== '', { message: 'Duration is required' }),
   notes: z.string().optional(),
   status: z.enum(['scheduled', 'completed', 'canceled', 'in_queue']),
 });
 
 const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
   const { user } = useAuth();
-  const { allDoctors : doctors } = useDoctors();
+  const { allDoctors: doctors } = useDoctors();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {createAppointment, updateAppointment, useAppointment} = useAppointments();
+  const { createAppointment, updateAppointment, useAppointment } = useAppointments();
   const { data: appointmentData } = useAppointment(appointmentId);
 
   const form = useForm({
@@ -57,10 +68,10 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
       status: 'scheduled',
     },
   });
-  const {reset} = form;
+  const { reset } = form;
 
   useEffect(() => {
-    if(isOpen) {
+    if (isOpen) {
       if (isEditing && appointmentData) {
         reset({
           patient_uuid: appointmentData.patient.patient_id,
@@ -71,8 +82,7 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
           notes: appointmentData.notes,
           status: appointmentData.status,
         });
-      }
-      else {
+      } else {
         reset({
           patient_uuid: '',
           doctor_id: '',
@@ -104,7 +114,7 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
       console.error('Error saving appointment:', error);
       toast.error('Failed to save appointment');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   };
 
@@ -126,7 +136,7 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
                   <FormItem>
                     <FormLabel>Patient UUID</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter Patient UUID" {...field} disabled={ isEditing }/>
+                      <Input placeholder="Enter Patient UUID" {...field} disabled={isEditing} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -158,33 +168,35 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
                 )}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Date Field */}
-              <FormField
-                control={form.control}
-                name="appointment_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}/>
-              {/* Time Field */}
-              <FormField
-                control={form.control}
-                name="appointment_time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /></div>
+                {/* Date Field */}
+                <FormField
+                  control={form.control}
+                  name="appointment_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Time Field */}
+                <FormField
+                  control={form.control}
+                  name="appointment_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               {/* Duration Field */}
               <FormField
                 control={form.control}
@@ -235,7 +247,8 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
                     </Select>
                     <FormMessage />
                   </FormItem>
-                )}  />
+                )}
+              />
 
               <Button type="submit" className="w-full bg-primary" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting' : 'Submit'}

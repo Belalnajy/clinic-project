@@ -20,6 +20,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import {  FileText, PlayCircle, Edit, CheckCircle } from 'lucide-react';
 import CustomPagination from '@/components/CustomPagination';
+import AppointmentModal from '@/components/modals/AppointmentModal';
+import { useState } from 'react';
 
 const ScheduleTable = ({
   appointments,
@@ -31,6 +33,25 @@ const ScheduleTable = ({
   const itemsPerPage = 10;
   const { user } = useAuth();
   const isSecretary = user.role === 'secretary';
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Tracks if the modal is in edit mode
+  const [editingAppointment, setEditingAppointment] = useState(null); // Stores the appointment being edited
+
+   const openModal = () => {
+     setIsModalOpen(true);
+   };
+
+   const closeModal = () => {
+     setIsModalOpen(false);
+     setIsEditing(false); // Reset edit mode
+     setEditingAppointment(null); // Clear editing data
+   };
+
+  const handleEditClick = (appointment) => {
+    setIsEditing(true);
+    setEditingAppointment(appointment); // Pass the appointment data to the modal
+    openModal();
+  };
 
   return (
     <Card className="border-slate-200 p-0 shadow-sm overflow-hidden gap-0">
@@ -72,7 +93,7 @@ const ScheduleTable = ({
                 </TableHead>
 
                 <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
-                  Status   
+                  Status
                 </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Actions
@@ -111,9 +132,7 @@ const ScheduleTable = ({
                         </div>
                         <div className="text-xs text-slate-500 truncate">
                           {/* Patient UUID */}
-                          {appointment.patient
-                            ? appointment.patient.patient_id
-                            : ''}
+                          {appointment.patient ? appointment.patient.patient_id : ''}
                         </div>
                       </div>
                     </div>
@@ -148,6 +167,7 @@ const ScheduleTable = ({
                             size="sm"
                             variant="secondary"
                             className="bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer px-2 sm:px-3"
+                            onClick={() => handleEditClick(appointment)}
                           >
                             <Edit size={14} className="sm:size-4" />
                             <span className="hidden sm:inline ml-1 sm:ml-2">Edit</span>
@@ -192,8 +212,7 @@ const ScheduleTable = ({
                               </>
                             ) : (
                               <>
-
-                                <Edit size={14} className="sm:size-4"  />
+                                <Edit size={14} className="sm:size-4" />
                                 <span className="hidden sm:inline">Update</span>
                               </>
                             )}
@@ -224,14 +243,17 @@ const ScheduleTable = ({
             {completionRate}%
           </span>
         </div>
-
       </CardFooter>
+
+      <AppointmentModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        isEditing={isEditing}
+        appointmentId={editingAppointment?.appointment_id}
+      />
       {/* Pagination */}
       <div className="flex justify-end bg-slate-50/50 p-4">
-        <CustomPagination
-          pagination={{ count: totalItems }}
-          pageSize={itemsPerPage}
-        />
+        <CustomPagination pagination={{ count: totalItems }} pageSize={itemsPerPage} />
       </div>
     </Card>
   );

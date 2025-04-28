@@ -14,7 +14,7 @@ import CheckInTab from '@/components/dashboard/CheckInTab';
 export default function SecretaryDashboard() {
   const [stats, setStats] = useState({});
   // Sync appointmentsPage with ?page in URL
-  
+
   const [searchParams, setSearchParams] = useSearchParams();
   const appointmentsPage = Number(searchParams.get('page')) || 1;
   const [appointmentsTotalPages, setAppointmentsTotalPages] = useState(1);
@@ -44,8 +44,6 @@ export default function SecretaryDashboard() {
     fetchStats();
   }, []);
 
-
-
   // Fetch all patients (with pagination)
   useEffect(() => {
     const fetchPatients = async () => {
@@ -68,7 +66,6 @@ export default function SecretaryDashboard() {
     fetchPatients();
   }, [patientsPage]);
 
- 
   useEffect(() => {
     const fetchAppointments = async () => {
       setAppointmentsLoading(true);
@@ -99,7 +96,8 @@ export default function SecretaryDashboard() {
   const filteredAppointments = todayAppointments.filter((appointment) => {
     let name = '';
     if (appointment.patient && (appointment.patient.first_name || appointment.patient.last_name)) {
-      name = `${appointment.patient.first_name || ''} ${appointment.patient.last_name || ''}`.trim();
+      name =
+        `${appointment.patient.first_name || ''} ${appointment.patient.last_name || ''}`.trim();
     } else if (appointment.patient_name) {
       name = appointment.patient_name;
     }
@@ -150,9 +148,7 @@ export default function SecretaryDashboard() {
           />
         </TabsContent>
         {/* Check-in */}
-        <TabsContent value="check-in">
-          {/* <CheckInTab /> */}
-        </TabsContent>
+        <TabsContent value="check-in">{/* <CheckInTab /> */}</TabsContent>
         {/* Patients */}
         <TabsContent value="patients">
           <PatientsTab

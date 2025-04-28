@@ -20,7 +20,8 @@ def get_dashboard_statistics(user=None):
         stats['patients_today'] = Patient.objects.filter(created_at__date=today).count()
         stats['active_patients'] = Patient.objects.filter(is_active=True).count()
         stats['appointments_today'] = Appointment.objects.filter(appointment_date=today).count()
-        stats['available_doctors'] = Doctor.objects.filter(user__status='available').count() if hasattr(Doctor, 'user') else Doctor.objects.count()
+        stats['available_doctors'] = Doctor.objects.filter(user__status='available',).count() if hasattr(Doctor, 'user') else Doctor.objects.count()
         stats['new_registrations'] = Patient.objects.filter(created_at__date=today).count()
+        stats['waiting_patients'] = Appointment.objects.filter(status='in_queue',appointment_date=today).count()
     return stats
 
