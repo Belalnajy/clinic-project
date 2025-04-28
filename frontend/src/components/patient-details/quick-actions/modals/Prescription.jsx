@@ -149,7 +149,7 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
   };
 
   if (isLoadingLatestRecord) {
-    return <LoadingState message="Loading medical record..." />;
+    return <LoadingState fullPage={true} message="Loading medical record..." />;
   }
 
   return (

@@ -1,13 +1,12 @@
-import { usePatient } from '@/hooks/usePatients';
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import PersonalInfo from './overview-cards/PersonalInfo';
 import LoadingState from '@/components/LoadingState';
 import CustomAlert from '@/components/CustomAlert';
-import ContactInfo from './overview-cards/ContactInfo';
-import { useMedicalRecords } from '@/hooks/useMedicalRecords';
 import { useParams } from 'react-router-dom';
-import CurrentCondition from './overview-cards/CurrentCondition';
+import { useMedicalRecords } from '@/hooks/useMedicalRecords';
 import { usePrescriptions } from '@/hooks/usePrescriptions';
+import { usePatient } from '@/hooks/usePatients';
+import PersonalInfo from './overview-cards/PersonalInfo';
+import ContactInfo from './overview-cards/ContactInfo';
+import CurrentCondition from './overview-cards/CurrentCondition';
 import CurrentMedications from './overview-cards/CurrentMedications';
 import InsuranceInfo from './overview-cards/InsuranceInfo';
 
@@ -26,7 +25,7 @@ const Overview = () => {
   const currentMedications = [];
 
   if (patientLoading || medRecLoading || isLoadingPrescriptions) {
-    return <LoadingState fullPage="true" message="Loading Patient Personal Info" />;
+    return <LoadingState fullPage={true} message="Loading Patient Personal Info" />;
   }
 
   if (patientError || medRecError || prescriptionsError) {
@@ -36,20 +35,13 @@ const Overview = () => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
       <div className="space-y-4">
-        {/* Personal Information */}
         <PersonalInfo patient={patientData} />
-
-        {/* Contact Information  */}
         <ContactInfo patient={patientData} />
       </div>
 
       <div className="space-y-4">
-        {/* Current Condition */}
         <CurrentCondition medicalRecord={medicalRecord} />
-        {/* Current Medications */}
         <CurrentMedications currentMedications={medications} />
-
-        {/* Insurance Information */}
         <InsuranceInfo patient={patientData} />
       </div>
     </div>

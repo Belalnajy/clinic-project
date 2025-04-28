@@ -111,7 +111,7 @@ const MedicalRecord = ({ open, onOpenChange }) => {
         </DialogHeader>
 
         {isCheckingAppointment ? (
-          <LoadingState message="Checking appointment status..." />
+          <LoadingState fullPage={true} message="Checking appointment status..." />
         ) : appointmentError ? (
           <CustomAlert variant="destructive" message={appointmentError} />
         ) : (

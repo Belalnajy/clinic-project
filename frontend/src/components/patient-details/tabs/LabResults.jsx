@@ -11,7 +11,7 @@ const LabResults = () => {
   const { labResults, labResultsLoading, labResultsError, pagination } =
     usePatientLabResults(patientId);
   if (labResultsLoading) {
-    return <LoadingState fullPage="true" message="Loading Lab Results..." />;
+    return <LoadingState fullPage={true} message="Loading Lab Results..." />;
   }
 
   if (labResultsError) {

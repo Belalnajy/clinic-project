@@ -16,7 +16,7 @@ const Prescriptions = () => {
   }
 
   if (isLoadingPrescriptions) {
-    return <LoadingState fullPage="true" message="Loading prescriptions..." />;
+    return <LoadingState fullPage={true} message="Loading prescriptions..." />;
   }
 
   console.log(prescriptionsData);

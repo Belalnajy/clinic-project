@@ -24,7 +24,7 @@ const MedicalRecords = () => {
   };
 
   if (isLoadingMedicalRecords) {
-    return <LoadingState message="Loading medical records..." />;
+    return <LoadingState fullPage={true} message="Loading medical records..." />;
   }
 
   if (medicalRecordsError) {

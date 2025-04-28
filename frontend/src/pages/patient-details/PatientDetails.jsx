@@ -21,7 +21,7 @@ const PatientDetails = () => {
   const tabsData = ['overview', 'medical-records', 'prescriptions', 'lab-results'];
 
   if (isLoading) {
-    return <LoadingState fullPage="true" message="Loading Patient Details" />;
+    return <LoadingState fullPage={true} message="Loading Patient Details" />;
   }
 
   if (isError) {
