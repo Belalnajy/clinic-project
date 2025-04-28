@@ -112,9 +112,7 @@ const PatientsTab = ({
                 <TableHead className="hidden lg:table-cell py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   City
                 </TableHead>
-                <TableHead className="hidden xl:table-cell py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
-                  Blood Type
-                </TableHead>
+
                 <TableHead className="py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Status
                 </TableHead>
@@ -191,10 +189,6 @@ const PatientsTab = ({
 
                     <TableCell className="hidden lg:table-cell py-3 px-4 sm:py-4 sm:px-6">
                       {p.city}
-                    </TableCell>
-
-                    <TableCell className="hidden xl:table-cell py-3 px-4 sm:py-4 sm:px-6">
-                      {p.blood_type}
                     </TableCell>
 
                     <TableCell className="py-3 px-4 sm:py-4 sm:px-6">

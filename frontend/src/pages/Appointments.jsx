@@ -54,8 +54,6 @@ const Appointments = () => {
     openModal();
   };
 
-  console.log(appointments);
-
   if (isLoadingAppointments) {
     return <LoadingState fullPage={true} message="Loading appointments..." />;
   }

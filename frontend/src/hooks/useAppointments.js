@@ -8,7 +8,10 @@ import {
   deleteAppointment,
   cancelAppointment,
   completeAppointment,
+  getTodayAppointments,
+  markAppointmentAsQueue,
 } from '@/api/appointments';
+import { getDashboardStatistics } from '@/api/statistics';
 
 const useAppointments = () => {
   const queryClient = useQueryClient();
@@ -18,8 +21,7 @@ const useAppointments = () => {
   const startDate = searchParams.get('date') || searchParams.get('startDate') || '';
   const endDate = searchParams.get('endDate') || '';
   const search = searchParams.get('search') || '';
-  console.log(startDate);
-  console.log(endDate);
+
   // Fetch appointments using useQuery
   const {
     data: appointmentsData,
@@ -28,6 +30,26 @@ const useAppointments = () => {
   } = useQuery({
     queryKey: ['appointments', currentPage, search, startDate, endDate],
     queryFn: () => getAppointments({ page: currentPage, search, startDate, endDate }),
+  });
+
+  // Fetch today's appointments
+  const {
+    data: todayAppointmentsData,
+    isLoading: isLoadingTodayAppointments,
+    error: todayAppointmentsError,
+  } = useQuery({
+    queryKey: ['todayAppointments', currentPage],
+    queryFn: () => getTodayAppointments(currentPage),
+  });
+
+  // Fetch dashboard statistics
+  const {
+    data: dashboardStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: getDashboardStatistics,
   });
 
   // Fetch a single appointment using useQuery
@@ -43,7 +65,7 @@ const useAppointments = () => {
   const createAppointmentMutation = useMutation({
     mutationFn: createAppointment,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
     },
   });
 
@@ -51,7 +73,7 @@ const useAppointments = () => {
   const updateAppointmentMutation = useMutation({
     mutationFn: ({ id, data }) => updateAppointment(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
     },
   });
 
@@ -59,7 +81,7 @@ const useAppointments = () => {
   const deleteAppointmentMutation = useMutation({
     mutationFn: (id) => deleteAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
     },
   });
 
@@ -67,7 +89,7 @@ const useAppointments = () => {
   const cancelAppointmentMutation = useMutation({
     mutationFn: (id) => cancelAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
     },
   });
 
@@ -75,31 +97,63 @@ const useAppointments = () => {
   const completeAppointmentMutation = useMutation({
     mutationFn: (id) => completeAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+    },
+  });
+  // Complete appointment using useMutation
+  const queueAppointmentMutation = useMutation({
+    mutationFn: (id) => markAppointmentAsQueue(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
     },
   });
 
   return {
+    // Appointments data
     appointments: appointmentsData?.results || [],
+    todayAppointments: todayAppointmentsData?.results || [],
+    dashboardStats: dashboardStats || {},
+
+    // Pagination
     pagination: {
       count: appointmentsData?.count || 0,
       next: appointmentsData?.next,
       previous: appointmentsData?.previous,
       currentPage,
     },
-    isLoadingAppointments,
-    appointmentsError,
+    todayAppointmentsPagination: {
+      count: todayAppointmentsData?.count || 0,
+      next: todayAppointmentsData?.next,
+      previous: todayAppointmentsData?.previous,
+      currentPage,
+    },
+
     useAppointment,
+
+    // Loading states
+    isLoadingAppointments,
+    isLoadingTodayAppointments,
+    isLoadingStats,
+
+    // Error states
+    appointmentsError,
+    todayAppointmentsError,
+    statsError,
+
+    // Mutations
     createAppointment: createAppointmentMutation.mutateAsync,
     updateAppointment: updateAppointmentMutation.mutateAsync,
     deleteAppointment: deleteAppointmentMutation.mutateAsync,
     cancelAppointment: cancelAppointmentMutation.mutateAsync,
     completeAppointment: completeAppointmentMutation.mutateAsync,
+    queueAppointment: queueAppointmentMutation.mutateAsync,
+    // Mutation states
     isCreating: createAppointmentMutation.isPending,
     isUpdating: updateAppointmentMutation.isPending,
     isDeleting: deleteAppointmentMutation.isPending,
     isCancelling: cancelAppointmentMutation.isPending,
     isCompleting: completeAppointmentMutation.isPending,
+    isQueueing: queueAppointmentMutation.isPending,
   };
 };
 
