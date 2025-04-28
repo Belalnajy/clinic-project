@@ -37,7 +37,7 @@ class SimpleDoctorSerializer(serializers.Serializer):
     bio = serializers.CharField()
     is_active = serializers.BooleanField(source="user.is_active")
 
-# Nested serializers for related fields
+    # Nested serializers for related fields
     def get_specialization(self, obj):
         return obj.specialization.name if obj.specialization else None
 
@@ -50,6 +50,16 @@ class SimpleUserSerializer(serializers.Serializer):
     role = serializers.CharField()
     status = serializers.CharField()
     is_active = serializers.BooleanField()
+
+
+class SimplePaymentSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = serializers.DateTimeField()
+    method = serializers.CharField()
+    status = serializers.CharField()
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField()
 
 
 class PatientChoiceField(serializers.PrimaryKeyRelatedField):
@@ -66,6 +76,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
     patient_name = serializers.SerializerMethodField()
     doctor_name = serializers.SerializerMethodField()
     created_by_name = serializers.SerializerMethodField()
+    payment = serializers.SerializerMethodField()
 
     # Nested serializers for related fields
     patient = SimplePatientSerializer(read_only=True)
@@ -105,6 +116,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "patient_name",
             "doctor_name",
             "created_by_name",
+            "payment",
         ]
         read_only_fields = [
             "appointment_id",
@@ -117,6 +129,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "patient",
             "doctor",
             "created_by",
+            "payment",
         ]
 
     def get_patient_name(self, obj):
@@ -128,10 +141,14 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def get_created_by_name(self, obj):
         return f"{obj.created_by.first_name} {obj.created_by.last_name}"
 
-    # def validate_appointment_date(self, value):
-    #     if value < timezone.now().date():
-    #         raise serializers.ValidationError("Cannot create appointment in the past")
-    #     return value
+    def get_payment(self, obj):
+        try:
+            from billing.models import Payment
+
+            payment = Payment.objects.get(appointment=obj)
+            return SimplePaymentSerializer(payment).data
+        except Payment.DoesNotExist:
+            return None
 
     def validate(self, data):
         appointment_date = data.get("appointment_date")
