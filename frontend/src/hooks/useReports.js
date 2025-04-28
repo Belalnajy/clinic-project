@@ -7,6 +7,7 @@ import {
   getAppointments,
   getDoctors,
   getSpecializations,
+  getFinancialMetrics,
 } from '@/api/reports';
 
 export const useReports = () => {
@@ -35,6 +36,12 @@ export const useReports = () => {
   const appointmentMetricsQuery = useQuery({
     queryKey: ['appointmentMetrics'],
     queryFn: getAppointmentMetrics,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const financialMetricsQuery = useQuery({
+    queryKey: ['financialMetrics'],
+    queryFn: getFinancialMetrics,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -79,6 +86,10 @@ export const useReports = () => {
     appointmentMetrics: appointmentMetricsQuery.data,
     isLoadingAppointmentMetrics: appointmentMetricsQuery.isLoading,
     appointmentMetricsError: appointmentMetricsQuery.error,
+    // Financial metrics
+    financialMetrics: financialMetricsQuery.data,
+    isLoadingFinancialMetrics: financialMetricsQuery.isLoading,
+    financialMetricsError: financialMetricsQuery.error,
     // Patient analysis
     patientAnalysis: patientAnalysisQuery.data,
     isLoadingPatientAnalysis: patientAnalysisQuery.isLoading,

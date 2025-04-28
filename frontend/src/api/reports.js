@@ -50,8 +50,6 @@ export const getSpecializations = async () => {
   return response.data;
 };
 
-
-
 /**
  * Fetch appointments with pagination and filters
  * @param {Object} params - Query parameters
@@ -100,5 +98,14 @@ export const getAppointments = async ({ page = 1, doctor, specialization, status
       ...dateParams,
     },
   });
+  return response.data;
+};
+
+/**
+ * Fetch financial metrics data
+ * @returns {Promise<Object>} - Financial metrics data including revenue, payments, and distributions
+ */
+export const getFinancialMetrics = async () => {
+  const response = await axiosInstance.get('/reports/financial-metrics/');
   return response.data;
 };
