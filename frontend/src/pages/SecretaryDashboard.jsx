@@ -6,163 +6,123 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@radix-ui/react-tabs';
 import PatientsTab from '@/components/dashboard/PatientsTab';
 import ScheduleTable from '@/components/dashboard/ScheduleTable';
-import { getDashboardStatistics } from '@/api/statistics';
-import { getTodayAppointments } from '@/api/appointments';
-import { getPatients } from '@/api/patients';
+
 import CheckInTab from '@/components/dashboard/CheckInTab';
+import LoadingState from '@/components/LoadingState';
+import CustomAlert from '@/components/CustomAlert';
+import useAppointments from '@/hooks/useAppointments';
+import { usePatientsList } from '@/hooks/usePatients';
 
 export default function SecretaryDashboard() {
-  const [stats, setStats] = useState({});
-  // Sync appointmentsPage with ?page in URL
-  
-  const [searchParams, setSearchParams] = useSearchParams();
-  const appointmentsPage = Number(searchParams.get('page')) || 1;
-  const [appointmentsTotalPages, setAppointmentsTotalPages] = useState(1);
-  const [appointmentsTotalItems, setAppointmentsTotalItems] = useState(0);
-  const [todayAppointments, setTodayAppointments] = useState([]);
-  const [appointmentsLoading, setAppointmentsLoading] = useState(true);
-  const [appointmentsError, setAppointmentsError] = useState(null);
-  const [patients, setPatients] = useState([]);
-  const [patientsLoading, setPatientsLoading] = useState(true);
-  const [patientsError, setPatientsError] = useState(null);
-  const [patientsPage, setPatientsPage] = useState(1);
-  const [patientsTotalPages, setPatientsTotalPages] = useState(1);
-  const [patientsTotalItems, setPatientsTotalItems] = useState(0);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
 
-  // Fetch dashboard statistics
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const statsData = await getDashboardStatistics();
-        setStats(statsData);
-      } catch (err) {
-        setStats({});
-      }
-    };
-    fetchStats();
-  }, []);
+  // Get appointments data using custom hook
+  const {
+    todayAppointments,
+    dashboardStats,
+    isLoadingTodayAppointments,
+    todayAppointmentsError,
+    isLoadingStats,
+    statsError,
+    todayAppointmentsPagination,
+  } = useAppointments();
+  console.log(dashboardStats);
 
-
-
-  // Fetch all patients (with pagination)
-  useEffect(() => {
-    const fetchPatients = async () => {
-      setPatientsLoading(true);
-      setPatientsError(null);
-      try {
-        const data = await getPatients(patientsPage);
-        setPatients(data.results || []);
-        setPatientsTotalPages(data.total_pages || 1);
-        setPatientsTotalItems(data.count || 0);
-      } catch (err) {
-        setPatientsError('Failed to load patients');
-        setPatients([]);
-        setPatientsTotalPages(1);
-        setPatientsTotalItems(0);
-      } finally {
-        setPatientsLoading(false);
-      }
-    };
-    fetchPatients();
-  }, [patientsPage]);
-
- 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      setAppointmentsLoading(true);
-      setAppointmentsError(null);
-      try {
-        const data = await getTodayAppointments(appointmentsPage);
-        setTodayAppointments(data.results || []);
-        setAppointmentsTotalPages(data.total_pages || 1);
-        setAppointmentsTotalItems(data.count || 0);
-      } catch (err) {
-        setAppointmentsError('Failed to load appointments');
-        setTodayAppointments([]);
-        setAppointmentsTotalPages(1);
-        setAppointmentsTotalItems(0);
-      } finally {
-        setAppointmentsLoading(false);
-      }
-    };
-    fetchAppointments();
-  }, [appointmentsPage]);
-
+  // Get patients data using custom hook
+  const {
+    patientsData,
+    isLoading: isLoadingPatients,
+    error: patientsError,
+    pagination: patientsPagination,
+  } = usePatientsList();
   // Reset to first page when search term changes
   useEffect(() => {
     setSearchParams({ page: 1 });
   }, [searchTerm]);
 
-  // Filtered appointments (if you want to filter by searchTerm, apply on todayAppointments)
+  // Filter appointments based on search term
   const filteredAppointments = todayAppointments.filter((appointment) => {
-    let name = '';
-    if (appointment.patient && (appointment.patient.first_name || appointment.patient.last_name)) {
-      name = `${appointment.patient.first_name || ''} ${appointment.patient.last_name || ''}`.trim();
-    } else if (appointment.patient_name) {
-      name = appointment.patient_name;
-    }
+    const name = appointment.patient
+      ? `${appointment.patient.first_name || ''} ${appointment.patient.last_name || ''}`.trim()
+      : appointment.patient_name || '';
     return name.toLowerCase().includes(searchTerm.toLowerCase());
   });
-  const handleOpenPatientView = (patient) => {
-    navigate(`/patient/${patient.patientId}`);
-  };
 
-  const handleNewAppointment = () => {
-    // You can implement appointment creation logic here
-  };
+  // Calculate completion rate
   const completedAppointments = todayAppointments.filter((a) => a.status === 'completed').length;
   const completionRate = Math.round((completedAppointments / todayAppointments.length) * 100) || 0;
 
+  // Status styles for appointments
   const statusStyles = {
     completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     waiting: 'bg-amber-50 text-amber-700 border border-amber-200',
     'in-progress': 'bg-sky-50 text-sky-700 border border-sky-200',
     cancelled: 'bg-rose-50 text-rose-700 border border-rose-200',
   };
+
+  // Loading state
+  if (isLoadingTodayAppointments || isLoadingStats || isLoadingPatients) {
+    return <LoadingState fullPage={true} message="Loading dashboard data..." />;
+  }
+
+  // Error state
+  if (todayAppointmentsError || statsError || patientsError) {
+    return (
+      <CustomAlert
+        message="Failed to load dashboard data"
+        description="Please try refreshing the page or contact support if the issue persists."
+        variant="destructive"
+      />
+    );
+  }
+
   return (
     <div className="p-6 md:p-8">
       <div className="mb-8 border-b border-slate-200 pb-4">
-        <h1 className="text-3xl font-light tracking-tight text-slate-800 bg-mint-500">
-          Secretary's dashboard
-        </h1>
-        <p className="text-slate-500 mt-1 text-sm">Welcome back, Mr. John Smith</p>
+        <h1 className="text-3xl font-light tracking-tight text-slate-800">Secretary's dashboard</h1>
+        <p className="text-slate-500 mt-1 text-sm">Welcome back, {user?.name || 'Secretary'}</p>
       </div>
+
       {/* Stats Section */}
-      <StatsSection stats={stats} />
+      <StatsSection stats={dashboardStats} />
+
       <Tabs defaultValue="appointments" className="mb-8">
         <TabsHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        {/* Appointments */}
+
+        {/* Appointments Tab */}
         <TabsContent value="appointments" className="mt-0">
           <ScheduleTable
             appointments={filteredAppointments}
-            loading={appointmentsLoading}
-            error={appointmentsError}
-            handleOpenPatientView={handleOpenPatientView}
+            loading={isLoadingTodayAppointments}
+            error={todayAppointmentsError}
+            handleOpenPatientView={(patient) => navigate(`/patient/${patient.patientId}`)}
             statusStyles={statusStyles}
-            handleNewAppointment={handleNewAppointment}
             completionRate={completionRate}
-            currentPage={appointmentsPage}
-            totalPages={appointmentsTotalPages}
-            totalItems={appointmentsTotalItems}
+            currentPage={todayAppointmentsPagination.currentPage}
+            totalPages={Math.ceil(todayAppointmentsPagination.count / 10)}
+            totalItems={todayAppointmentsPagination.count}
             onPageChange={(page) => setSearchParams({ page })}
           />
         </TabsContent>
-        {/* Check-in */}
+
+        {/* Check-in Tab */}
         <TabsContent value="check-in">
-          {/* <CheckInTab /> */}
+          <CheckInTab />
         </TabsContent>
-        {/* Patients */}
+
+        {/* Patients Tab */}
         <TabsContent value="patients">
           <PatientsTab
-            patients={patients}
-            loading={patientsLoading}
+            patients={patientsData}
+            loading={isLoadingPatients}
             error={patientsError}
-            currentPage={patientsPage}
-            totalPages={patientsTotalPages}
-            totalItems={patientsTotalItems}
-            onPageChange={setPatientsPage}
+            currentPage={patientsPagination.currentPage}
+            totalPages={patientsPagination.totalPages}
+            totalItems={patientsPagination.count}
+            onPageChange={(page) => setSearchParams({ page })}
           />
         </TabsContent>
       </Tabs>

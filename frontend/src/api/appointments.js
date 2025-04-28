@@ -11,8 +11,6 @@ export const getAppointments = async ({ search, page, startDate, endDate } = {})
     params: { page, search, appointment_date__gte: startDate, appointment_date__lte: endDate },
   });
 
-  console.log('api res: ', response.data);
-
   return response.data;
 };
 
@@ -61,5 +59,10 @@ export const getLatestPatientAppointment = async (patientId) => {
 
 export const markAppointmentAsCompleted = async (appointmentId) => {
   const response = await axiosInstance.post(`/appointments/${appointmentId}/complete/`);
+  return response.data;
+};
+
+export const markAppointmentAsQueue = async (appointmentId) => {
+  const response = await axiosInstance.post(`/appointments/${appointmentId}/queue/`);
   return response.data;
 };

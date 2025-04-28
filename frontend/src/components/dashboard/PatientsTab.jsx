@@ -22,6 +22,8 @@ import { useAuth } from '@/contexts/Auth/useAuth';
 import { FileText, Edit, CheckCircle, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useReactivatePatientMutation, useDeletePatientMutation } from '@/hooks/usePatients';
 
 const PatientsTab = ({
   patients = [],
@@ -39,34 +41,33 @@ const PatientsTab = ({
   const { user } = useAuth();
   const isSecretary = user.role === 'secretary';
   const itemsPerPage = 10;
-  
+
   const navigate = useNavigate();
+  const { deletePatient, isDeleting } = useDeletePatientMutation();
+  const { reactivatePatient, isReactivating } = useReactivatePatientMutation();
 
   // Handler functions
-  const handleEditPatient = (patient) => {
-    toast({
-      title: "Edit Patient",
-      description: `Editing patient ${patient.first_name} ${patient.last_name}`,
-    });
-    // Implement your edit logic here
+  const handleEditPatient = (patientId) => {
+    navigate(`/patients/${patientId}/edit`);
   };
 
-  const handleToggleActive = (patient) => {
-    toast({
-      title: patient.is_active ? "Deactivate Patient" : "Activate Patient",
-      description: `${patient.is_active ? "Deactivating" : "Activating"} patient ${patient.first_name} ${patient.last_name}`,
-    });
-    // Implement your toggle active logic here
+  const handleDeletePatient = async (patientId) => {
+    try {
+      await deletePatient(patientId);
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+    }
   };
-
-  const handleOpenPatientView = (patient) => {
-    toast({
-      title: "View Patient",
-      description: `Viewing patient ${patient.first_name} ${patient.last_name}`,
-    });
-    // Implement your view logic here
+  const handleReactivatePatient = async (patientId) => {
+    try {
+      await reactivatePatient(patientId);
+    } catch (error) {
+      console.error('Error reactivating patient:', error);
+    }
   };
-
+  const handleViewPatient = (patientId) => {
+    navigate(`/patient/${patientId}`);
+  };
 
   return (
     <Card className="border-slate-200 p-0 shadow-sm overflow-hidden">
@@ -85,7 +86,6 @@ const PatientsTab = ({
             <Link
               to="/patients"
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-black bg-white rounded-md shadow-sm hover:bg-sky-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-              
             >
               <UserPlus size={16} className="mr-2 text-slate-800" />
               New Patient
@@ -112,9 +112,7 @@ const PatientsTab = ({
                 <TableHead className="hidden lg:table-cell py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   City
                 </TableHead>
-                <TableHead className="hidden xl:table-cell py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
-                  Blood Type
-                </TableHead>
+
                 <TableHead className="py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Status
                 </TableHead>
@@ -130,8 +128,19 @@ const PatientsTab = ({
                   <TableCell colSpan={7} className="text-center py-12 text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <div className="rounded-full bg-slate-100 p-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6 text-slate-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          />
                         </svg>
                       </div>
                       <p className="text-slate-500 font-medium">No patients found</p>
@@ -169,9 +178,7 @@ const PatientsTab = ({
                           <div className="font-medium text-slate-800 truncate">
                             {p.first_name} {p.last_name}
                           </div>
-                          <div className="text-xs text-slate-500 truncate">
-                            {p.patient_id}
-                          </div>
+                          <div className="text-xs text-slate-500 truncate">{p.patient_id}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -184,16 +191,10 @@ const PatientsTab = ({
                       {p.city}
                     </TableCell>
 
-                    <TableCell className="hidden xl:table-cell py-3 px-4 sm:py-4 sm:px-6">
-                      {p.blood_type}
-                    </TableCell>
-
                     <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                       <Badge
                         className={`font-normal px-2 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-sm ${
-                          p.is_active
-                            ? statusStyles.active
-                            : statusStyles.inactive
+                          p.is_active ? statusStyles.active : statusStyles.inactive
                         }`}
                       >
                         {p.is_active ? 'Active' : 'Inactive'}
@@ -208,18 +209,17 @@ const PatientsTab = ({
                               size="sm"
                               variant="secondary"
                               className="bg-secondary text-slate-700 hover:bg-slate-200 px-2 sm:px-3"
-                              onClick={() => handleEditPatient(p)}
+                              onClick={() => handleEditPatient(p.id)}
                             >
                               <Edit size={14} />
-                              <span className="hidden sm:inline ml-1 sm:ml-2">
-                                Edit
-                              </span>
+                              <span className="hidden sm:inline ml-1 sm:ml-2">Edit</span>
                             </Button>
                             <Button
                               size="xs"
                               variant="default"
                               className="bg-primary-300 hover:bg-sky-700 px-2 sm:px-3"
-                              onClick={() => handleToggleActive(p)}
+                              onClick={() => handleDeletePatient(p.id)}
+                              disabled={isDeleting}
                             >
                               <CheckCircle size={14} className="text-white" />
                               <span className="hidden sm:inline ml-1 sm:ml-2 text-white">
@@ -233,12 +233,10 @@ const PatientsTab = ({
                               size="sm"
                               variant="ghost"
                               className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 px-2 sm:px-3"
-                              onClick={() => handleOpenPatientView(p)}
+                              onClick={() => handleViewPatient(p.id)}
                             >
                               <FileText size={14} />
-                              <span className="hidden sm:inline ml-1 sm:ml-2">
-                                View
-                              </span>
+                              <span className="hidden sm:inline ml-1 sm:ml-2">View</span>
                             </Button>
                           </>
                         )}
@@ -250,78 +248,76 @@ const PatientsTab = ({
             </TableBody>
           </Table>
         </div>
-        
-    
       </CardContent>
 
       {/* Footer with summary + export */}
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-t border-slate-100 py-3 px-4 sm:py-4 sm:px-6 bg-slate-50/50">
         <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-4">
-          <div className="text-sm text-slate-600">
-            Total Patients: {totalItems}
-          </div>
-          
+          <div className="text-sm text-slate-600">Total Patients: {totalItems}</div>
 
-              {/* Simple Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center py-4 border-slate-200">
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8 w-8 p-0 rounded-full" 
-                disabled={currentPage === 1}
-                onClick={() => onPageChange(currentPage - 1)}
-              >
-                <ChevronLeft size={16} />
-              </Button>
-              
-              <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  // Calculate which page numbers to show
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    // If 5 or fewer pages, show all
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    // If near the start
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    // If near the end
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    // If in the middle
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      className={`h-8 w-8 p-0 ${currentPage === pageNum ? 'bg-primary-500 text-red-slate-400' : 'text-slate-600'}`}
-                      onClick={() => onPageChange(pageNum)}
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
+          {/* Simple Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center py-4 border-slate-200">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                  disabled={currentPage === 1}
+                  onClick={() => onPageChange(currentPage - 1)}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    // Calculate which page numbers to show
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      // If 5 or fewer pages, show all
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      // If near the start
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      // If near the end
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      // If in the middle
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? 'default' : 'outline'}
+                        size="sm"
+                        className={`h-8 w-8 p-0 ${currentPage === pageNum ? 'bg-primary-500 text-red-slate-400' : 'text-slate-600'}`}
+                        onClick={() => onPageChange(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-full"
+                  disabled={currentPage === totalPages}
+                  onClick={() => onPageChange(currentPage + 1)}
+                >
+                  <ChevronRight size={16} />
+                </Button>
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8 w-8 p-0 rounded-full" 
-                disabled={currentPage === totalPages}
-                onClick={() => onPageChange(currentPage + 1)}
-              >
-                <ChevronRight size={16} />
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
-        <Link className="text-sm text-slate-600 "  to="/patients"> View All Patients</Link>
+          <Link className="text-sm text-slate-600 " to="/patients">
+            {' '}
+            View All Patients
+          </Link>
         </div>
       </CardFooter>
     </Card>
