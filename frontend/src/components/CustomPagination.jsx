@@ -1,86 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+// Ellipsis component (replace with PaginationEllipsis if available)
+const PaginationEllipsis = () => <span className="px-2">...</span>;
 
-const CustomPagination = ({
-  totalItems,
-  itemsPerPage = 10,
-  currentPage: externalCurrentPage,
-  onPageChange,
-  maxVisiblePages = 5,
-}) => {
-  const [currentPage, setCurrentPage] = useState(externalCurrentPage || 1);
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  useEffect(() => {
-    if (externalCurrentPage !== undefined) {
-      setCurrentPage(externalCurrentPage);
-    }
-  }, [externalCurrentPage]);
+const CustomPagination = ({ pagination, pageSize = 10 }) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const totalPages = Math.floor(pagination.count / pageSize);
 
   const handlePageChange = (page) => {
-    const newPage = Math.max(1, Math.min(page, totalPages));
-    setCurrentPage(newPage);
-    onPageChange?.(newPage);
-  };
-
-  const renderPageNumbers = () => {
-    const pages = [];
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    if (startPage > 1) {
-      pages.push(
-        <PaginationItem key={1}>
-          <PaginationLink onClick={() => handlePageChange(1)}>1</PaginationLink>
-        </PaginationItem>
-      );
-      if (startPage > 2) {
-        pages.push(
-          <PaginationItem key="ellipsis-start">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationItem key={i}>
-          <PaginationLink isActive={currentPage === i} onClick={() => handlePageChange(i)}>
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(
-          <PaginationItem key="ellipsis-end">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-      pages.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink onClick={() => handlePageChange(totalPages)}>{totalPages}</PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return pages;
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page);
+    navigate({ search: params.toString() });
   };
 
   if (totalPages <= 1) return null;
@@ -91,13 +30,54 @@ const CustomPagination = ({
         <PaginationItem>
           <PaginationPrevious
             onClick={() => handlePageChange(currentPage - 1)}
+            className={currentPage === 1 ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''}
             disabled={currentPage === 1}
           />
         </PaginationItem>
-        {renderPageNumbers()}
+
+        {/* Ellipsis Pagination */}
+        {(() => {
+          const pages = [];
+          for (let i = 1; i <= totalPages; i++) {
+            if (
+              i === 1 ||
+              i === 2 ||
+              i === totalPages ||
+              i === totalPages - 1 ||
+              Math.abs(i - currentPage) <= 1
+            ) {
+              pages.push(
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(i)}
+                    isActive={currentPage === i}
+                    variant="ghost"
+                  >
+                    {i}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            } else if (
+              (i === 3 && currentPage > 4) ||
+              (i === totalPages - 2 && currentPage < totalPages - 3)
+            ) {
+              pages.push(
+                <PaginationItem key={`ellipsis-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+          }
+          return pages;
+        })()}
+
+
         <PaginationItem>
           <PaginationNext
             onClick={() => handlePageChange(currentPage + 1)}
+            className={
+              currentPage === totalPages ? 'pointer-events-none opacity-50 cursor-not-allowed' : ''
+            }
             disabled={currentPage === totalPages}
           />
         </PaginationItem>
