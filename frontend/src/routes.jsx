@@ -33,6 +33,8 @@ import ActivePatients from './pages/patients/ActivePatients';
 import InactivePatients from './pages/patients/InactivePatients';
 import PatientForm from './pages/patients/PatientForm';
 import AppointmentDetails from './pages/AppointmentDetails';
+import StatisticsCards from './components/managerdashboard/StatisticsCards';
+import FinanceSection from './components/managerdashboard/FinanceSection';
 
 const router = createBrowserRouter([
   {
@@ -100,6 +102,20 @@ const router = createBrowserRouter([
             <ManagerDashboard />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="overview" replace />,
+          },
+          {
+            path: 'overview',
+            element: <StatisticsCards />,
+          },
+          {
+            path: 'finance',
+            element: <FinanceSection />,
+          },
+        ],
       },
       {
         path: 'register',
