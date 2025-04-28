@@ -1,18 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStatistics, getTodayAppointments, getRecentPatientRecords } from '../data/data';
+import { getDashboardStatistics } from '@/api/statistics';
+import { getMedicalRecords } from '@/api/medicalRecords';
+import { getPatients } from '@/api/patients';
+import { getTodayAppointments } from '@/api/appointments';
 
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
-
-import { Filter, UserPlus, Users, ArrowsUpFromLine } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import Papa from 'papaparse';
 import FilterDialog from '@/components/dashboard/FilterDialog';
@@ -22,14 +14,100 @@ import ScheduleTable from '@/components/dashboard/ScheduleTable';
 import MedicalRecordsList from '@/components/dashboard/MedicalRecordsList';
 import PatientsTab from '@/components/dashboard/PatientsTab';
 import { useAuth } from '@/contexts/Auth/useAuth';
+
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const stats = getStatistics('doctor');
-  const todayAppointments = getTodayAppointments();
-  const originalRecords = getRecentPatientRecords();
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState(null);
+  const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [records, setRecords] = useState(originalRecords);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+  const [recordsError, setRecordsError] = useState(null);
+  const [currentRecordPage, setCurrentRecordPage] = useState(1);
+  const [totalRecordPages, setTotalRecordPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      setLoadingStats(true);
+      setStatsError(null);
+      try {
+        const data = await getDashboardStatistics();
+        setStats(data);
+      } catch (err) {
+        setStatsError('Failed to load statistics');
+        setStats(null);
+      } finally {
+        setLoadingStats(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    async function fetchAppointments() {
+      setLoadingAppointments(true);
+      setAppointmentsError(null);
+      try {
+        const data = await getTodayAppointments();
+        setAppointments(data.results || data); // handle paginated or direct array
+      } catch (err) {
+        setAppointments([]);
+        setAppointmentsError('Failed to load today\'s appointments');
+      } finally {
+        setLoadingAppointments(false);
+      }
+    }
+    fetchAppointments();
+  }, []);
+
+  // Fetch medical records from backend
+  const fetchRecords = async (page = 1) => {
+    setLoadingRecords(true);
+    setRecordsError(null);
+    try {
+      const data = await getMedicalRecords(page);
+      // Handle paginated response from API
+      if (data && data.results && Array.isArray(data.results)) {
+        setRecords(data.results);
+        setTotalRecords(data.count || 0);
+        setTotalRecordPages(Math.ceil((data.count || 0) / 10));
+        console.log('API Pagination - Medical Records:', { 
+          page, 
+          count: data.count, 
+          results: data.results.length,
+          totalPages: Math.ceil((data.count || 0) / 10)
+        });
+      } else if (data && Array.isArray(data)) {
+        // Fallback if API returns array directly
+        setRecords(data);
+        setTotalRecords(data.length);
+        setTotalRecordPages(Math.ceil(data.length / 10));
+      } else {
+        // Fallback for unexpected data format
+        setRecords([]);
+        setTotalRecords(0);
+        setTotalRecordPages(1);
+        console.error('Unexpected data format for medical records:', data);
+      }
+    } catch (err) {
+      setRecordsError('Failed to load medical records');
+      console.error('Error fetching medical records:', err);
+    } finally {
+      setLoadingRecords(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecords(currentRecordPage);
+  }, [currentRecordPage]);
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterCriteria, setFilterCriteria] = useState({
     patientName: '',
@@ -38,89 +116,69 @@ const Dashboard = () => {
   });
 
   // Navigate to patient view page
-  const handleOpenPatientView = (patient) => {
-    navigate(`/patient/${patient.patientId}`);
+  const handleOpenPatientView = (patientId) => {
+    navigate(`/patient/${patientId}`);
   };
 
-  const handleNewAppointment = () => {
-    toast({
-      title: 'New Appointment',
-      description: 'Appointment has been scheduled successfully.',
-    });
+  // Calculate completion percentage for today's appointments from backend
+  const totalAppointments = appointments.length;
+  const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
+  const completionRate = totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0;
+
+
+
+
+  // Fetch patients from backend
+  const [loadingPatients, setLoadingPatients] = useState(true);
+  const [patientsError, setPatientsError] = useState(null);
+  const [currentPatientPage, setCurrentPatientPage] = useState(1);
+  const [totalPatientPages, setTotalPatientPages] = useState(1);
+  const [totalPatients, setTotalPatients] = useState(0);
+
+  const fetchPatients = async (page = 1) => {
+    setLoadingPatients(true);
+    setPatientsError(null);
+    try {
+      const data = await getPatients(page);
+      // Handle paginated response from API
+      if (data && data.results && Array.isArray(data.results)) {
+        setPatients(data.results);
+        setTotalPatients(data.count || 0);
+        setTotalPatientPages(Math.ceil((data.count || 0) / 10));
+        console.log('API Pagination:', { 
+          page, 
+          count: data.count, 
+          results: data.results.length,
+          totalPages: Math.ceil((data.count || 0) / 10)
+        });
+      } else if (data && Array.isArray(data)) {
+        // Fallback if API returns array directly
+        setPatients(data);
+        setTotalPatients(data.length);
+        setTotalPatientPages(Math.ceil(data.length / 10));
+      } else {
+        // Fallback for unexpected data format
+        setPatients([]);
+        setTotalPatients(0);
+        setTotalPatientPages(1);
+        console.error('Unexpected data format:', data);
+      }
+    } catch (err) {
+      setPatientsError('Failed to load patients');
+      console.error('Error fetching patients:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to load patients',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingPatients(false);
+    }
   };
 
-  // Calculate completion percentage for today
-  const completedAppointments = todayAppointments.filter((a) => a.status === 'completed').length;
-  const completionRate = Math.round((completedAppointments / todayAppointments.length) * 100) || 0;
-
-  // Filter appointments for search
-  const filteredAppointments = todayAppointments.filter((appointment) =>
-    appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Handle Filter Button Click
-  const handleFilter = () => {
-    setFilterOpen(true);
-  };
-
-  // Apply Filters
-  const applyFilters = () => {
-    const filtered = originalRecords.filter((record) => {
-      const matchesName = record.patientName
-        .toLowerCase()
-        .includes(filterCriteria.patientName.toLowerCase());
-      const matchesDate = filterCriteria.date ? record.date === filterCriteria.date : true;
-      const matchesType = filterCriteria.type
-        ? (record.type || 'Consultation').toLowerCase().includes(filterCriteria.type.toLowerCase())
-        : true;
-      return matchesName && matchesDate && matchesType;
-    });
-    setRecords(filtered);
-    setFilterOpen(false);
-    toast({
-      title: 'Filters Applied',
-      description: `Showing ${filtered.length} matching records.`,
-    });
-  };
-
-  // Reset Filters
-  const resetFilters = () => {
-    setFilterCriteria({ patientName: '', date: '', type: '' });
-    setRecords(originalRecords);
-    setFilterOpen(false);
-    toast({
-      title: 'Filters Reset',
-      description: 'All records are now displayed.',
-    });
-  };
-
-  // Handle Export Button Click
-  const handleExport = () => {
-    const csvData = records.map((record) => ({
-      PatientName: record.patientName,
-      PatientID: record.patientId,
-      Date: record.date,
-      Type: record.type || 'Consultation',
-      Diagnosis: record.diagnosis,
-      Treatment: record.treatment,
-      Prescription: record.prescription || 'N/A',
-      Notes: record.notes || 'N/A',
-      Physician: record.physician || 'N/A',
-    }));
-
-    const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'medical_records.csv');
-    link.click();
-    URL.revokeObjectURL(url);
-    toast({
-      title: 'Export Successful',
-      description: 'Medical records have been exported as CSV.',
-    });
-  };
+  useEffect(() => {
+    fetchPatients(currentPatientPage);
+  }, [currentPatientPage]);
 
   const statusStyles = {
     completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -141,52 +199,63 @@ const Dashboard = () => {
       </div>
 
       {/* Statistics Cards */}
-      <StatsSection
-        stats={{
-          patientsToday: '8',
-          completedAppointments: `${completedAppointments}/${todayAppointments.length}`,
-          completionRate,
-          nextAppointment: '10:30 AM',
-          pendingLabs: '3',
-        }}
-      />
+      {loadingStats ? (
+        <div className="mb-8">Loading statistics...</div>
+      ) : statsError ? (
+        <div className="mb-8 text-red-500">{statsError}</div>
+      ) : (
+        <StatsSection stats={stats || {}} />
+      )}
+
+
       <Tabs defaultValue="schedule" className="mb-8">
         <TabsHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         {/* Schedule */}
         <TabsContent value="schedule" className="mt-0">
-          <ScheduleTable
-            appointments={filteredAppointments}
-            handleOpenPatientView={handleOpenPatientView}
-            statusStyles={statusStyles}
-            handleNewAppointment={handleNewAppointment}
-            completionRate={completionRate}
-          />
+          {loadingAppointments ? (
+            <div className="p-4">Loading appointments...</div>
+          ) : appointmentsError ? (
+            <div className="p-4 text-red-500">{appointmentsError}</div>
+          ) : (
+            <ScheduleTable
+              appointments={appointments}
+              handleOpenPatientView={handleOpenPatientView}
+              statusStyles={statusStyles}
+              completionRate={completionRate}
+            />
+          )}
         </TabsContent>
 
         {/* Patients */}
         <TabsContent value="patients">
-          <PatientsTab />
+          <PatientsTab
+            patients={patients}
+            loading={loadingPatients}
+            error={patientsError}
+
+            onPageChange={(page) => {
+              setCurrentPatientPage(page);
+            }}
+            currentPage={currentPatientPage}
+            totalPages={totalPatientPages}
+            totalItems={totalPatients}
+          />
         </TabsContent>
         {/* Medical Records */}
         <TabsContent value="records">
           <MedicalRecordsList
             records={records}
-            originalRecords={originalRecords}
+            loading={loadingRecords}
+            error={recordsError}
+            totalRecords={totalRecords}
+            currentPage={currentRecordPage}
+            totalPages={totalRecordPages}
+            onPageChange={(page) => setCurrentRecordPage(page)}
             handleOpenPatientView={handleOpenPatientView}
-            handleFilter={handleFilter}
-            handleExport={handleExport}
           />
         </TabsContent>
       </Tabs>
-      {/* Filter */}
-      <FilterDialog
-        filterOpen={filterOpen}
-        setFilterOpen={setFilterOpen}
-        filterCriteria={filterCriteria}
-        setFilterCriteria={setFilterCriteria}
-        applyFilters={applyFilters}
-        resetFilters={resetFilters}
-      />
+
     </div>
   );
 };
