@@ -133,10 +133,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
             self.fields.pop("doctor")
             self.fields.pop("doctor_id")
 
-    def validate_appointment_date(self, value):
-        if value < timezone.now().date():
-            raise serializers.ValidationError("Cannot create appointment in the past")
-        return value
+    # def validate_appointment_date(self, value):
+    #     if value < timezone.now().date():
+    #         raise serializers.ValidationError("Cannot create appointment in the past")
+    #     return value
 
     def validate(self, data):
         appointment_date = data.get("appointment_date")

@@ -27,6 +27,7 @@ import LoadingState from '@/components/LoadingState';
 import CustomPagination from '@/components/CustomPagination';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { useSearchParams, Outlet } from 'react-router-dom';
 
 const Appointments = () => {
   const navigate = useNavigate();
@@ -39,7 +40,10 @@ const Appointments = () => {
     createAppointment,
     updateAppointment,
   } = useAppointments();
-  
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,41 +55,44 @@ const Appointments = () => {
   let today = new Date().toLocaleDateString();
   const [date, setDate] = useState(today);
 
-  useEffect(() => {
-    setFilteredAppointments(appointments);
-    // console.log(filteredAppointments)
-    // console.log(appointments)
-  }, [appointments]);
 
-  useEffect(() => {
-    if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
-      setFilteredAppointments(appointments);
-    } else {
-      const filtered = appointments
-        .filter(
-          (appointment) =>
-            // appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .filter((appointment) => {
-          if (appointmentStatusFilter === 'all') {
-            return true;
-          }
-          return appointment.status.toLowerCase() === appointmentStatusFilter.toLowerCase();
-        })
-        .filter((appointment) => {
-          if (date === today) {
-            return true;
-          }
-          return appointment.date === format(date, 'yyyy-MM-dd');
-        });
-      setFilteredAppointments(filtered);
-    }
-  }, [searchTerm, appointments, appointmentStatusFilter, date]);
+  // useEffect(() => {
+  //   setFilteredAppointments(appointments);
+  //   // console.log(filteredAppointments)
+  //   // console.log(appointments)
+  // }, [appointments]);
+
+  // useEffect(() => {
+  //   if (searchTerm.trim() === '' && appointmentStatusFilter === 'all' && date === today) {
+  //     setFilteredAppointments(appointments);
+  //   } else {
+  //     const filtered = appointments
+  //       .filter(
+  //         (appointment) =>
+  //           // appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //           appointment.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //           appointment.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
+  //       )
+  //       .filter((appointment) => {
+  //         if (appointmentStatusFilter === 'all') {
+  //           return true;
+  //         }
+  //         return appointment.status.toLowerCase() === appointmentStatusFilter.toLowerCase();
+  //       })
+  //       .filter((appointment) => {
+  //         if (date === today) {
+  //           return true;
+  //         }
+  //         return appointment.date === format(date, 'yyyy-MM-dd');
+  //       });
+  //     setFilteredAppointments(filtered);
+  //   }
+  // }, [searchTerm, appointments, appointmentStatusFilter, date]);
 
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+    e.preventDefault();
+    setSearchParams({ page: '1', search: searchQuery });
+    setSearchQuery('');
   };
 
   const openModal = () => {
@@ -121,30 +128,6 @@ const Appointments = () => {
     }
   };
 
-  const handleEditAppointment = async (appointmentData) => {
-    try {
-      await updateAppointment(appointmentData);
-      toast.success('Appointment updated successfully', {
-        description: 'Your appointment has been updated.',
-      });
-      setEditingAppointment(null); // Clear the editing appointment
-      setIsEditing(false); // Reset the editing state
-      closeModal();
-    } catch (error) {
-      console.error('Error in updateAppointment:', error.response.data);
-      const errorMessage =
-        error.response?.data?.appointment_time?.[0] || // Specific error for appointment_time
-        error.response?.data?.appointment_date?.[0] ||
-        error.response?.data?.error || // General error message
-        error.response?.data?.message || // Fallback error message
-        'An error occurred while updating the appointment.'; // Default message
-
-      // Display the error message in the toast
-      toast.error('Failed to update appointment', {
-        description: errorMessage,
-      });
-    }
-  };
   const handleEditClick = (appointment) => {
     setIsEditing(true);
     setEditingAppointment(appointment); // Pass the appointment data to the modal
@@ -167,15 +150,18 @@ const Appointments = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="relative flex-1">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                <Search size={18} />
+                
               </div>
-              <Input
-                type="search"
-                placeholder="Search by patient name, doctor name, or appointment ID..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-10"
-              />
+              <form onSubmit={handleSearch} className="flex items-center gap-4">
+                <Input
+                  type="text"
+                  placeholder="Search appointments using status, patient or doctor's name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-100"
+                />
+                <Button type="submit">Search</Button>
+              </form>
             </div>
             <Popover modal={true} onValueChange={setDate}>
               <PopoverTrigger>
@@ -194,18 +180,7 @@ const Appointments = () => {
                 <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
               </PopoverContent>
             </Popover>
-            <Select onValueChange={setAppointmentStatusFilter}>
-              <SelectTrigger className="h-9 w-auto text-sm  border-gray-200">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="Scheduled">Scheduled</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="In-Queue">In-Queue</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+            
             <Button
               onClick={openModal}
               className="bg-primary hover:bg-primary/90 transition-colors"
@@ -244,8 +219,8 @@ const Appointments = () => {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {filteredAppointments.length > 0 ? (
-                  filteredAppointments.map((appointment) => (
+                {appointments.length > 0 ? (
+                  appointments.map((appointment) => (
                     <tr key={appointment.id} className="transition-colors hover:bg-slate-50">
                       <td className="p-4 pl-6 align-middle">
                         <div className="flex items-center gap-3">
@@ -264,14 +239,15 @@ const Appointments = () => {
                       <td className="p-4 align-middle">
                         <div className="flex justify-center space-x-1">
                           <Link to={`/appointment/${appointment.appointment_id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-slate-600 hover:text-primary hover:bg-primary/10"
-                            aria-label="View Patient"
-                          >
-                            <Eye size={18} />
-                          </Button></Link>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-slate-600 hover:text-primary hover:bg-primary/10"
+                              aria-label="View Patient"
+                            >
+                              <Eye size={18} />
+                            </Button>
+                          </Link>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -325,10 +301,9 @@ const Appointments = () => {
         appointmentId={editingAppointment?.appointment_id}
       />
       <div className="mt-6">
-        <CustomPagination
-          pagination={pagination}
-        />
+        <CustomPagination pagination={pagination} />
       </div>
+      <Outlet context={{ searchQuery: searchParams.get('search') || '' }} />
     </div>
   );
 };

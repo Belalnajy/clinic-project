@@ -1,8 +1,10 @@
 import axiosInstance from '../lib/axios';
 
-export const getAppointments = async (page = 1) => {
+export const getAppointments = async ({ search, page } = {}) => {
   const response = await axiosInstance.get('/appointments', {
-    params: { page },
+    params: { page,
+      search
+     },
   });
 
   console.log('api res: ', response.data);

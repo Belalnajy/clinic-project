@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +13,8 @@ import logging
 from uuid import UUID
 from django.core.exceptions import ValidationError
 from patients.models import Patient
+from django.db.models import Value, CharField, F, Q, Func
+from django.db.models.functions import Concat
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +33,22 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = AppointmentFilter
     pagination_class = AppointmentPagination
     ordering_fields = ["appointment_date"]
     ordering = ["-appointment_date"]
 
+    # Annotate related fields for searching
     def get_queryset(self):
         # Get all active appointments
         queryset = Appointment.objects.filter(is_active=True).order_by("-appointment_date")
+        queryset = queryset.annotate(
+            patient_first_name=F("patient__first_name"),
+            patient_last_name=F("patient__last_name"),
+            doctor_first_name=F("doctor__user__first_name"),
+            doctor_last_name=F("doctor__user__last_name"),
+        )
         logger.info(f"Total active appointments: {queryset.count()}")
 
         if not self.request.user.is_authenticated:
@@ -69,6 +78,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         # For other authenticated users, show all appointments
         logger.info("User is authenticated, showing all appointments")
         return queryset
+
+    search_fields = [
+        "patient_first_name",
+        "patient_last_name",
+        "doctor_first_name",
+        "doctor_last_name",
+        "status",
+    ]
 
     def get_object(self):
         # Get the appointment ID from the URL
