@@ -49,7 +49,6 @@ export function LoginForm({ className, ...props }) {
 
   const handleDemoAccountClick = (role) => {
     const account = demoAccounts.find((account) => account.role === role);
-    console.log(account);
     if (account) {
       form.setValue('email', account.email);
       form.setValue('password', account.password);

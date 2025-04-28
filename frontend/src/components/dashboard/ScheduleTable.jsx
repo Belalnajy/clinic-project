@@ -47,8 +47,6 @@ const ScheduleTable = ({
     isQueueing,
   } = useAppointments();
 
-  console.log(appointments);
-
   const handleAppointmentStateChange = (appointmentId, status) => {
     if (status === 'scheduled') {
       queueAppointment(appointmentId);

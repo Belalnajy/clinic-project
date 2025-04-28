@@ -12,12 +12,6 @@ export const calculateStats = (appointments, patients, doctors, timeRange, speci
 
   // Patient statistics
   const totalPatients = patients.length;
-  const timeRangeDays = {
-    '7days': 7,
-    '30days': 30,
-    '90days': 90,
-    year: 365,
-  }[timeRange];
 
   const newPatients = 4;
   const patientGrowthRate = totalPatients > 0 ? Math.round((newPatients / totalPatients) * 100) : 0;
@@ -32,8 +26,6 @@ export const calculateStats = (appointments, patients, doctors, timeRange, speci
     const specialization = specializations.find(
       (spec) => spec.id === doctor.specializationId
     )?.name;
-
-    // console.log(specialization);
 
     return {
       id: doctor.id,

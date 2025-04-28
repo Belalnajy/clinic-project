@@ -19,8 +19,6 @@ const Prescriptions = () => {
     return <LoadingState fullPage={true} message="Loading prescriptions..." />;
   }
 
-  console.log(prescriptionsData);
-
   if (prescriptionsData.length === 0) {
     return <CustomAlert message="No prescription history available." variant="alert" />;
   }

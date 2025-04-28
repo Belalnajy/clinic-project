@@ -21,7 +21,6 @@ const FinanceSection = () => {
     return <CustomAlert message="Error Loading Data..." />;
   }
   const monthlyRevenue = getCurrentMonthRevenueAndPercentage(financialMetrics.monthly_revenue);
-  console.log(financialMetrics);
   const { amount, count } = financialMetrics.pending_payments;
   return (
     <div className="space-y-8">

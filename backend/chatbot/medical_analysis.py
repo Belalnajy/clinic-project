@@ -10,18 +10,18 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
 class MedicalAnalysis:
     def __init__(self):
         self.client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
         self.medical_terms = self._load_medical_terms()
-        
+
     def _load_medical_terms(self) -> Dict:
         """Load medical terminology database"""
         try:
-            with open('backend/chatbot/data/medical_terms.json', 'r') as f:
+            with open("backend/chatbot/data/medical_terms.json", "r") as f:
                 return json.load(f)
         except Exception as e:
-            logger.error(f"Error loading medical terms: {str(e)}")
             return {}
 
     def analyze_medical_report(self, text: str) -> Dict:
@@ -37,26 +37,22 @@ class MedicalAnalysis:
             Report text:
             {text}
             """
-            
+
             response = self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a medical report analysis assistant."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a medical report analysis assistant.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
-                temperature=0.3
+                temperature=0.3,
             )
-            
-            return {
-                "success": True,
-                "analysis": response.choices[0].message.content
-            }
+
+            return {"success": True, "analysis": response.choices[0].message.content}
         except Exception as e:
-            logger.error(f"Error analyzing medical report: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def process_medical_image(self, image_path: str) -> Dict:
         """Process medical images (X-rays, scans, etc.)"""
@@ -66,7 +62,7 @@ class MedicalAnalysis:
                 return {
                     "success": False,
                     "error": "Image file not found",
-                    "error_type": "file_missing"
+                    "error_type": "file_missing",
                 }
 
             # Open and validate image
@@ -78,7 +74,7 @@ class MedicalAnalysis:
                     "success": False,
                     "error": "Invalid or corrupted image file",
                     "error_type": "invalid_image",
-                    "details": str(e)
+                    "details": str(e),
                 }
 
             # Extract text from image using OCR
@@ -89,7 +85,7 @@ class MedicalAnalysis:
                     "success": False,
                     "error": "Failed to extract text from image",
                     "error_type": "ocr_failed",
-                    "details": str(e)
+                    "details": str(e),
                 }
 
             # If no text was extracted, return early
@@ -97,41 +93,36 @@ class MedicalAnalysis:
                 return {
                     "success": False,
                     "error": "No readable text found in the image",
-                    "error_type": "no_text"
+                    "error_type": "no_text",
                 }
-            
+
             # Analyze the extracted text
             analysis = self.analyze_medical_report(text)
-            
+
             if not analysis["success"]:
                 return {
                     "success": False,
                     "error": "Failed to analyze extracted text",
                     "error_type": "analysis_failed",
-                    "details": analysis.get("error")
+                    "details": analysis.get("error"),
                 }
 
             # Get image metadata
-            metadata = {
-                "format": image.format,
-                "size": image.size,
-                "mode": image.mode
-            }
-            
+            metadata = {"format": image.format, "size": image.size, "mode": image.mode}
+
             return {
                 "success": True,
                 "text": text,
                 "analysis": analysis["analysis"],
                 "metadata": metadata,
-                "image_type": "medical" if any(term in text.lower() for term in self.medical_terms) else "unknown"
+                "image_type": (
+                    "medical"
+                    if any(term in text.lower() for term in self.medical_terms)
+                    else "unknown"
+                ),
             }
         except Exception as e:
-            logger.error(f"Error processing medical image: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e),
-                "error_type": "general_error"
-            }
+            return {"success": False, "error": str(e), "error_type": "general_error"}
 
     def generate_medical_visualization(self, data: Dict) -> Dict:
         """Generate medical data visualizations"""
@@ -145,26 +136,22 @@ class MedicalAnalysis:
             - Include relevant medical terminology
             - Show key metrics and trends
             """
-            
+
             response = self.client.images.generate(
                 model="dall-e-3",
                 prompt=prompt,
                 size="1024x1024",
                 quality="standard",
-                n=1
+                n=1,
             )
-            
+
             return {
                 "success": True,
                 "url": response.data[0].url,
-                "revised_prompt": response.data[0].revised_prompt
+                "revised_prompt": response.data[0].revised_prompt,
             }
         except Exception as e:
-            logger.error(f"Error generating medical visualization: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def summarize_medical_data(self, data: List[Dict]) -> Dict:
         """Summarize medical data and trends"""
@@ -179,23 +166,19 @@ class MedicalAnalysis:
             Data:
             {json.dumps(data, indent=2)}
             """
-            
+
             response = self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a medical data analysis assistant."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a medical data analysis assistant.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
-                temperature=0.3
+                temperature=0.3,
             )
-            
-            return {
-                "success": True,
-                "summary": response.choices[0].message.content
-            }
+
+            return {"success": True, "summary": response.choices[0].message.content}
         except Exception as e:
-            logger.error(f"Error summarizing medical data: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            } 
+            return {"success": False, "error": str(e)}

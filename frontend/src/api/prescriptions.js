@@ -26,8 +26,6 @@ export const addMedicationsToPrescription = async (prescriptionId, medications) 
     })),
   };
 
-  console.log('API Request Data:', JSON.stringify(requestData, null, 2));
-
   const response = await axiosInstance.post('/prescription-medications/', requestData);
   return response.data;
 };

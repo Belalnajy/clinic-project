@@ -29,7 +29,6 @@ export default function SecretaryDashboard() {
     statsError,
     todayAppointmentsPagination,
   } = useAppointments();
-  console.log(dashboardStats);
 
   // Get patients data using custom hook
   const {

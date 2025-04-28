@@ -60,23 +60,16 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             doctor_first_name=F("doctor__user__first_name"),
             doctor_last_name=F("doctor__user__last_name"),
         )
-        logger.info(f"Total active appointments: {queryset.count()}")
 
         if not self.request.user.is_authenticated:
-            logger.info("User not authenticated")
             return queryset.none()
-
-        logger.info(f"User role: {getattr(self.request.user, 'role', 'No role')}")
 
         if self.request.user.role == "doctor":
             if not hasattr(self.request.user, "doctor_profile"):
-                logger.warning("User has doctor role but no doctor_profile")
                 return queryset.none()
             doctor = self.request.user.doctor_profile
             queryset = queryset.filter(doctor=doctor).order_by("-appointment_date")
-            logger.info(
-                f"Filtered appointments for doctor {doctor}: {queryset.count()}"
-            )
+
             return queryset
 
         # For manager, secretary, or other roles: apply filters as requested
@@ -93,34 +86,27 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def get_object(self):
         # Get the appointment ID from the URL
         appointment_id = self.kwargs.get("pk")
-        logger.info(f"Looking for appointment with ID: {appointment_id}")
 
         try:
             # Validate if the ID is a valid UUID
             UUID(appointment_id)
         except (ValueError, TypeError):
-            logger.warning(f"Invalid UUID format: {appointment_id}")
             return None
 
         try:
             # First try to get the appointment without any filters
             appointment = Appointment.objects.get(appointment_id=appointment_id)
-            logger.info(f"Found appointment: {appointment}")
 
             # Then check if the user has permission to view it
             if self.request.user.role == "doctor":
                 if not hasattr(self.request.user, "doctor_profile"):
-                    logger.warning("User has doctor role but no doctor_profile")
                     return None
                 if appointment.doctor != self.request.user.doctor_profile:
-                    logger.warning(
-                        f"Doctor {self.request.user.doctor_profile} is not authorized to view appointment {appointment_id}"
-                    )
+
                     return None
 
             return appointment
         except Appointment.DoesNotExist:
-            logger.warning(f"Appointment with ID {appointment_id} not found")
             return None
 
     def retrieve(self, request, *args, **kwargs):

@@ -59,7 +59,7 @@ const Dashboard = () => {
         setAppointments(data.results || data); // handle paginated or direct array
       } catch (err) {
         setAppointments([]);
-        setAppointmentsError('Failed to load today\'s appointments');
+        setAppointmentsError("Failed to load today's appointments");
       } finally {
         setLoadingAppointments(false);
       }
@@ -78,12 +78,6 @@ const Dashboard = () => {
         setRecords(data.results);
         setTotalRecords(data.count || 0);
         setTotalRecordPages(Math.ceil((data.count || 0) / 10));
-        console.log('API Pagination - Medical Records:', { 
-          page, 
-          count: data.count, 
-          results: data.results.length,
-          totalPages: Math.ceil((data.count || 0) / 10)
-        });
       } else if (data && Array.isArray(data)) {
         // Fallback if API returns array directly
         setRecords(data);
@@ -123,10 +117,8 @@ const Dashboard = () => {
   // Calculate completion percentage for today's appointments from backend
   const totalAppointments = appointments.length;
   const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
-  const completionRate = totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0;
-
-
-
+  const completionRate =
+    totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0;
 
   // Fetch patients from backend
   const [loadingPatients, setLoadingPatients] = useState(true);
@@ -145,12 +137,6 @@ const Dashboard = () => {
         setPatients(data.results);
         setTotalPatients(data.count || 0);
         setTotalPatientPages(Math.ceil((data.count || 0) / 10));
-        console.log('API Pagination:', { 
-          page, 
-          count: data.count, 
-          results: data.results.length,
-          totalPages: Math.ceil((data.count || 0) / 10)
-        });
       } else if (data && Array.isArray(data)) {
         // Fallback if API returns array directly
         setPatients(data);
@@ -207,7 +193,6 @@ const Dashboard = () => {
         <StatsSection stats={stats || {}} />
       )}
 
-
       <Tabs defaultValue="schedule" className="mb-8">
         <TabsHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         {/* Schedule */}
@@ -232,7 +217,6 @@ const Dashboard = () => {
             patients={patients}
             loading={loadingPatients}
             error={patientsError}
-
             onPageChange={(page) => {
               setCurrentPatientPage(page);
             }}
@@ -255,7 +239,6 @@ const Dashboard = () => {
           />
         </TabsContent>
       </Tabs>
-
     </div>
   );
 };

@@ -71,7 +71,6 @@ export default function Component(props) {
       </CardContent>
       <CardFooter className="flex items-center justify-between">
         <div className="leading-none text-muted-foreground">Total: {total}</div>
-        {console.log(completed)}
         <div className="leading-none text-muted-foreground">Completed: {completed}</div>
       </CardFooter>
     </Card>

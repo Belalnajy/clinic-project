@@ -12,7 +12,6 @@ const AppointmentDetails = () => {
   const { appointmentId } = useParams(); // Extract the appointmentId from the URL
   const { useAppointment } = useAppointments(); // Access the custom hook
   const { data: appointment, isLoading, error } = useAppointment(appointmentId); // Fetch the appointment data
-  console.log(appointment);
   if (isLoading) {
     return <div>Loading appointment details...</div>;
   }

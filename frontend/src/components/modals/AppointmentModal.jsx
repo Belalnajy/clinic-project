@@ -104,7 +104,6 @@ const AppointmentModal = ({ isOpen, onClose, appointmentId, isEditing }) => {
   }, [isOpen, appointmentData, reset, isEditing]);
 
   const onSubmit = async (appointmentData) => {
-    console.log('Form submitted:', { id: appointmentId, data: appointmentData });
     try {
       setIsSubmitting(true);
       if (isEditing) {

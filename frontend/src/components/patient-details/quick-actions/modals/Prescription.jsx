@@ -132,8 +132,6 @@ const Prescription = ({ isOpen, setIsPrescriptionOpen }) => {
         medications: formattedMedications,
       };
 
-      console.log('Component Request Data:', JSON.stringify(requestData, null, 2));
-
       await addMedications(requestData);
 
       setIsPrescriptionOpen(false);

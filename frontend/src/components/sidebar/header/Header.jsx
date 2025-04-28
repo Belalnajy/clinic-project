@@ -5,12 +5,6 @@ import React from 'react';
 import { StatusSelector } from '@/components/ui/StatusSelector';
 
 const Header = ({ toggleSidebar, title, user }) => {
-  //! For Testing
-  const handleLogout = () => {
-    // Implement logout functionality here
-    console.log('Logout clicked');
-  };
-
   const getInitials = (name) => {
     if (!name) return 'U';
     return name

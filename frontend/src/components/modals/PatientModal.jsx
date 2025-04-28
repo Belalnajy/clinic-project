@@ -125,31 +125,30 @@ const PatientModal = ({ isOpen, onClose, patientData }) => {
   }, [isOpen, patientData, reset, user]);
 
   const onSubmit = async (data) => {
-      const payload = {
-        first_name: data.firstName,
-        last_name: data.lastName,
-        birth_date: data.dateOfBirth,
-        gender: data.gender,
-        email: data.email,
-        phone_number: data.phone,
-        address: data.address,
-        city: data.city,
-        blood_type: data.bloodType,
-        height: data.height,
-        weight: data.weight,
-        payment_type: data.paymentType,
-        credit_card_number: data.creditCardNumber,
-        insurance_provider: data.insuranceInfo.provider,
-        insurance_number: data.insuranceInfo.policyNumber,
-        insurance_expiration_date: data.insuranceInfo.expiryDate,
-        created_by: user?.id,
-      };
+    const payload = {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      birth_date: data.dateOfBirth,
+      gender: data.gender,
+      email: data.email,
+      phone_number: data.phone,
+      address: data.address,
+      city: data.city,
+      blood_type: data.bloodType,
+      height: data.height,
+      weight: data.weight,
+      payment_type: data.paymentType,
+      credit_card_number: data.creditCardNumber,
+      insurance_provider: data.insuranceInfo.provider,
+      insurance_number: data.insuranceInfo.policyNumber,
+      insurance_expiration_date: data.insuranceInfo.expiryDate,
+      created_by: user?.id,
+    };
 
-      console.log('Transformed payload:',payload);
-      await savePatient({ data:payload, id: patientData?.id });
-      toast.success(patientData ? 'Patient updated successfully' : 'Patient created successfully');
-      reset();
-      onClose();
+    await savePatient({ data: payload, id: patientData?.id });
+    toast.success(patientData ? 'Patient updated successfully' : 'Patient created successfully');
+    reset();
+    onClose();
   };
 
   const handleCancel = () => {

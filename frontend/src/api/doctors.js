@@ -8,7 +8,6 @@ import axiosInstance from '@/lib/axios';
  * @returns {Promise<Object>} - Paginated response with results and count
  */
 export const getDoctors = async (query = '', page = 1, pageSize = 10) => {
-  // console.log(query, page, pageSize);
   const response = await axiosInstance.get('/doctors/doctorsList/', {
     params: {
       search: query,
@@ -47,4 +46,4 @@ export const getSpecializations = async () => {
 export const getAllDoctors = async () => {
   const response = await axiosInstance.get('/doctors/doctorsList/all-doctors');
   return response.data;
-}
+};

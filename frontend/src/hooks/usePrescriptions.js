@@ -38,7 +38,6 @@ export const usePrescriptions = () => {
   // Mutation for adding medications
   const addMedicationsMutation = useMutation({
     mutationFn: ({ prescription_id, medications }) => {
-      console.log('Mutation Data:', JSON.stringify({ prescription_id, medications }, null, 2));
       return addMedicationsToPrescription(prescription_id, medications);
     },
     onSuccess: () => {
