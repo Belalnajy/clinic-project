@@ -1,5 +1,6 @@
-import { Tabs } from '@/components/ui/tabs';
+import { useSearchParams } from 'react-router-dom';
 import { useReports } from '@/hooks/useReports';
+import { Tabs } from '@/components/ui/tabs';
 import TabList from '@/components/Reports/tabs-list/TabList';
 import OverviewTab from '@/components/Reports/tabs/OverviewTab';
 import AppointmentsTab from '@/components/Reports/tabs/AppointmentsTab';
@@ -7,21 +8,22 @@ import PatientTab from '@/components/Reports/tabs/PatientTab';
 import DoctorsTab from '@/components/Reports/tabs/DoctorsTab';
 
 const Reports = () => {
+  const [searchParams] = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+
   const {
-    user,
-    stats,
-    dailyCompletionData,
-    appointmentCompletionData,
-    appointmentStatusData,
-    filters,
-    handleFilterChange,
-    filteredAppointments,
-    uniqueSpecializations,
-    uniqueProviders,
-    handleExportData,
-    patients,
-    timeRange,
-    setTimeRange,
+    appointmentMetrics,
+    isLoadingAppointmentMetrics,
+    patientAnalysis,
+    isLoadingPatientAnalysis,
+    doctorPerformanceData,
+    isLoadingDoctorPerformance,
+    appointmentsData,
+    isLoadingAppointments,
+    doctors,
+    isLoadingDoctors,
+    specializations,
+    isLoadingSpecializations,
   } = useReports();
 
   return (
@@ -33,34 +35,26 @@ const Reports = () => {
 
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <Tabs defaultValue="overview" className="w-full">
-          {/* ! Tab List component Here */}
-          <TabList user={user} timeRange={timeRange} setTimeRange={setTimeRange} />
-          {/* Overview */}
+          <TabList />
+          {/* Overview Tab */}
           <OverviewTab
-            stats={stats}
-            appointmentCompletionData={appointmentCompletionData}
-            appointmentStatusData={appointmentStatusData}
+            appointmentMetrics={appointmentMetrics}
+            patientAnalysis={patientAnalysis}
+            isLoading={isLoadingAppointmentMetrics || isLoadingPatientAnalysis}
           />
-          {/* Appointments */}
+          {/* Appointments Tab */}
           <AppointmentsTab
-            stats={stats}
-            dailyCompletionData={dailyCompletionData}
-            appointmentCompletionData={appointmentCompletionData}
-            appointmentStatusData={appointmentStatusData}
-            filters={filters}
-            handleFilterChange={handleFilterChange}
-            filteredAppointments={filteredAppointments}
-            uniqueSpecializations={uniqueSpecializations}
-            uniqueProviders={uniqueProviders}
-            handleExportData={handleExportData}
-            timeRange={timeRange}
-            setTimeRange={setTimeRange}
-            patients={patients}
+            appointmentMetrics={appointmentMetrics}
+            appointmentsData={appointmentsData}
+            isLoadingAppointments={isLoadingAppointments}
+            doctors={doctors}
+            specializations={specializations}
+            isLoading={isLoadingDoctors || isLoadingSpecializations}
           />
-          {/* Patients */}
-          <PatientTab patients={patients} />
-          {/* Doctors */}
-          {user.role === 'manager' && <DoctorsTab stats={stats} />}{' '}
+          {/* Patient Tab */}
+          <PatientTab />
+          {/* Doctors Tab */}
+          <DoctorsTab />
         </Tabs>
       </div>
     </>

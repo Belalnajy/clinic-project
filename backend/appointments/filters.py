@@ -13,6 +13,7 @@ class AppointmentFilter(filters.FilterSet):
     status = filters.CharFilter()
     doctor = filters.NumberFilter()
     patient = filters.NumberFilter()
+    specialization = filters.NumberFilter(field_name='doctor__specialization')
     ordering = filters.OrderingFilter(
         fields=(
             ("appointment_date", "appointment_date"),
@@ -22,4 +23,4 @@ class AppointmentFilter(filters.FilterSet):
 
     class Meta:
         model = Appointment
-        fields = ["appointment_date", "status", "doctor", "patient"]
+        fields = ["appointment_date", "status", "doctor", "patient", "specialization"]

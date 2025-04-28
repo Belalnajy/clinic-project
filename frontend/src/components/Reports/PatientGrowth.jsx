@@ -7,8 +7,8 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 
-const PatientGrowth = ({ stats }) => {
-  const { new: newPatients, growthRate, total: totalPatients } = stats;
+const PatientGrowth = ({ stats = {} }) => {
+  const { new: newPatients = 0, growthRate = 0, total: totalPatients = 0 } = stats;
 
   return (
     <Card>

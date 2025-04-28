@@ -1,7 +1,10 @@
 import { NavLink } from 'react-router-dom';
-const tabs = ['profile', 'account'];
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 function SettingsTabs() {
+  const { user } = useAuth();
+  const tabs = ['profile', 'account', ...(user?.role === 'doctor' ? ['professional'] : [])];
+
   return (
     <div className="flex gap-4 p-2 bg-muted rounded-md w-fit">
       {tabs.map((tab) => (
@@ -20,4 +23,5 @@ function SettingsTabs() {
     </div>
   );
 }
+
 export default SettingsTabs;

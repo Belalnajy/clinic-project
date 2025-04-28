@@ -1,122 +1,102 @@
-import { calculateStats } from '@/utils/calculateReportStats';
-import { calculateDailyCompletion } from '@/utils/calculateDailtyCompletion';
-import { getAppointmentCompletionData } from '@/utils/getAppointmentCompletion';
-import { getAppointmentStatusData } from '@/utils/appointmentStatusData';
-import Papa from 'papaparse';
-import { getAllAppointments, getAllPatients, getAllDoctors, getAllSpecializations } from '../data/data';
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
+import {
+  getAppointmentMetrics,
+  getPatientAnalysis,
+  getDoctorPerformance,
+  getAppointments,
+  getDoctors,
+  getSpecializations,
+} from '@/api/reports';
 
-export function useReports() {
-  const user = { role: 'manager' };
-  const [timeRange, setTimeRange] = useState('7days');
-  const [appointments, setAppointments] = useState([]);
-  const [patients, setPatients] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [specializations, setSpecializations] = useState([]);
+export const useReports = () => {
+  const [searchParams] = useSearchParams();
+  // Filters from URL
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const doctorPage = Number(searchParams.get('doctorPage')) || 1;
+  const doctor = searchParams.get('doctor') || '';
+  const specialization = searchParams.get('specialization') || '';
+  const status = searchParams.get('status') || '';
 
-  const [filters, setFilters] = useState({
-    location: '',
-    provider: '',
-    appointmentType: '',
-    status: '',
+  // Date filter
+  const startDateStr = searchParams.get('startDate');
+  const endDateStr = searchParams.get('endDate');
+  let date = null;
+  if (startDateStr && endDateStr) {
+    date = {
+      startDate: new Date(startDateStr),
+      endDate: new Date(endDateStr),
+    };
+  } else if (searchParams.get('date')) {
+    date = new Date(searchParams.get('date'));
+  }
+
+  // Queries
+  const appointmentMetricsQuery = useQuery({
+    queryKey: ['appointmentMetrics'],
+    queryFn: getAppointmentMetrics,
+    staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => {
-    // Load data from local storage
-    const loadedAppointments = getAllAppointments();
-    const loadedPatients = getAllPatients();
-    const loadedDoctors = getAllDoctors();
-    const loadedSpecializations = getAllSpecializations();
-
-
-
-
-    // Enrich appointments with patientName, providerName, and specialization
-    const enrichedAppointments = loadedAppointments.map((appointment) => {
-      const doctor = loadedDoctors.find((doc) => doc.id === appointment.doctorId);
-      const patient = loadedPatients.find((pat) => pat.id === appointment.patientId);
-      return {
-        ...appointment,
-        providerName: doctor ? doctor.name : 'Unknown Provider',
-        patientName: patient ? patient.fullName : 'Unknown Patient',
-      };
-    });
-
-    setAppointments(enrichedAppointments);
-    setPatients(loadedPatients);
-    setDoctors(loadedDoctors);
-    setSpecializations(loadedSpecializations);
-
-  }, []);
-
-  const stats = calculateStats(appointments, patients, doctors, timeRange, specializations);
-
-  const dailyCompletionData = calculateDailyCompletion(appointments, 7);
-
-  const appointmentCompletionData = getAppointmentCompletionData(stats);
-
-  const appointmentStatusData = getAppointmentStatusData(stats);
-
-  const handleFilterChange = (filterKey, value) => {
-    setFilters((prevFilters) => ({ ...prevFilters, [filterKey]: value }));
-  };
-
-  const filteredAppointments = appointments.filter((appointment) => {
-    return (
-      (!filters.location || appointment.specializationName === filters.location) &&
-      (!filters.provider || appointment.doctorId === filters.provider) &&
-      (!filters.appointmentType || appointment.type === filters.appointmentType) &&
-      (!filters.status || appointment.status === filters.status)
-    );
+  const patientAnalysisQuery = useQuery({
+    queryKey: ['patientAnalysis'],
+    queryFn: getPatientAnalysis,
+    staleTime: 5 * 60 * 1000,
   });
 
-  const uniqueSpecializations = [
-    ...new Set(appointments.map((appointment) => appointment.specializationName)),
-  ];
+  const doctorsQuery = useQuery({
+    queryKey: ['doctors'],
+    queryFn: getDoctors,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const uniqueProviders = [
-    ...new Map(
-      appointments.map((appointment) => [
-        appointment.doctorId,
-        { id: appointment.doctorId, name: appointment.providerName },
-      ])
-    ).values(),
-  ];
+  const specializationsQuery = useQuery({
+    queryKey: ['specializations'],
+    queryFn: getSpecializations,
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const handleExportData = () => {
-    const csvData = filteredAppointments.map((appointment) => ({
-      AppointmentID: appointment.id,
-      PatientName: appointment.patientName,
-      ProviderName: appointment.providerName,
-      Date: appointment.date,
-      Status: appointment.status,
-      Type: appointment.type,
-    }));
+  const doctorPerformanceQuery = useQuery({
+    queryKey: ['doctorPerformance', doctorPage],
+    queryFn: () => getDoctorPerformance(doctorPage),
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const csv = Papa.unparse(csvData);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'appointments_report.csv');
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  const appointmentsQuery = useQuery({
+    queryKey: ['appointments', currentPage, doctor, specialization, status, date],
+    queryFn: () => getAppointments({
+      page: currentPage,
+      doctor,
+      specialization,
+      status,
+      date,
+    }),
+    keepPreviousData: true,
+  });
 
   return {
-    user,
-    stats,
-    dailyCompletionData,
-    appointmentCompletionData,
-    appointmentStatusData,
-    filters,
-    handleFilterChange,
-    filteredAppointments,
-    uniqueSpecializations,
-    uniqueProviders,
-    handleExportData,
-    timeRange,
-    setTimeRange,
-    patients,
+    // Appointment metrics
+    appointmentMetrics: appointmentMetricsQuery.data,
+    isLoadingAppointmentMetrics: appointmentMetricsQuery.isLoading,
+    appointmentMetricsError: appointmentMetricsQuery.error,
+    // Patient analysis
+    patientAnalysis: patientAnalysisQuery.data,
+    isLoadingPatientAnalysis: patientAnalysisQuery.isLoading,
+    patientAnalysisError: patientAnalysisQuery.error,
+    // Doctor performance
+    doctorPerformanceData: doctorPerformanceQuery.data,
+    isLoadingDoctorPerformance: doctorPerformanceQuery.isLoading,
+    doctorPerformanceError: doctorPerformanceQuery.error,
+    // Appointments
+    appointmentsData: appointmentsQuery.data,
+    isLoadingAppointments: appointmentsQuery.isLoading,
+    appointmentsError: appointmentsQuery.error,
+    // Doctors and specializations
+    doctors: doctorsQuery.data,
+    isLoadingDoctors: doctorsQuery.isLoading,
+    doctorsError: doctorsQuery.error,
+    specializations: specializationsQuery.data,
+    isLoadingSpecializations: specializationsQuery.isLoading,
+    specializationsError: specializationsQuery.error,
   };
-}
+};

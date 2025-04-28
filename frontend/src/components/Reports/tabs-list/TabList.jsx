@@ -1,16 +1,8 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { selectItems, tablistItems } from './tabListData';
+import { tablistItems } from './tabListData';
 
-const TabList = ({ user, timeRange, setTimeRange }) => {
+const TabList = ({ user }) => {
   const renderTabs = tablistItems.map((item) => {
-    if (item.permissions && !item.permissions.includes(user.role)) return;
     return (
       <TabsTrigger
         key={item.id}
@@ -22,22 +14,9 @@ const TabList = ({ user, timeRange, setTimeRange }) => {
     );
   });
 
-  const renderSelectItems = selectItems.map((item) => (
-    <SelectItem key={item.id} value={item.value}>
-      {item.title}
-    </SelectItem>
-  ));
-
   return (
     <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
       <TabsList className="flex flex-wrap gap-2">{renderTabs}</TabsList>
-
-      <Select defaultValue={timeRange} onValueChange={setTimeRange}>
-        <SelectTrigger className="w-full md:w-[180px]">
-          <SelectValue placeholder="Select time period" />
-        </SelectTrigger>
-        <SelectContent>{renderSelectItems}</SelectContent>
-      </Select>
     </div>
   );
 };

@@ -8,29 +8,20 @@ import {
   CardDescription,
   CardFooter,
 } from '@/components/ui/card';
-
-import { Button } from '@/components/ui/button';
-import AppointmentCompletion from '@/components/Reports/AppointmentCompletion';
-import AppointmentStatus from '@/components/Reports/AppointmentStatus';
-
-import DailyCompletionChart from '@/components/Reports/DailyCompletionChart';
+import AppointmentAnalyticsHeader from '../AppointmentAnalyticsHeader';
 import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
-import { FileArchive } from 'lucide-react';
+import ExportAppointmentsButton from '../ExportAppointmentsButton';
+import LoadingState from '@/components/LoadingState';
+import useAppointmentFilters from '../../../hooks/useAppointmentFilters';
+import { useReports } from '@/hooks/useReports';
 
-const AppointmentsTab = (props) => {
-  const {
-    stats,
-    dailyCompletionData,
-    appointmentCompletionData,
-    appointmentStatusData,
-    filters,
-    handleFilterChange,
-    filteredAppointments,
-    uniqueSpecializations,
-    uniqueProviders,
-    handleExportData,
-  } = props;
+const AppointmentsTab = () => {
+  const { filters, handleFilterChange } = useAppointmentFilters();
+
+  const { appointmentMetrics, appointmentsData, isLoadingAppointments, doctors, specializations } =
+    useReports();
+
   return (
     <TabsContent value="appointments" className="mt-6">
       <Card>
@@ -39,39 +30,25 @@ const AppointmentsTab = (props) => {
           <CardDescription>Detailed analysis of appointment data</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <AppointmentStatus appointmentStatusData={appointmentStatusData} />
-
-            <DailyCompletionChart dailyCompletionData={dailyCompletionData} />
-
-            <AppointmentCompletion
-              completionRate={stats.appointmentStats.completionRate}
-              total={stats.appointmentStats.total}
-              completed={stats.appointmentStats.completed}
-              appointmentCompletionData={appointmentCompletionData}
-            />
-          </div>
-
+          <AppointmentAnalyticsHeader appointmentMetrics={appointmentMetrics} />
           <TableFilters
             filters={filters}
             handleFilterChange={handleFilterChange}
-            uniqueSpecializations={uniqueSpecializations}
-            uniqueProviders={uniqueProviders}
+            doctors={doctors}
+            specializations={specializations}
           />
-
           <div className="overflow-x-auto">
-            <AppointmentTable appointments={filteredAppointments} />
+            {isLoadingAppointments ? (
+              <div className="flex justify-center items-center h-[500px]">
+                <LoadingState message="Loading appointments..." className="scale-250" />
+              </div>
+            ) : (
+              <AppointmentTable appointments={appointmentsData} />
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4 md:flex-row md:justify-end">
-          <Button
-            size="lg"
-            className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200  hover:cursor-pointer"
-            onClick={handleExportData}
-          >
-            <FileArchive size={16} className="mr-2 text-slate-800" />
-            Export
-          </Button>
+          <ExportAppointmentsButton appointmentsData={appointmentsData} />
         </CardFooter>
       </Card>
     </TabsContent>

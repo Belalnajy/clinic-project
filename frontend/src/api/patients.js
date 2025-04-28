@@ -1,60 +1,46 @@
 import axiosInstance from '@/lib/axios';
 
 /**
- * Get all patients with pagination and optional search
- * @param {number} page - Page number
- * @param {string} search - Search term
- * @returns {Promise<Object>} - Paginated patients data
+ * Get list of patients with optional search and filters
+ * @param {Object} params - Query parameters
+ * @param {string} [params.search] - Search query for patient name
+ * @param {boolean} [params.is_active] - Filter by active status
+ * @param {number} [params.page=1] - Page number
+ * @returns {Promise<Object>} - Paginated response with patients data
  */
-export const getPatients = async (page = 1, search = '') => {
-  const response = await axiosInstance.get('/patients/patients/', {
-    params: { page, search },
+export const getPatients = async ({ search, is_active, page } = {}) => {
+  const response = await axiosInstance.get('/patients/', {
+    params: {
+      search,
+      is_active,
+      page,
+    },
   });
   return response.data;
 };
 
-/**
- * Get a single patient by ID
- * @param {string} id - Patient ID
- * @returns {Promise<Object>} - Patient data
- */
-export const getPatient = async (id) => {
-  const response = await axiosInstance.get(`/patients/patients/${id}/`);
+export const getPatient = async (patientId) => {
+  const response = await axiosInstance.get(`/patients/${patientId}/`);
   return response.data;
 };
 
-/**
- * Create or update a patient
- * @param {Object} data - Patient data
- * @param {string} [id] - Patient ID (optional for updates)
- * @returns {Promise<Object>} - Created or updated patient data
- */
-export const savePatient = async (data, id = null) => {
-  if (id) {
-    const response = await axiosInstance.put(`/patients/patients/${id}/`, data);
-    return response.data;
-  } else {
-    const response = await axiosInstance.post('/patients/patients/', data);
-    return response.data;
-  }
-};
-
-
-/**
- * Delete a patient by ID
- * @param {string} id - Patient ID
- * @returns {Promise<void>} - Deletes the patient
- */
-export const deletePatient = async (id) => {
-  const response = await axiosInstance.delete(`/patients/patients/${id}/`);
+export const createPatient = async (data) => {
+  const response = await axiosInstance.post('/patients/', data);
   return response.data;
 };
 
-/**
- * Get all deactivated patients
- * @returns {Promise<Array>} - List of deactivated patients
- */
-export const getDeactivatedPatients = async () => {
-  const response = await axiosInstance.get('/patients/patients/deactivated/');
+export const updatePatient = async (patientId, data) => {
+  const response = await axiosInstance.patch(`/patients/${patientId}/`, data);
+  return response.data;
+};
+
+export const deletePatient = async (patientId) => {
+  await axiosInstance.delete(`/patients/${patientId}/`);
+};
+
+export const reActivatePatient = async (patientId) => {
+  const response = await axiosInstance.post(`/patients/${patientId}/reactivate/`, {
+    is_active: true,
+  });
   return response.data;
 };
