@@ -6,6 +6,7 @@ import { Tabs } from '@/components/ui/tabs';
 import CustomTabsList from '@/components/CustomTabsList';
 import { tabsData } from './appointment-details/tabsData';
 import Overview from '@/components/appointment-details/tabs/Overview';
+import { Button } from '@/components/ui/button';
 
 const AppointmentDetails = () => {
   const { appointmentId } = useParams(); // Extract the appointmentId from the URL
@@ -34,9 +35,20 @@ const AppointmentDetails = () => {
         <p className="text-slate-500">Viewing appointment for {appointment.patient_name}</p>
 
         <div className=" my-6 p-6 bg-white rounded-lg border">
-          <h2 className="text-2xl mb-2 font-bold">{appointment.patient_name}</h2>
-          <p className="text-slate-500 text-sm">Patient ID: {appointment.patient.patient_id}</p>
-          <p className="text-slate-500 text-sm">city: {appointment.patient.city}</p>
+         <div className="flex items-center justify-between mb-4">
+         <h2 className="text-2xl mb-2 font-bold">{appointment.patient_name}</h2>
+         <Link to={`/patient/${appointment.patient.id}`} className="text-sm text-blue-600 hover:text-blue-800 flex items-center mb-2">
+         <Button
+              className="bg-primary hover:bg-primary/90 transition-colors"
+            >
+              View Patient Details
+            </Button>
+        </Link>
+          
+         </div>
+          <p className="text-slate-500 text-sm">Patient ID: {appointment.patient.id}</p>
+          <p className="text-slate-500 text-sm">Patient UUID: {appointment.patient.patient_id}</p>
+          <p className="text-slate-500 text-sm">City: {appointment.patient.city}</p>
         </div>
       </div>
       <h1 className="text-2xl font-bold mb-4">Appointment Details</h1>

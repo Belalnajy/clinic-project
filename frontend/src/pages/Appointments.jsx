@@ -22,11 +22,11 @@ import { Plus, Search, Eye, Edit, Trash, User } from 'lucide-react';
 import AppointmentModal from '@/components/modals/AppointmentModal';
 import { useNavigate } from 'react-router-dom';
 import useAppointments from '@/hooks/useAppointments';
-import { usePatients } from '@/hooks/usePatients';
 import { useDoctors } from '@/hooks/useDoctors';
 import LoadingState from '@/components/LoadingState';
 import CustomPagination from '@/components/CustomPagination';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 const Appointments = () => {
   const navigate = useNavigate();
@@ -39,10 +39,7 @@ const Appointments = () => {
     createAppointment,
     updateAppointment,
   } = useAppointments();
-  const { usePatientsList } = usePatients();
-  const { data: patientsData, isLoading: isLoadingPatients } = usePatientsList();
-  const { doctors } = useDoctors();
-  const patients = patientsData?.results || [];
+  
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -266,6 +263,7 @@ const Appointments = () => {
                       <td className="p-4 align-middle font-medium">{appointment.notes}</td>
                       <td className="p-4 align-middle">
                         <div className="flex justify-center space-x-1">
+                          <Link to={`/appointment/${appointment.appointment_id}`}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -273,7 +271,7 @@ const Appointments = () => {
                             aria-label="View Patient"
                           >
                             <Eye size={18} />
-                          </Button>
+                          </Button></Link>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -328,13 +326,7 @@ const Appointments = () => {
       />
       <div className="mt-6">
         <CustomPagination
-          totalItems={pagination.count}
-          currentPage={pagination.currentPage}
-          onPageChange={(page) => {
-            navigate(`/appointments?page=${page}`);
-          }}
-          hasNextPage={!!pagination.next}
-          hasPreviousPage={!!pagination.previous}
+          pagination={pagination}
         />
       </div>
     </div>
