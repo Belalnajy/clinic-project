@@ -1,6 +1,4 @@
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/Auth/useAuth';
 
@@ -17,7 +15,7 @@ const roleBasedTabs = {
   ],
 };
 
-const TabsHeader = ({ searchTerm, setSearchTerm }) => {
+const TabsHeader = () => {
   const { user } = useAuth();
   const tabs = roleBasedTabs[user.role || 'doctor'];
 
@@ -40,15 +38,7 @@ const TabsHeader = ({ searchTerm, setSearchTerm }) => {
           ))}
         </TabsList>
       </div>
-      <div className="relative w-full sm:w-auto">
-        <Input
-          placeholder="Search..."
-          className="w-full sm:w-64 pl-8 sm:pl-9 pr-3 border-slate-200 rounded-full bg-slate-50 focus:bg-white transition-all focus:ring-2 focus:ring-blue-50 text-sm sm:text-base"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-      </div>
+
     </div>
   );
 };
