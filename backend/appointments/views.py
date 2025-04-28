@@ -19,17 +19,20 @@ from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
+
 class AppointmentPagination(PageNumberPagination):
-    page_size = 10 
-    page_size_query_param = "page_size" 
-    max_page_size = 50  
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
     def get_paginated_response(self, data):
-        return Response({
-            'count': self.page.paginator.count,
-            'total_pages': self.page.paginator.num_pages,
-            'results': data
-        })
+        return Response(
+            {
+                "count": self.page.paginator.count,
+                "total_pages": self.page.paginator.num_pages,
+                "results": data,
+            }
+        )
 
 
 # Create your views here.
@@ -48,7 +51,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     # Annotate related fields for searching
     def get_queryset(self):
         # Use super() to allow DjangoFilterBackend to apply filters from request
-        queryset = super().get_queryset().filter(is_active=True).order_by("-appointment_date")
+        queryset = (
+            super().get_queryset().filter(is_active=True).order_by("-appointment_date")
+        )
         queryset = queryset.annotate(
             patient_first_name=F("patient__first_name"),
             patient_last_name=F("patient__last_name"),
@@ -69,7 +74,9 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 return queryset.none()
             doctor = self.request.user.doctor_profile
             queryset = queryset.filter(doctor=doctor).order_by("-appointment_date")
-            logger.info(f"Filtered appointments for doctor {doctor}: {queryset.count()}")
+            logger.info(
+                f"Filtered appointments for doctor {doctor}: {queryset.count()}"
+            )
             return queryset
 
         # For manager, secretary, or other roles: apply filters as requested
@@ -82,7 +89,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         "doctor_last_name",
         "status",
     ]
-
 
     def get_object(self):
         # Get the appointment ID from the URL
@@ -192,13 +198,66 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         # Add the patient to the request data
         request.data["patient_id"] = patient.id
 
+        # Extract billing amount from request data
+        billing_amount = request.data.pop("billing_amount", None)
+        if billing_amount is None:
+            return Response(
+                {"error": "Billing amount is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            billing_amount = float(billing_amount)
+            if billing_amount <= 0:
+                return Response(
+                    {"error": "Billing amount must be greater than zero."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid billing amount format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Extract billing method from request data, default to "Cash"
+        billing_method = request.data.get("billing_method", "Cash")
+        if billing_method not in ["Cash", "Credit Card", "Debit Card", "Insurance"]:
+            return Response(
+                {
+                    "error": "Invalid billing method. Must be one of: Cash, Credit Card, Debit Card, Insurance"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # Use the serializer to validate and save the appointment
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=request.user)
+        appointment = serializer.save(created_by=request.user)
 
+        # Create billing record
+        try:
+            from billing.models import Payment
+
+            payment = Payment.objects.create(
+                patient=patient,
+                appointment=appointment,
+                amount=billing_amount,
+                method=billing_method,
+                status="Pending",
+            )
+        except Exception as e:
+            # If billing record creation fails, delete the appointment
+            appointment.delete()
+            return Response(
+                {"error": f"Failed to create billing record: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Get the updated appointment with payment information
+        appointment.refresh_from_db()
+        serializer = self.get_serializer(appointment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
     def update(self, request, *args, **kwargs):
         # Extract the patient's UUID from the request data
         patient_uuid = request.data.get("patient_uuid")
@@ -219,13 +278,81 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
+        # Remove status from request data if present
+        if "status" in request.data:
+            del request.data["status"]
+
+        # Handle payment updates if present
+        billing_amount = request.data.pop("billing_amount", None)
+        billing_method = request.data.pop("billing_method", None)
+
+        # Get the instance first
+        instance = self.get_object()
+        if instance is None:
+            return Response(
+                {"error": "Appointment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Ensure required fields are preserved
+        required_fields = ["appointment_date", "appointment_time", "duration"]
+        for field in required_fields:
+            if field not in request.data:
+                request.data[field] = getattr(instance, field)
+
         # Use the serializer to validate and update the appointment
         partial = kwargs.pop("partial", False)
-        instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        appointment = serializer.save()
 
+        # Update payment if billing information is provided
+        if billing_amount is not None or billing_method is not None:
+            try:
+                from billing.models import Payment
+
+                payment = Payment.objects.get(appointment=appointment)
+
+                if billing_amount is not None:
+                    try:
+                        billing_amount = float(billing_amount)
+                        if billing_amount <= 0:
+                            return Response(
+                                {"error": "Billing amount must be greater than zero."},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+                        payment.amount = billing_amount
+                    except (ValueError, TypeError):
+                        return Response(
+                            {"error": "Invalid billing amount format."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                if billing_method is not None:
+                    if billing_method not in [
+                        "Cash",
+                        "Credit Card",
+                        "Debit Card",
+                        "Insurance",
+                    ]:
+                        return Response(
+                            {
+                                "error": "Invalid billing method. Must be one of: Cash, Credit Card, Debit Card, Insurance"
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    payment.method = billing_method
+
+                payment.save()
+            except Payment.DoesNotExist:
+                return Response(
+                    {"error": "No payment record found for this appointment."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        # Get the updated appointment with payment information
+        appointment.refresh_from_db()
+        serializer = self.get_serializer(appointment)
         return Response(serializer.data)
 
     def perform_destroy(self, instance):
@@ -237,6 +364,17 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         appointment.status = "canceled"
         appointment.save()
+
+        # Update billing record if exists
+        try:
+            from billing.models import Payment
+
+            payment = Payment.objects.get(appointment=appointment)
+            payment.status = "Failed"
+            payment.save()
+        except Payment.DoesNotExist:
+            pass
+
         return Response({"status": "appointment canceled"})
 
     @action(detail=True, methods=["post"])
@@ -244,4 +382,22 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         appointment = self.get_object()
         appointment.status = "completed"
         appointment.save()
+
+        # Update billing record if exists
+        try:
+            from billing.models import Payment
+
+            payment = Payment.objects.get(appointment=appointment)
+            payment.status = "Paid"
+            payment.save()
+        except Payment.DoesNotExist:
+            pass
+
         return Response({"status": "appointment completed"})
+
+    @action(detail=True, methods=["post"])
+    def queue(self, request, pk=None):
+        appointment = self.get_object()
+        appointment.status = "in_queue"
+        appointment.save()
+        return Response({"status": "appointment moved to queue"})

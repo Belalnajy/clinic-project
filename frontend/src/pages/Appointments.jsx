@@ -3,13 +3,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
-
-import { cn } from '@/lib/utils';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
 import { Plus, Eye, Edit, Trash, User } from 'lucide-react';
 import AppointmentModal from '@/components/modals/AppointmentModal';
 import useAppointments from '@/hooks/useAppointments';
@@ -60,6 +53,8 @@ const Appointments = () => {
     setEditingAppointment(appointment); // Pass the appointment data to the modal
     openModal();
   };
+
+  console.log(appointments);
 
   if (isLoadingAppointments) {
     return <LoadingState fullPage={true} message="Loading appointments..." />;
@@ -130,8 +125,9 @@ const Appointments = () => {
                   <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
                     Status
                   </th>
+
                   <th className="h-12 px-4 text-left align-middle font-medium text-slate-500">
-                    Notes
+                    Payment Amount
                   </th>
                   <th className="h-12 px-4 text-center align-middle font-medium text-slate-500">
                     Actions
@@ -157,7 +153,9 @@ const Appointments = () => {
                       <td className="p-4 align-middle">{appointment.appointment_time}</td>
                       <td className="p-4 align-middle">{appointment.doctor_name}</td>
                       <td className="p-4 align-middle">{appointment.status}</td>
-                      <td className="p-4 align-middle font-medium">{appointment.notes}</td>
+                      <td className="p-4 align-middle font-medium">
+                        {appointment.payment?.amount || 'Free'}
+                      </td>
                       <td className="p-4 align-middle">
                         <div className="flex justify-center space-x-1">
                           <Link to={`/appointment/${appointment.appointment_id}`}>
