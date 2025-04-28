@@ -10,7 +10,7 @@ const roleBasedTabs = {
   ],
   secretary: [
     { value: 'appointments', label: 'Appointments' },
-    { value: 'check-in', label: 'Check-in' },
+    // { value: 'check-in', label: 'Check-in' },
     { value: 'patients', label: 'Patients' },
   ],
 };
