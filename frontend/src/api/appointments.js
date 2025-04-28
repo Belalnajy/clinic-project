@@ -29,7 +29,7 @@ export const createAppointment = async (data) => {
 };
 
 export const updateAppointment = async (id, data) => {
-  const response = await axiosInstance.put(`/appointments/${id}/`, data);
+  const response = await axiosInstance.patch(`/appointments/${id}/`, data);
 
   return response.data;
 };

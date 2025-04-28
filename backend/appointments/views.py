@@ -282,13 +282,77 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if "status" in request.data:
             del request.data["status"]
 
+        # Handle payment updates if present
+        billing_amount = request.data.pop("billing_amount", None)
+        billing_method = request.data.pop("billing_method", None)
+
+        # Get the instance first
+        instance = self.get_object()
+        if instance is None:
+            return Response(
+                {"error": "Appointment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Ensure required fields are preserved
+        required_fields = ["appointment_date", "appointment_time", "duration"]
+        for field in required_fields:
+            if field not in request.data:
+                request.data[field] = getattr(instance, field)
+
         # Use the serializer to validate and update the appointment
         partial = kwargs.pop("partial", False)
-        instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        appointment = serializer.save()
 
+        # Update payment if billing information is provided
+        if billing_amount is not None or billing_method is not None:
+            try:
+                from billing.models import Payment
+
+                payment = Payment.objects.get(appointment=appointment)
+
+                if billing_amount is not None:
+                    try:
+                        billing_amount = float(billing_amount)
+                        if billing_amount <= 0:
+                            return Response(
+                                {"error": "Billing amount must be greater than zero."},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+                        payment.amount = billing_amount
+                    except (ValueError, TypeError):
+                        return Response(
+                            {"error": "Invalid billing amount format."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                if billing_method is not None:
+                    if billing_method not in [
+                        "Cash",
+                        "Credit Card",
+                        "Debit Card",
+                        "Insurance",
+                    ]:
+                        return Response(
+                            {
+                                "error": "Invalid billing method. Must be one of: Cash, Credit Card, Debit Card, Insurance"
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    payment.method = billing_method
+
+                payment.save()
+            except Payment.DoesNotExist:
+                return Response(
+                    {"error": "No payment record found for this appointment."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        # Get the updated appointment with payment information
+        appointment.refresh_from_db()
+        serializer = self.get_serializer(appointment)
         return Response(serializer.data)
 
     def perform_destroy(self, instance):
