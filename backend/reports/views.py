@@ -160,6 +160,7 @@ class FinancialMetricsView(APIView):
         
         # Pending Payments
         pending_payments = Payment.objects.filter(status='Pending').aggregate(total=Sum('amount'))['total'] or 0
+        pending_payments_count = Payment.objects.filter(status='Pending').count()
         
         # Monthly Revenue (this year vs last year)
         today = now()
@@ -230,7 +231,10 @@ class FinancialMetricsView(APIView):
         
         return Response({
             'total_revenue': total_revenue,
-            'pending_payments': pending_payments,
+            'pending_payments': {
+                'amount': pending_payments,
+                'count': pending_payments_count
+            },
             'monthly_revenue': monthly_revenue,
             'payment_methods': payment_methods,
             'specialization_payments': specialization_payments
