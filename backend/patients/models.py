@@ -93,6 +93,9 @@ class Patient(models.Model):
     is_active = models.BooleanField(default=True, verbose_name=_("is active"))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_("updated at"))
+    created_by = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="patients", verbose_name=_("created by"))
+    doctor = models.ForeignKey('doctors.Doctor', on_delete=models.SET_NULL, null=True, blank=True, related_name="patients", verbose_name=_("doctor"))
+
     created_by = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,

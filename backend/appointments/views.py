@@ -15,15 +15,21 @@ from django.core.exceptions import ValidationError
 from patients.models import Patient
 from django.db.models import Value, CharField, F, Q, Func
 from django.db.models.functions import Concat
+from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
-
-# Create a custom pagination class
 class AppointmentPagination(PageNumberPagination):
-    page_size = 10  # Number of items per page
-    page_size_query_param = "page_size"  # Allow client to override page size
-    max_page_size = 50  # Maximum page size allowed
+    page_size = 10 
+    page_size_query_param = "page_size" 
+    max_page_size = 50  
+
+    def get_paginated_response(self, data):
+        return Response({
+            'count': self.page.paginator.count,
+            'total_pages': self.page.paginator.num_pages,
+            'results': data
+        })
 
 
 # Create your views here.
@@ -41,8 +47,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 
     # Annotate related fields for searching
     def get_queryset(self):
-        # Get all active appointments
-        queryset = Appointment.objects.filter(is_active=True).order_by("-appointment_date")
+        # Use super() to allow DjangoFilterBackend to apply filters from request
+        queryset = super().get_queryset().filter(is_active=True).order_by("-appointment_date")
         queryset = queryset.annotate(
             patient_first_name=F("patient__first_name"),
             patient_last_name=F("patient__last_name"),
@@ -55,28 +61,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             logger.info("User not authenticated")
             return queryset.none()
 
-        # Log user attributes
         logger.info(f"User role: {getattr(self.request.user, 'role', 'No role')}")
 
-        # If user is manager or secretary, show all appointments
-        if self.request.user.role in ["manager", "secretary"]:
-            logger.info("User is manager or secretary, showing all appointments")
-            return queryset
-
-        # If user is a doctor, show only their appointments
         if self.request.user.role == "doctor":
             if not hasattr(self.request.user, "doctor_profile"):
                 logger.warning("User has doctor role but no doctor_profile")
                 return queryset.none()
             doctor = self.request.user.doctor_profile
             queryset = queryset.filter(doctor=doctor).order_by("-appointment_date")
-            logger.info(
-                f"Filtered appointments for doctor {doctor}: {queryset.count()}"
-            )
+            logger.info(f"Filtered appointments for doctor {doctor}: {queryset.count()}")
             return queryset
 
-        # For other authenticated users, show all appointments
-        logger.info("User is authenticated, showing all appointments")
+        # For manager, secretary, or other roles: apply filters as requested
         return queryset
 
     search_fields = [
@@ -86,6 +82,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         "doctor_last_name",
         "status",
     ]
+
 
     def get_object(self):
         # Get the appointment ID from the URL

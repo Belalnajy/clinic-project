@@ -47,6 +47,13 @@ class MedicalRecordViewSet(viewsets.ModelViewSet):
     filter_fields = ["created_at", "patient", "doctor"]
     permission_classes = [IsAuthenticated, IsDoctorOrManager]
 
+    def get_queryset(self):
+        queryset = self.queryset
+        user = self.request.user
+        if hasattr(user, 'role') and user.role == 'doctor' and hasattr(user, 'doctor_profile'):
+            queryset = queryset.filter(doctor=user.doctor_profile)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         try:
             return super().create(request, *args, **kwargs)

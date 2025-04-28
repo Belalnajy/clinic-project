@@ -18,20 +18,22 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import { CalendarPlus, FileText, PlayCircle, Edit, Download, CheckCircle } from 'lucide-react';
+import {  FileText, PlayCircle, Edit, CheckCircle } from 'lucide-react';
+import CustomPagination from '@/components/CustomPagination';
 
 const ScheduleTable = ({
   appointments,
   handleOpenPatientView,
   statusStyles,
-  handleNewAppointment,
   completionRate,
+  totalItems = 0,
 }) => {
+  const itemsPerPage = 10;
   const { user } = useAuth();
   const isSecretary = user.role === 'secretary';
 
   return (
-    <Card className="border-slate-200 p-0 shadow-sm overflow-hidden">
+    <Card className="border-slate-200 p-0 shadow-sm overflow-hidden gap-0">
       <CardHeader className="border-b border-slate-100 py-4 sm:py-6 bg-primary-300">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
@@ -46,14 +48,6 @@ const ScheduleTable = ({
               })}
             </CardDescription>
           </div>
-          <Button
-            size="sm"
-            className="border-slate-200 bg-secondary text-slate-800 hover:bg-slate-200 hover:cursor-pointer w-full sm:w-auto"
-            onClick={handleNewAppointment}
-          >
-            <CalendarPlus size={16} className="mr-2 text-slate-800" />
-            Add Appointment
-          </Button>
         </div>
       </CardHeader>
 
@@ -68,11 +62,17 @@ const ScheduleTable = ({
                 <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Patient
                 </TableHead>
-                <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500 hidden sm:table-cell">
+                {isSecretary && (
+                  <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500 hidden sm:table-cell">
+                    Doctor
+                  </TableHead>
+                )}
+                <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Reason
                 </TableHead>
+
                 <TableHead className="text-left py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
-                  Status
+                  Status   
                 </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 font-medium text-xs sm:text-sm text-slate-500">
                   Actions
@@ -82,36 +82,54 @@ const ScheduleTable = ({
             <TableBody>
               {appointments.map((appointment, index) => (
                 <TableRow
-                  key={index}
+                  key={appointment.id || index}
                   className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
                 >
+                  {/* Appointment Time */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6 text-slate-700 whitespace-nowrap">
-                    {appointment.time}
+                    {appointment.appointment_time}
                   </TableCell>
+                  {/* Patient Info: Avatar, Name, ID */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                     <div className="flex items-center min-w-[150px]">
                       <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mr-2 sm:mr-3 border border-slate-200">
+                        {/* Patient image if available, fallback to first letter */}
                         <AvatarImage
-                          src={appointment.patientAvatar}
-                          alt={appointment.patientName}
+                          src={appointment.patient && appointment.patient.avatar}
+                          alt={appointment.patient ? appointment.patient.first_name : ''}
                         />
                         <AvatarFallback className="bg-slate-100 text-slate-700">
-                          {appointment.patientName.charAt(0)}
+                          {appointment.patient ? appointment.patient.first_name.charAt(0) : ''}
                         </AvatarFallback>
                       </Avatar>
                       <div className="truncate">
                         <div className="font-medium text-slate-800 truncate">
-                          {appointment.patientName}
+                          {/* Patient full name */}
+                          {appointment.patient
+                            ? `${appointment.patient.first_name} ${appointment.patient.last_name}`
+                            : appointment.patient_name}
                         </div>
                         <div className="text-xs text-slate-500 truncate">
-                          {appointment.patientId}
+                          {/* Patient UUID */}
+                          {appointment.patient
+                            ? appointment.patient.patient_id
+                            : ''}
                         </div>
                       </div>
                     </div>
                   </TableCell>
+                  {isSecretary && (
+                    <TableCell className="py-3 px-4 sm:py-4 sm:px-6 text-slate-700">
+                      {appointment.doctor
+                        ? `Dr. ${appointment.doctor.first_name || ''} ${appointment.doctor.last_name || ''}`.trim()
+                        : appointment.doctor_name || '—'}
+                    </TableCell>
+                  )}
+                  {/* Reason/Notes */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6 text-slate-600 hidden sm:table-cell">
-                    {appointment.reason}
+                    {appointment.notes || appointment.reason}
                   </TableCell>
+                  {/* Status */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                     <Badge
                       className={`font-normal px-2 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-sm ${
@@ -121,6 +139,7 @@ const ScheduleTable = ({
                       {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                     </Badge>
                   </TableCell>
+                  {/* Actions */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                     <div className="flex justify-end space-x-1 sm:space-x-2">
                       {isSecretary ? (
@@ -205,15 +224,15 @@ const ScheduleTable = ({
             {completionRate}%
           </span>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-slate-200 hover:cursor-pointer w-full sm:w-auto"
-        >
-          <Download size={14} className="mr-1 sm:mr-2 text-slate-500 sm:size-4" />
-          <span className="text-xs sm:text-sm">Export Schedule</span>
-        </Button>
+
       </CardFooter>
+      {/* Pagination */}
+      <div className="flex justify-end bg-slate-50/50 p-4">
+        <CustomPagination
+          pagination={{ count: totalItems }}
+          pageSize={itemsPerPage}
+        />
+      </div>
     </Card>
   );
 };

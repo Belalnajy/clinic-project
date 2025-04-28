@@ -1,5 +1,11 @@
-import axiosInstance from '../lib/axios';
+import axiosInstance from '@/lib/axios';
 
+// Get today's appointments from the backend
+export const getTodayAppointments = async (page = 1) => {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const response = await axiosInstance.get(`/appointments/?appointment_date=${today}&page=${page}`);
+  return response.data;
+};
 export const getAppointments = async ({ search, page, startDate, endDate } = {}) => {
   const response = await axiosInstance.get('/appointments', {
     params: { page, search, appointment_date__gte: startDate, appointment_date__lte: endDate },

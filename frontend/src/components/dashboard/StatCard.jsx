@@ -30,23 +30,29 @@ const StatCard = ({ title, value, change, icon, color = "primary" }) => {
 
   return (
     <div
-      className={`overflow-hidden ${style.bgGradient} border border-opacity-50 ${style.borderColor} shadow-sm transition-all duration-300 hover:shadow-md rounded-lg`}>
-      <div className="p-6 flex justify-between items-start">
-        <div>
-          <p className="text-sm font-medium text-slate-500 mb-1">
-            {title}
-          </p>
-          <h3 className="text-2xl font-semibold tracking-tight text-slate-800">
+      className={`overflow-hidden ${style.bgGradient} border border-opacity-60 ${style.borderColor} shadow-sm rounded-2xl group transition-all duration-300 hover:shadow-xl hover:scale-[1.025] hover:border-opacity-100 animate-fade-in`}
+      style={{ minHeight: 120 }}
+    >
+      <div className="px-6 pt-5 pb-4 flex justify-between items-start gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-semibold text-slate-600 tracking-wide">
+              {title}
+            </p>
+            <span className={`block w-2 h-2 rounded-full ${style.iconColor} opacity-70`}></span>
+          </div>
+          <h3 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-500 via-sky-600 to-emerald-400 bg-clip-text text-transparent drop-shadow-sm mb-1 animate-pop-in">
             {value}
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="text-xs text-slate-500 font-medium">
             {change}
           </p>
         </div>
-        <div className={`rounded-full p-3 ${style.iconBg}`}>
+        <div className={`rounded-2xl p-3 shadow-md transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 ${style.iconBg}`}>
           {icon}
         </div>
       </div>
+      <div className={`h-1 w-full ${style.iconBg} mt-1 rounded-b-2xl`}></div>
     </div>
   );
 };

@@ -30,12 +30,16 @@ class SimpleDoctorSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     first_name = serializers.CharField(source="user.first_name")
     last_name = serializers.CharField(source="user.last_name")
-    specialization = serializers.CharField(source="specialization.name")
+    specialization = serializers.SerializerMethodField()
     license_number = serializers.CharField()
     years_of_experience = serializers.IntegerField()
     qualifications = serializers.CharField()
     bio = serializers.CharField()
     is_active = serializers.BooleanField(source="user.is_active")
+
+# Nested serializers for related fields
+    def get_specialization(self, obj):
+        return obj.specialization.name if obj.specialization else None
 
 
 class SimpleUserSerializer(serializers.Serializer):

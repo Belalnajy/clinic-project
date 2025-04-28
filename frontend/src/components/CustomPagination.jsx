@@ -7,6 +7,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+// Ellipsis component (replace with PaginationEllipsis if available)
+const PaginationEllipsis = () => <span className="px-2">...</span>;
 
 const CustomPagination = ({ pagination, pageSize = 10 }) => {
   const [searchParams] = useSearchParams();
@@ -33,17 +35,42 @@ const CustomPagination = ({ pagination, pageSize = 10 }) => {
           />
         </PaginationItem>
 
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <PaginationItem key={page}>
-            <PaginationLink
-              onClick={() => handlePageChange(page)}
-              isActive={currentPage === page}
-              variant="ghost"
-            >
-              {page}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
+        {/* Ellipsis Pagination */}
+        {(() => {
+          const pages = [];
+          for (let i = 1; i <= totalPages; i++) {
+            if (
+              i === 1 ||
+              i === 2 ||
+              i === totalPages ||
+              i === totalPages - 1 ||
+              Math.abs(i - currentPage) <= 1
+            ) {
+              pages.push(
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(i)}
+                    isActive={currentPage === i}
+                    variant="ghost"
+                  >
+                    {i}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            } else if (
+              (i === 3 && currentPage > 4) ||
+              (i === totalPages - 2 && currentPage < totalPages - 3)
+            ) {
+              pages.push(
+                <PaginationItem key={`ellipsis-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+          }
+          return pages;
+        })()}
+
 
         <PaginationItem>
           <PaginationNext

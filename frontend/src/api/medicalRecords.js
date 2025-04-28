@@ -1,9 +1,11 @@
 import axiosInstance from '@/lib/axios';
 
-export const getMedicalRecords = async (page = 1, patientId) => {
-  const response = await axiosInstance.get(
-    `/medical-records/?page=${page}${patientId ? `&patient=${patientId}` : ''}`
-  );
+export const getMedicalRecords = async (page = 1, patientId = '') => {
+  const params = {
+    page,
+    ...(patientId && { patient: patientId }),
+  };
+  const response = await axiosInstance.get('/medical-records/', { params });
   return response.data;
 };
 
