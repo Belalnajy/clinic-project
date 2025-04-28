@@ -12,7 +12,10 @@ class PatientSerializer(serializers.ModelSerializer):
     """
 
     phone_number = PhoneNumberField(required=False, allow_null=True)
-    credit_card_number = serializers.CharField(required=False, allow_null=True)
+    credit_card_number = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    insurance_provider = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    insurance_number = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    insurance_expiration_date = serializers.DateField(required=False, allow_null=True)
     height = serializers.DecimalField(
         max_digits=5,
         decimal_places=2,

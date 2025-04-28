@@ -32,6 +32,7 @@ import NotFound from './pages/NotFound';
 import ActivePatients from './pages/patients/ActivePatients';
 import InactivePatients from './pages/patients/InactivePatients';
 import PatientForm from './pages/patients/PatientForm';
+import AppointmentDetails from './pages/AppointmentDetails';
 
 const router = createBrowserRouter([
   {
@@ -193,6 +194,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
             <Appointments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/appointment/:appointmentId',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <AppointmentDetails />
           </ProtectedRoute>
         ),
       },

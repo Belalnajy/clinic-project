@@ -104,7 +104,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "appointment_id",
-            "status",
             "is_active",
             "created_by",
             "created_at",
@@ -125,19 +124,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def get_created_by_name(self, obj):
         return f"{obj.created_by.first_name} {obj.created_by.last_name}"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Get the request from the context
-        request = self.context.get("request", None)
-        if request and request.user and request.user.role == "doctor":
-            # Remove doctor field from fields list for doctor users
-            self.fields.pop("doctor")
-            self.fields.pop("doctor_id")
-
-    def validate_appointment_date(self, value):
-        if value < timezone.now().date():
-            raise serializers.ValidationError("Cannot create appointment in the past")
-        return value
+    # def validate_appointment_date(self, value):
+    #     if value < timezone.now().date():
+    #         raise serializers.ValidationError("Cannot create appointment in the past")
+    #     return value
 
     def validate(self, data):
         appointment_date = data.get("appointment_date")
