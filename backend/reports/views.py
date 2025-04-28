@@ -4,12 +4,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from appointments.models import Appointment
 from django.utils.timezone import now
-from datetime import timedelta
-from django.db.models import Count
+from datetime import timedelta, datetime
+from django.db.models import Count, Sum
 from patients.models import Patient
-from doctors.models import Doctor
+from doctors.models import Doctor, Specialization
 from rest_framework.pagination import PageNumberPagination
 from core.permissions import IsManager
+from billing.models import Payment
 
 class AppointmentMetricsView(APIView):
     permission_classes = [IsAuthenticated,IsManager]
@@ -148,3 +149,89 @@ class DoctorPerformanceView(APIView):
             })
 
         return paginator.get_paginated_response(performance_data)
+
+
+class FinancialMetricsView(APIView):
+    # permission_classes = [IsAuthenticated, IsManager]
+
+    def get(self, request):
+        # Total Revenue
+        total_revenue = Payment.objects.filter(status='Paid').aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Pending Payments
+        pending_payments = Payment.objects.filter(status='Pending').aggregate(total=Sum('amount'))['total'] or 0
+        
+        # Monthly Revenue (this year vs last year)
+        today = now()
+        current_year = today.year
+        last_year = current_year - 1
+        
+        monthly_revenue = []
+        for month in range(1, 13):
+            # This year's revenue for the month
+            this_year_start = datetime(current_year, month, 1)
+            this_year_end = (this_year_start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+            this_year_revenue = Payment.objects.filter(
+                status='Paid',
+                payment_date__year=current_year,
+                payment_date__month=month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            # Last year's revenue for the month
+            last_year_start = datetime(last_year, month, 1)
+            last_year_end = (last_year_start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+            last_year_revenue = Payment.objects.filter(
+                status='Paid',
+                payment_date__year=last_year,
+                payment_date__month=month
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            
+            monthly_revenue.append({
+                'month': this_year_start.strftime('%b'),
+                'thisYear': this_year_revenue,
+                'lastYear': last_year_revenue
+            })
+        
+        # Payment Method Distribution (as percentages)
+        total_payments = Payment.objects.filter(status='Paid').count()
+        payment_methods = []
+        
+        if total_payments > 0:
+            method_counts = Payment.objects.filter(status='Paid').values('method').annotate(
+                count=Count('method')
+            ).order_by('-count')
+            
+            for method in method_counts:
+                percentage = round((method['count'] / total_payments) * 100)
+                payment_methods.append({
+                    'name': method['method'],
+                    'value': percentage
+                })
+        
+        # Payment Distribution by Specialization
+        specialization_payments = []
+        if total_payments > 0:
+            # Get all specializations with their payment counts
+            spec_counts = Payment.objects.filter(
+                status='Paid',
+                appointment__doctor__specialization__isnull=False
+            ).values(
+                'appointment__doctor__specialization__name'
+            ).annotate(
+                count=Count('id')
+            ).order_by('-count')
+            
+            for spec in spec_counts:
+                percentage = round((spec['count'] / total_payments) * 100)
+                specialization_payments.append({
+                    'name': spec['appointment__doctor__specialization__name'],
+                    'value': percentage
+                })
+        
+        return Response({
+            'total_revenue': total_revenue,
+            'pending_payments': pending_payments,
+            'monthly_revenue': monthly_revenue,
+            'payment_methods': payment_methods,
+            'specialization_payments': specialization_payments
+        })
