@@ -6,7 +6,9 @@ import PaymentMethodsChart from './PaymentMethodsChart';
 import DepartmentRevenueChart from './DepartmentRevenueChart';
 import { getRevenueData } from '@/data/data';
 import { useReports } from '@/hooks/useReports';
-import { getCurrentMonthRevenueAndPercentage } from '@/lib/utils';
+import { formatCurrency, getCurrentMonthRevenueAndPercentage } from '@/lib/utils';
+import LoadingState from '../LoadingState';
+import CustomAlert from '../CustomAlert';
 
 const FinanceSection = () => {
   const { financialMetrics, isLoadingFinancialMetrics, financialMetricsError } = useReports();
@@ -19,7 +21,8 @@ const FinanceSection = () => {
     return <CustomAlert message="Error Loading Data..." />;
   }
   const monthlyRevenue = getCurrentMonthRevenueAndPercentage(financialMetrics.monthly_revenue);
-
+  console.log(financialMetrics);
+  const { amount, count } = financialMetrics.pending_payments;
   return (
     <div className="space-y-8">
       <div className="grid gap-6 lg:grid-cols-2">
@@ -56,9 +59,9 @@ const FinanceSection = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-500 mb-1">$8,240</div>
+            <div className="text-3xl font-bold text-orange-500 mb-1">{formatCurrency(amount)}</div>
             <div className="text-sm text-orange-600 flex items-center mb-4">
-              <AlertCircle className="h-4 w-4 mr-1" /> 14 pending invoices
+              <AlertCircle className="h-4 w-4 mr-1" /> {count} pending invoices
             </div>
           </CardContent>
         </Card>

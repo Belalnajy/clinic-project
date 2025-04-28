@@ -62,3 +62,10 @@ export function getCurrentMonthRevenueAndPercentage(data) {
     percentage: percentageChange,
   };
 }
+
+export function formatCurrency(amount) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+}
