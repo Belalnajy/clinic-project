@@ -72,6 +72,6 @@ class DoctorViewSet(viewsets.ModelViewSet):
         """
         Custom endpoint to return all doctors without pagination.
         """
-        doctors = self.get_queryset()  # Fetch all doctors
+        doctors = self.get_queryset().filter(is_active=True)  # Fetch all doctors
         serializer = self.get_serializer(doctors, many=True)  # Serialize the data
         return Response(serializer.data)  # Return the serialized data

@@ -21,6 +21,7 @@ import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
 import AiAssistant from "./pages/AiAssistant";
 import SpecializationsPage from './pages/specializations';
+import AppointmentDetails from './pages/AppointmentDetails';
 
 const router = createBrowserRouter([
   {
@@ -139,6 +140,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
             <Appointments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/appointments/:appointmentId',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <AppointmentDetails />
           </ProtectedRoute>
         ),
       },
