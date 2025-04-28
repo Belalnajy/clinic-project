@@ -1,23 +1,33 @@
 import axiosInstance from '@/lib/axios';
 
-/**
- * Get all medical records (with optional pagination)
- * @param {number} page - Page number
- * @returns {Promise<Object>} - Paginated medical records data
- */
-export const getMedicalRecords = async (page = 1) => {
-  const response = await axiosInstance.get('/medical-records/', {
-    params: { page },
-  });
+export const getMedicalRecords = async (page = 1, patientId) => {
+  const response = await axiosInstance.get(
+    `/medical-records/?page=${page}${patientId ? `&patient=${patientId}` : ''}`
+  );
   return response.data;
 };
 
-/**
- * Get a single medical record by ID
- * @param {string|number} id - Medical record ID
- * @returns {Promise<Object>} - Medical record data
- */
 export const getMedicalRecord = async (id) => {
   const response = await axiosInstance.get(`/medical-records/${id}/`);
+  return response.data;
+};
+
+export const getLatestMedicalRecord = async (patientId) => {
+  const response = await axiosInstance.get(`/medical-records/${patientId}/latest/`);
+  return response.data;
+};
+
+export const createMedicalRecord = async (data) => {
+  const response = await axiosInstance.post('/medical-records/', data);
+  return response.data;
+};
+
+export const updateMedicalRecord = async (id, data) => {
+  const response = await axiosInstance.put(`/medical-records/${id}/`, data);
+  return response.data;
+};
+
+export const deleteMedicalRecord = async (id) => {
+  const response = await axiosInstance.delete(`/medical-records/${id}/`);
   return response.data;
 };

@@ -4,13 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { debounce } from 'lodash';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,9 +27,22 @@ import { useAuth } from '@/contexts/Auth/useAuth';
 import { getDoctorProfileByUserId, updateDoctorProfile } from '@/api/settings';
 
 const formSchema = z.object({
-  license_number: z.string().min(5, 'License number must be at least 5 characters').optional().or(z.literal('')),
-  years_of_experience: z.coerce.number().min(0, 'Years of experience must be 0 or greater').max(60, 'Years of experience must be less than 60').optional().or(z.literal('')),
-  qualifications: z.string().min(5, 'Qualifications must be at least 5 characters').optional().or(z.literal('')),
+  license_number: z
+    .string()
+    .min(5, 'License number must be at least 5 characters')
+    .optional()
+    .or(z.literal('')),
+  years_of_experience: z.coerce
+    .number()
+    .min(0, 'Years of experience must be 0 or greater')
+    .max(60, 'Years of experience must be less than 60')
+    .optional()
+    .or(z.literal('')),
+  qualifications: z
+    .string()
+    .min(5, 'Qualifications must be at least 5 characters')
+    .optional()
+    .or(z.literal('')),
   bio: z.string().min(10, 'Bio must be at least 10 characters').optional().or(z.literal('')),
   specialization_id: z.string().optional(),
 });
@@ -61,7 +68,9 @@ function ProfessionalSettings() {
   useEffect(() => {
     const fetchSpecializations = debounce(async () => {
       try {
-        const response = await import('@/lib/axios').then(m => m.default.get('/doctors/specializations/'));
+        const response = await import('@/lib/axios').then((m) =>
+          m.default.get('/doctors/specializations/')
+        );
         setSpecializations(response.data);
       } catch (error) {
         toast.error('Failed to fetch specializations');
@@ -115,21 +124,18 @@ function ProfessionalSettings() {
       toast.success('Professional information updated successfully');
     } catch (error) {
       toast.error('Failed to update professional information', {
-        description: error.message || 'Please try again'
+        description: error.message || 'Please try again',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-4 border-b mb-4">
         <CardTitle>Professional Information</CardTitle>
-        <CardDescription>
-          Update your professional details and qualifications
-        </CardDescription>
+        <CardDescription>Update your professional details and qualifications</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -156,7 +162,13 @@ function ProfessionalSettings() {
                 <FormItem>
                   <FormLabel>Years of Experience</FormLabel>
                   <FormControl>
-                    <Input type="number" min="0" max="60" placeholder="Enter years of experience" {...field} />
+                    <Input
+                      type="number"
+                      min="0"
+                      max="60"
+                      placeholder="Enter years of experience"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,7 +182,11 @@ function ProfessionalSettings() {
                 <FormItem>
                   <FormLabel>Qualifications</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="List your medical qualifications and certifications" className="min-h-[100px]" {...field} />
+                    <Textarea
+                      placeholder="List your medical qualifications and certifications"
+                      className="min-h-[100px]"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,7 +200,11 @@ function ProfessionalSettings() {
                 <FormItem>
                   <FormLabel>Professional Bio</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Write a brief professional biography" className="min-h-[150px]" {...field} />
+                    <Textarea
+                      placeholder="Write a brief professional biography"
+                      className="min-h-[150px]"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -212,14 +232,21 @@ function ProfessionalSettings() {
                     </SelectContent>
                   </Select>
                   <FormMessage />
-                  <p className="text-xs text-slate-500">Contact administration to update your specialization.</p>
+                  <p className="text-xs text-slate-500">
+                    Contact administration to update your specialization.
+                  </p>
                 </FormItem>
               )}
             />
             {/* Profile Picture Upload (only for doctor) */}
 
             <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" onClick={() => form.reset()} disabled={isSubmitting}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => form.reset()}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
@@ -233,4 +260,4 @@ function ProfessionalSettings() {
   );
 }
 
-export default ProfessionalSettings; 
+export default ProfessionalSettings;

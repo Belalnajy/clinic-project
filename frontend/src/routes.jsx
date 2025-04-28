@@ -5,7 +5,7 @@ import ProfileSettings from './components/settings/ProfileSettings';
 import AccountSettings from './components/settings/AccountSettings';
 import ProfessionalSettings from './components/settings/ProfessionalSettings';
 import Dashboard from './pages/Dashboard';
-import Patients from './pages/Patients';
+import Patients from './pages/patients/Patients';
 import LoginPage from './pages/Login';
 import Reports from './pages/Reports';
 import DoctorsPage from './pages/DoctorsPage';
@@ -20,8 +20,19 @@ import MedicationsPage from './pages/MedicationsPage';
 import MedicationsTable from './pages/medications/MedicationsTable';
 import MedicationForm from './pages/MedicationForm';
 import RootRedirect from './components/RootRedirect';
-import AiAssistant from "./pages/AiAssistant";
+import AiAssistant from './pages/AiAssistant';
 import SpecializationsPage from './pages/specializations';
+import {
+  LabResults,
+  MedicalRecords,
+  Overview,
+  Prescriptions,
+} from './components/patient-details/tabs';
+import NotFound from './pages/NotFound';
+import ActivePatients from './pages/patients/ActivePatients';
+import InactivePatients from './pages/patients/InactivePatients';
+import PatientForm from './pages/patients/PatientForm';
+import AppointmentDetails from './pages/AppointmentDetails';
 
 const router = createBrowserRouter([
   {
@@ -31,7 +42,6 @@ const router = createBrowserRouter([
         <LoginPage />
       </ProtectedRoute>
     ),
-    errorElement: <div>404 Not Found</div>,
   },
   {
     path: '/unauthorized',
@@ -44,10 +54,13 @@ const router = createBrowserRouter([
         <MainLayout />
       </ProtectedRoute>
     ),
-    errorElement: <div>404 Not Found</div>,
     children: [
       {
         index: true,
+        element: <RootRedirect />,
+      },
+      {
+        path: 'dashboard',
         element: <RootRedirect />,
       },
       {
@@ -122,11 +135,29 @@ const router = createBrowserRouter([
       },
       {
         path: 'patients',
-        element: (
-          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
-            <Patients />
-          </ProtectedRoute>
-        ),
+        element: <Patients />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="active-patients" replace />,
+          },
+          {
+            path: 'active-patients',
+            element: <ActivePatients />,
+          },
+          {
+            path: 'inactive-patients',
+            element: <InactivePatients />,
+          },
+          {
+            path: 'add',
+            element: <PatientForm />,
+          },
+          {
+            path: ':id/edit',
+            element: <PatientForm />,
+          },
+        ],
       },
       {
         path: 'patient/:id',
@@ -135,12 +166,42 @@ const router = createBrowserRouter([
             <PatientDetails />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="overview" replace />,
+          },
+          {
+            path: 'overview',
+            element: <Overview />,
+          },
+          {
+            path: 'medical-records',
+            element: <MedicalRecords />,
+          },
+          {
+            path: 'prescriptions',
+            element: <Prescriptions />,
+          },
+          {
+            path: 'lab-results',
+            element: <LabResults />,
+          },
+        ],
       },
       {
         path: 'appointments',
         element: (
           <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
             <Appointments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/appointment/:appointmentId',
+        element: (
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <AppointmentDetails />
           </ProtectedRoute>
         ),
       },
@@ -165,15 +226,19 @@ const router = createBrowserRouter([
       },
 
       {
-        path: "ai-assistant",
+        path: 'ai-assistant',
         element: (
-          <ProtectedRoute allowedRoles={["doctor","secretary","manager"]}>
-            <AiAssistant/>
+          <ProtectedRoute allowedRoles={['doctor', 'secretary', 'manager']}>
+            <AiAssistant />
           </ProtectedRoute>
-        )
-      }
-    ]
-  }
+        ),
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
+  },
 ]);
 
 export default router;

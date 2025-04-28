@@ -3,7 +3,6 @@ import { useReports } from '@/hooks/useReports';
 import { Tabs } from '@/components/ui/tabs';
 import TabList from '@/components/Reports/tabs-list/TabList';
 import OverviewTab from '@/components/Reports/tabs/OverviewTab';
-import LoadingState from '@/components/LoadingState';
 import AppointmentsTab from '@/components/Reports/tabs/AppointmentsTab';
 import PatientTab from '@/components/Reports/tabs/PatientTab';
 import DoctorsTab from '@/components/Reports/tabs/DoctorsTab';

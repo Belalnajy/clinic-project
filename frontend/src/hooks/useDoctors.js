@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDoctors, getSpecializations, toggleDoctorStatus } from '@/api/doctors';
+import { getDoctors, getSpecializations, toggleDoctorStatus, getAllDoctors } from '@/api/doctors';
 import { toast } from 'sonner';
 
 export const useDoctors = () => {
@@ -44,9 +44,15 @@ export const useDoctors = () => {
     },
   });
 
+  const { data: allDoctors = [] } = useQuery({
+    queryKey: ['allDoctors'],
+    queryFn: getAllDoctors,
+  });
+
   return {
     doctors: doctorsData.results || [],
     totalDoctors: doctorsData.count || 0,
+    allDoctors,
     specializations,
     isLoading,
     query,

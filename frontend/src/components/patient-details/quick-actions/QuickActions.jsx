@@ -22,7 +22,7 @@ const QuickActions = () => {
     },
     {
       id: 3,
-      name: 'Order Lab Test',
+      name: 'Add Lab Test',
       icon: 'Microscope',
       action: () => setIsLabTestOpen(true),
     },
@@ -30,7 +30,7 @@ const QuickActions = () => {
   return (
     <>
       <QuickActionButtons actions={actions} />
-      <MedicalRecord isOpen={isMedicalRecordOpen} setIsMedicalRecordOpen={setIsMedicalRecordOpen} />
+      <MedicalRecord open={isMedicalRecordOpen} onOpenChange={setIsMedicalRecordOpen} />
       <Prescription isOpen={isPrescriptionOpen} setIsPrescriptionOpen={setIsPrescriptionOpen} />
       <LabTest isOpen={isLabTestOpen} setIsLabTestOpen={setIsLabTestOpen} />
     </>

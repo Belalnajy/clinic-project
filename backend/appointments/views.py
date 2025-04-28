@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from rest_framework import viewsets, status
+from django.shortcuts import get_object_or_404, render
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +12,9 @@ from .filters import AppointmentFilter
 import logging
 from uuid import UUID
 from django.core.exceptions import ValidationError
+from patients.models import Patient
+from django.db.models import Value, CharField, F, Q, Func
+from django.db.models.functions import Concat
 from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
@@ -36,13 +39,22 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_class = AppointmentFilter
     pagination_class = AppointmentPagination
+    ordering_fields = ["appointment_date"]
+    ordering = ["-appointment_date"]
 
+    # Annotate related fields for searching
     def get_queryset(self):
         # Use super() to allow DjangoFilterBackend to apply filters from request
-        queryset = super().get_queryset().filter(is_active=True)
+        queryset = super().get_queryset().filter(is_active=True).order_by("-appointment_date")
+        queryset = queryset.annotate(
+            patient_first_name=F("patient__first_name"),
+            patient_last_name=F("patient__last_name"),
+            doctor_first_name=F("doctor__user__first_name"),
+            doctor_last_name=F("doctor__user__last_name"),
+        )
         logger.info(f"Total active appointments: {queryset.count()}")
 
         if not self.request.user.is_authenticated:
@@ -56,12 +68,20 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 logger.warning("User has doctor role but no doctor_profile")
                 return queryset.none()
             doctor = self.request.user.doctor_profile
-            queryset = queryset.filter(doctor=doctor)
+            queryset = queryset.filter(doctor=doctor).order_by("-appointment_date")
             logger.info(f"Filtered appointments for doctor {doctor}: {queryset.count()}")
             return queryset
 
         # For manager, secretary, or other roles: apply filters as requested
         return queryset
+
+    search_fields = [
+        "patient_first_name",
+        "patient_last_name",
+        "doctor_first_name",
+        "doctor_last_name",
+        "status",
+    ]
 
 
     def get_object(self):
@@ -150,6 +170,63 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         serializer.save(
             created_by=self.request.user, status="scheduled", is_active=True
         )
+
+    def create(self, request, *args, **kwargs):
+        # Extract the patient's UUID from the request data
+        patient_uuid = request.data.get("patient_uuid")
+        if not patient_uuid:
+            return Response(
+                {"error": "Patient UUID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Fetch the patient using the UUID
+        try:
+            patient = get_object_or_404(Patient, patient_id=patient_uuid)
+        except ValidationError:
+            return Response(
+                {"error": "Invalid UUID format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Add the patient to the request data
+        request.data["patient_id"] = patient.id
+
+        # Use the serializer to validate and save the appointment
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        # Extract the patient's UUID from the request data
+        patient_uuid = request.data.get("patient_uuid")
+        if patient_uuid:
+            try:
+                # Fetch the patient using the UUID
+                patient = get_object_or_404(Patient, patient_id=patient_uuid)
+                # Add the patient ID to the request data
+                request.data["patient_id"] = patient.id
+            except ValidationError:
+                return Response(
+                    {"error": "Invalid UUID format."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Patient.DoesNotExist:
+                return Response(
+                    {"error": "Patient not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+        # Use the serializer to validate and update the appointment
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         instance.is_active = False

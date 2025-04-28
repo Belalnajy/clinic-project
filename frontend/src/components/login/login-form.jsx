@@ -34,7 +34,6 @@ export function LoginForm({ className, ...props }) {
   });
 
   const onSubmit = async (credentials) => {
-    console.log('Form submitted:', credentials);
     try {
       setIsSubmitting(true);
       await login(credentials);

@@ -43,3 +43,8 @@ export const getSpecializations = async () => {
   const response = await axiosInstance.get('/doctors/specializations/');
   return response.data;
 };
+
+export const getAllDoctors = async () => {
+  const response = await axiosInstance.get('/doctors/doctorsList/all-doctors');
+  return response.data;
+}

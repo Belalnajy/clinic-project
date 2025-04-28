@@ -22,20 +22,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {  uploadAvatar, getUserProfile, updateDoctorProfilePicture, getDoctorProfileByUserId } from '@/api/settings';
+import {
+  uploadAvatar,
+  getUserProfile,
+  updateDoctorProfilePicture,
+  getDoctorProfileByUserId,
+} from '@/api/settings';
 import { useAuth } from '@/contexts/Auth/useAuth';
 import axiosInstance from '@/lib/axios';
 
 const formSchema = z.object({
-  first_name: z.string()
+  first_name: z
+    .string()
     .min(2, 'First name must be at least 2 characters')
     .nonempty('First name is required'),
-  last_name: z.string()
+  last_name: z
+    .string()
     .min(2, 'Last name must be at least 2 characters')
     .nonempty('Last name is required'),
-  email: z.string()
-    .email('Invalid email address')
-    .nonempty('Email is required'),
+  email: z.string().email('Invalid email address').nonempty('Email is required'),
   status: z.enum(['available', 'onBreak', 'withPatient']).optional(),
 });
 
@@ -83,11 +88,13 @@ function ProfileSettings() {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        status: isDoctor ? (user.status || 'available') : undefined,
+        status: isDoctor ? user.status || 'available' : undefined,
       });
       fetchDoctorAvatar();
     }
-    return () => { didCancel = true; };
+    return () => {
+      didCancel = true;
+    };
   }, [user, form, isDoctor]);
 
   const onSubmit = async (data) => {
@@ -98,10 +105,10 @@ function ProfileSettings() {
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
-        status: isDoctor ? (data.status || 'available') : undefined,
+        status: isDoctor ? data.status || 'available' : undefined,
       };
       // Remove undefined fields
-      Object.keys(userData).forEach(key => userData[key] === undefined && delete userData[key]);
+      Object.keys(userData).forEach((key) => userData[key] === undefined && delete userData[key]);
 
       // Use PUT instead of PATCH
       await axiosInstance.put('/auth/users/me/', userData);
@@ -110,7 +117,7 @@ function ProfileSettings() {
       toast.success('Profile updated successfully');
     } catch (error) {
       toast.error('Failed to update profile', {
-        description: error.message || 'Please try again'
+        description: error.message || 'Please try again',
       });
     } finally {
       setIsSubmitting(false);
@@ -122,13 +129,13 @@ function ProfileSettings() {
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
       toast.error('File too large', {
-        description: 'Please select an image smaller than 2MB'
+        description: 'Please select an image smaller than 2MB',
       });
       return;
     }
     if (!file.type.match('image.*')) {
       toast.error('Invalid file type', {
-        description: 'Please select an image file (JPG, PNG, GIF)'
+        description: 'Please select an image file (JPG, PNG, GIF)',
       });
       return;
     }
@@ -146,7 +153,7 @@ function ProfileSettings() {
       }
     } catch (error) {
       toast.error('Failed to update avatar', {
-        description: error.message || 'Please try again'
+        description: error.message || 'Please try again',
       });
     }
   };
@@ -157,12 +164,13 @@ function ProfileSettings() {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        status: isDoctor ? (user.status || 'available') : undefined,
+        status: isDoctor ? user.status || 'available' : undefined,
       });
       // Also reset avatar to latest from user/doctor
       if (isDoctor && user?.id) {
-        getDoctorProfileByUserId(user.id)
-          .then(doctor => setAvatarUrl(doctor.profile_picture || user.avatar || ''));
+        getDoctorProfileByUserId(user.id).then((doctor) =>
+          setAvatarUrl(doctor.profile_picture || user.avatar || '')
+        );
       } else {
         setAvatarUrl(user.avatar || '');
       }
@@ -172,7 +180,7 @@ function ProfileSettings() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-4 border-b mb-4">
         <CardTitle>Profile Information</CardTitle>
         <CardDescription>Update your personal details and information</CardDescription>
       </CardHeader>
@@ -180,63 +188,33 @@ function ProfileSettings() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={avatarUrl} alt={fullName} />
-                <AvatarFallback>
-                  {fullName?.split(' ').map((n) => n[0]).join('') || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              {user?.role === 'doctor' && (
-                <div>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <i className="fas fa-upload mr-2"></i> Change Avatar
-                  </Button>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    ref={fileInputRef}
-                    onChange={handleAvatarChange}
-                  />
-                  <p className="text-xs text-slate-500 mt-2">JPG, GIF or PNG. Max size of 2MB.</p>
-                </div>
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="first_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="last_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -252,31 +230,6 @@ function ProfileSettings() {
               )}
             />
 
-            {isDoctor && (
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="available">Available</SelectItem>
-                        <SelectItem value="onBreak">On Break</SelectItem>
-                        <SelectItem value="withPatient">With Patient</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
@@ -286,11 +239,8 @@ function ProfileSettings() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>

@@ -1,4 +1,5 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -14,7 +15,7 @@ const CustomPagination = ({ pagination, pageSize = 10 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentPage = Number(searchParams.get('page')) || 1;
-  const totalPages = Math.floor(pagination.count / pageSize);
+  const totalPages = Math.ceil(pagination.count / pageSize);
 
   const handlePageChange = (page) => {
     const params = new URLSearchParams(searchParams);

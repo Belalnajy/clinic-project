@@ -13,12 +13,9 @@ import AppointmentTable from '@/components/Reports/AppointmentTable';
 import TableFilters from '@/components/Reports/TableFilters';
 import ExportAppointmentsButton from '../ExportAppointmentsButton';
 import LoadingState from '@/components/LoadingState';
-import useAppointmentFilters from '../../../hooks/useAppointmentFilters';
 import { useReports } from '@/hooks/useReports';
 
 const AppointmentsTab = () => {
-  const { filters, handleFilterChange } = useAppointmentFilters();
-
   const { appointmentMetrics, appointmentsData, isLoadingAppointments, doctors, specializations } =
     useReports();
 
@@ -31,12 +28,7 @@ const AppointmentsTab = () => {
         </CardHeader>
         <CardContent>
           <AppointmentAnalyticsHeader appointmentMetrics={appointmentMetrics} />
-          <TableFilters
-            filters={filters}
-            handleFilterChange={handleFilterChange}
-            doctors={doctors}
-            specializations={specializations}
-          />
+          <TableFilters doctors={doctors} specializations={specializations} />
           <div className="overflow-x-auto">
             {isLoadingAppointments ? (
               <div className="flex justify-center items-center h-[500px]">
