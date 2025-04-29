@@ -227,19 +227,51 @@ def seed_database():
     print("Creating appointments...")
     appointments = []
     today = timezone.now().date()
-    for i in range(100):
-        appointments.append(
-            Appointment.objects.create(
+    
+    # Create today's appointments for each doctor
+    appointment_statuses = ['in_queue', 'completed', 'scheduled']
+    appointment_times = [f"{hour:02d}:00:00" for hour in range(9, 18)]  # 9 AM to 6 PM
+    
+    for doctor in doctors:
+        # Create 3-5 appointments for each doctor today
+        num_appointments = random.randint(3, 5)
+        available_times = appointment_times.copy()
+        
+        for _ in range(num_appointments):
+            if not available_times:
+                break
+                
+            appointment_time = random.choice(available_times)
+            available_times.remove(appointment_time)  # Prevent double booking
+            
+            status = random.choice(appointment_statuses)
+            
+            appointment = Appointment.objects.create(
                 patient=random.choice(patients),
-                doctor=random.choice(doctors),
-                appointment_date=today - timedelta(days=random.randint(1, 30)),
-                appointment_time=f"{random.randint(8, 17)}:{random.choice(['00', '30'])}:00",
+                doctor=doctor,
+                appointment_date=today,
+                appointment_time=appointment_time,
                 duration=30,
-                status="scheduled",
+                status=status,
                 notes=f"Appointment for {random.choice(diagnosis_list)} consultation",
                 created_by=admin,
             )
-        )
+            appointments.append(appointment)
+        
+        # Also create some past appointments (last 30 days)
+        for _ in range(random.randint(5, 10)):
+            past_date = today - timedelta(days=random.randint(1, 30))
+            appointment = Appointment.objects.create(
+                patient=random.choice(patients),
+                doctor=doctor,
+                appointment_date=past_date,
+                appointment_time=random.choice(appointment_times),
+                duration=30,
+                status='completed',  # Past appointments are completed
+                notes=f"Appointment for {random.choice(diagnosis_list)} consultation",
+                created_by=admin,
+            )
+            appointments.append(appointment)
 
     # Create payments
     print("Creating payments...")

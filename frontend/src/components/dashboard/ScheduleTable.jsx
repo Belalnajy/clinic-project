@@ -222,34 +222,12 @@ const ScheduleTable = ({
                             size="sm"
                             variant="ghost"
                             className="text-slate-600 hover:text-slate-900 hover:bg-blue-50 hover:cursor-pointer px-2 sm:px-3"
-                            onClick={() => handleOpenPatientView(appointment)}
+                            onClick={() => handleOpenPatientView(appointment.patient.id)}
                           >
                             <FileText size={14} className="sm:size-4" />
                             <span className="hidden sm:inline">View</span>
                           </Button>
-                          <Button
-                            size="xs"
-                            variant={appointment.status === 'waiting' ? 'default' : 'secondary'}
-                            className={
-                              appointment.status === 'waiting'
-                                ? 'bg-primary-300 hover:bg-sky-700 hover:cursor-pointer px-2 sm:px-3'
-                                : 'bg-secondary text-slate-700 hover:bg-slate-200 hover:cursor-pointer px-2 sm:px-3'
-                            }
-                          >
-                            {appointment.status === 'waiting' ? (
-                              <>
-                                <PlayCircle size={14} color="white" className="sm:size-4" />
-                                <span className="hidden sm:inline ml-1 sm:ml-2 text-white">
-                                  Start
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <Edit size={14} className="sm:size-4" />
-                                <span className="hidden sm:inline">Update</span>
-                              </>
-                            )}
-                          </Button>
+                  
                         </>
                       )}
                     </div>
