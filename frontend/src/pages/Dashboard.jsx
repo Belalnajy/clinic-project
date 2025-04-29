@@ -14,6 +14,7 @@ import ScheduleTable from '@/components/dashboard/ScheduleTable';
 import MedicalRecordsList from '@/components/dashboard/MedicalRecordsList';
 import PatientsTab from '@/components/dashboard/PatientsTab';
 import { useAuth } from '@/contexts/Auth/useAuth';
+import useAppointments from '@/hooks/useAppointments';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -50,22 +51,22 @@ const Dashboard = () => {
     fetchStats();
   }, []);
 
-  useEffect(() => {
-    async function fetchAppointments() {
-      setLoadingAppointments(true);
-      setAppointmentsError(null);
-      try {
-        const data = await getTodayAppointments();
-        setAppointments(data.results || data); // handle paginated or direct array
-      } catch (err) {
-        setAppointments([]);
-        setAppointmentsError("Failed to load today's appointments");
-      } finally {
-        setLoadingAppointments(false);
-      }
-    }
-    fetchAppointments();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchAppointments() {
+  //     setLoadingAppointments(true);
+  //     setAppointmentsError(null);
+  //     try {
+  //       const data = await getTodayAppointments();
+  //       setAppointments(data.results || data); // handle paginated or direct array
+  //     } catch (err) {
+  //       setAppointments([]);
+  //       setAppointmentsError("Failed to load today's appointments");
+  //     } finally {
+  //       setLoadingAppointments(false);
+  //     }
+  //   }
+  //   fetchAppointments();
+  // }, []);
 
   // Fetch medical records from backend
   const fetchRecords = async (page = 1) => {
@@ -115,10 +116,10 @@ const Dashboard = () => {
   };
 
   // Calculate completion percentage for today's appointments from backend
-  const totalAppointments = appointments.length;
-  const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
-  const completionRate =
-    totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0;
+  // const totalAppointments = appointments.length;
+  // const completedAppointments = appointments.filter((a) => a.status === 'completed').length;
+  // const completionRate =
+  //   totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0;
 
   // Fetch patients from backend
   const [loadingPatients, setLoadingPatients] = useState(true);
@@ -197,18 +198,10 @@ const Dashboard = () => {
         <TabsHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         {/* Schedule */}
         <TabsContent value="schedule" className="mt-0">
-          {loadingAppointments ? (
-            <div className="p-4">Loading appointments...</div>
-          ) : appointmentsError ? (
-            <div className="p-4 text-red-500">{appointmentsError}</div>
-          ) : (
-            <ScheduleTable
-              appointments={appointments}
+        <ScheduleTable         
               handleOpenPatientView={handleOpenPatientView}
-              statusStyles={statusStyles}
-              completionRate={completionRate}
+              statusStyles={statusStyles}           
             />
-          )}
         </TabsContent>
 
         {/* Patients */}

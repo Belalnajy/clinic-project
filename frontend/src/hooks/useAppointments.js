@@ -28,7 +28,7 @@ const useAppointments = () => {
     isLoading: isLoadingAppointments,
     error: appointmentsError,
   } = useQuery({
-    queryKey: ['appointments', currentPage, search, startDate, endDate],
+    queryKey: ['app', 'appointments', currentPage, search, startDate, endDate],
     queryFn: () => getAppointments({ page: currentPage, search, startDate, endDate }),
   });
 
@@ -38,7 +38,7 @@ const useAppointments = () => {
     isLoading: isLoadingTodayAppointments,
     error: todayAppointmentsError,
   } = useQuery({
-    queryKey: ['todayAppointments', currentPage],
+    queryKey: ['app', 'todayAppointments', currentPage],
     queryFn: () => getTodayAppointments(currentPage),
   });
 
@@ -65,7 +65,7 @@ const useAppointments = () => {
   const createAppointmentMutation = useMutation({
     mutationFn: createAppointment,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['app'] });
     },
   });
 
@@ -73,7 +73,7 @@ const useAppointments = () => {
   const updateAppointmentMutation = useMutation({
     mutationFn: ({ id, data }) => updateAppointment(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['app'] });
     },
   });
 
@@ -81,7 +81,7 @@ const useAppointments = () => {
   const deleteAppointmentMutation = useMutation({
     mutationFn: (id) => deleteAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['app'] });
     },
   });
 
@@ -89,7 +89,9 @@ const useAppointments = () => {
   const cancelAppointmentMutation = useMutation({
     mutationFn: (id) => cancelAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({
+        queryKey: ['app'],
+      });
     },
   });
 
@@ -97,14 +99,14 @@ const useAppointments = () => {
   const completeAppointmentMutation = useMutation({
     mutationFn: (id) => completeAppointment(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['app'] });
     },
   });
   // Complete appointment using useMutation
   const queueAppointmentMutation = useMutation({
     mutationFn: (id) => markAppointmentAsQueue(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', 'todayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['app'] });
     },
   });
 

@@ -18,18 +18,17 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/Auth/useAuth';
-import { FileText, PlayCircle, Edit, CheckCircle } from 'lucide-react';
+import { FileText} from 'lucide-react';
 import CustomPagination from '@/components/CustomPagination';
 import AppointmentModal from '@/components/modals/AppointmentModal';
 import { useState } from 'react';
 import useAppointments from '@/hooks/useAppointments';
 
 const ScheduleTable = ({
-  appointments,
+
   handleOpenPatientView,
   statusStyles,
-  completionRate,
-  totalItems = 0,
+
 }) => {
   const itemsPerPage = 10;
   const { user } = useAuth();
@@ -39,12 +38,11 @@ const ScheduleTable = ({
   const [editingAppointment, setEditingAppointment] = useState(null); // Stores the appointment being edited
 
   const {
+    todayAppointments: appointments, isLoadingTodayAppointments,todayAppointmentsError, todayAppointmentsPagination ,
     completeAppointment,
     cancelAppointment,
     queueAppointment,
-    isCompleting,
     isCancelling,
-    isQueueing,
   } = useAppointments();
 
   const handleAppointmentStateChange = (appointmentId, status) => {
@@ -65,11 +63,14 @@ const ScheduleTable = ({
     setEditingAppointment(null); // Clear editing data
   };
 
-  const handleEditClick = (appointment) => {
-    setIsEditing(true);
-    setEditingAppointment(appointment); // Pass the appointment data to the modal
-    openModal();
-  };
+
+  if (isLoadingTodayAppointments) {
+    return <h1>Loading...</h1>
+  }
+
+  if (todayAppointmentsError) {
+    return <h1>Error loading appointments</h1>
+  }
 
   return (
     <Card className="border-slate-200 p-0 shadow-sm overflow-hidden gap-0">
@@ -164,11 +165,9 @@ const ScheduleTable = ({
                   {/* Status */}
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                     <Badge
-                      className={`font-normal px-2 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-sm ${
-                        statusStyles[appointment.status]
-                      }`}
+                      className={`font-normal px-2 py-0.5 sm:px-2 sm:py-1 text-xs sm:text-sm`}
                     >
-                      {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                     { appointment.status}
                     </Badge>
                   </TableCell>
 
@@ -239,22 +238,7 @@ const ScheduleTable = ({
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-t border-slate-100 py-3 px-4 sm:py-4 sm:px-6 bg-slate-50/50">
-        <div className="flex items-center w-full sm:w-auto">
-          <span className="text-xs sm:text-sm font-medium text-slate-600 mr-2 whitespace-nowrap">
-            Daily Progress
-          </span>
-          <div className="w-24 sm:w-48 bg-slate-200 rounded-full h-1.5 sm:h-2 mr-2">
-            <div
-              className="bg-gradient-to-r from-sky-500 to-blue-600 h-1.5 sm:h-2 rounded-full"
-              style={{ width: `${completionRate}%` }}
-            ></div>
-          </div>
-          <span className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">
-            {completionRate}%
-          </span>
-        </div>
-      </CardFooter>
+
 
       <AppointmentModal
         isOpen={isModalOpen}
@@ -264,7 +248,7 @@ const ScheduleTable = ({
       />
       {/* Pagination */}
       <div className="flex justify-end bg-slate-50/50 p-4">
-        <CustomPagination pagination={{ count: totalItems }} pageSize={itemsPerPage} />
+        <CustomPagination pagination={todayAppointmentsPagination} pageSize={itemsPerPage} />
       </div>
     </Card>
   );
