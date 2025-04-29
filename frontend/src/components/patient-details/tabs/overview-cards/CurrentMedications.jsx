@@ -15,7 +15,7 @@ const CurrentMedications = () => {
     return <CustomAlert message="Couldn't get patient details" />;
   }
 
-  if (!currentMedications.length) {
+  if (!currentMedications?.length) {
     return (
       <Card>
         <CardHeader>

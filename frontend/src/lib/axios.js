@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // In development, we use the proxy, so we don't need the full URL
-const baseURL = import.meta.env.DEV ? '/api' : 'http://localhost:8000/api';
+const baseURL = import.meta.env.DEV ? '/api' : 'https://ahmed-muqawi-medicalserver.hf.space/api';
 
 const axiosInstance = axios.create({
   baseURL,
