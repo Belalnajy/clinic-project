@@ -254,20 +254,78 @@ def seed_database():
     # Create appointments
     print("Creating appointments...")
     appointments = []
-    for i in range(100):  # Create 100 appointments
-        future_date = timezone.now().date() + timedelta(days=random.randint(1, 365))  # Future dates
-        appointments.append(
-            Appointment.objects.create(
+    today = timezone.now().date()
+    
+    # Define time slots and statuses
+    time_slots = [
+        f"{hour:02d}:{minute:02d}:00" 
+        for hour in range(9, 17) 
+        for minute in [00, 30]
+    ]
+    
+    # Create today's appointments for each doctor
+    for doctor in doctors:
+        # Create appointments with different statuses for today
+        
+        # 2-3 completed appointments (morning slots)
+        morning_slots = time_slots[:6]  # First 3 hours
+        for _ in range(random.randint(2, 3)):
+            if not morning_slots:
+                break
+            slot = random.choice(morning_slots)
+            morning_slots.remove(slot)
+            
+            appointment = Appointment.objects.create(
                 patient=random.choice(patients),
-                doctor=random.choice(doctors),
-                appointment_date=future_date,
-                appointment_time=f"{random.randint(8, 17)}:{random.choice(['00', '30'])}:00",
+                doctor=doctor,
+                appointment_date=today,
+                appointment_time=slot,
                 duration=30,
-                status="scheduled",
-                notes=f"Appointment for {random.choice(diagnosis_list)} consultation",
-                created_by=admin,
+                status='completed',
+                notes=f"Completed appointment with Dr. {doctor.user.last_name}",
+                created_by=admin
             )
-        )
+            appointments.append(appointment)
+        
+        # 2-3 in_queue appointments (current time slots)
+        mid_slots = time_slots[6:12]  # Middle hours
+        for _ in range(random.randint(2, 3)):
+            if not mid_slots:
+                break
+            slot = random.choice(mid_slots)
+            mid_slots.remove(slot)
+            
+            appointment = Appointment.objects.create(
+                patient=random.choice(patients),
+                doctor=doctor,
+                appointment_date=today,
+                appointment_time=slot,
+                duration=30,
+                status='in_queue',
+                notes=f"Waiting for Dr. {doctor.user.last_name}",
+                created_by=admin
+            )
+            appointments.append(appointment)
+        
+        # 2-3 scheduled appointments (afternoon slots)
+        afternoon_slots = time_slots[12:]  # Remaining hours
+        for _ in range(random.randint(2, 3)):
+            if not afternoon_slots:
+                break
+            slot = random.choice(afternoon_slots)
+            afternoon_slots.remove(slot)
+            
+            appointment = Appointment.objects.create(
+                patient=random.choice(patients),
+                doctor=doctor,
+                appointment_date=today,
+                appointment_time=slot,
+                duration=30,
+                status='scheduled',
+                notes=f"Scheduled with Dr. {doctor.user.last_name}",
+                created_by=admin
+            )
+            appointments.append(appointment)
 
     # Create payments
     print("Creating payments...")
